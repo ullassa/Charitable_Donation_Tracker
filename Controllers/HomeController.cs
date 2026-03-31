@@ -7,7 +7,7 @@ namespace Charity.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    // jjj
+    // jjjggggg
 
     public HomeController(ILogger<HomeController> logger)
     {
