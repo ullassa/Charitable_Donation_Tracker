@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using CareFund.Models;
  
 namespace CareFund.Data
@@ -72,5 +73,6 @@ namespace CareFund.Data
                 .WithOne(n => n.Donation)
                 .HasForeignKey(n => n.DonationId);
         }
+    
     }
 }
