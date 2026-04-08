@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "uC1ps0QLrrSBukBMu3vtxNSMfPwXBsW0/jO4+aPPI5g=",
+  "Hash": "ep9ypnaQHCaFuJeuYq2Qqdwrqep0SnFMi//mgyIKU2U=",
   "Source": "CareFund",
   "BasePath": "_content/CareFund",
   "Mode": "Default",
@@ -34,25 +34,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\css\\site.css"
-    },
-    {
-      "Identity": "C:\\CareFund\\backend\\wwwroot\\favicon.ico",
-      "SourceId": "CareFund",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\CareFund\\backend\\wwwroot\\",
-      "BasePath": "_content/CareFund",
-      "RelativePath": "favicon.ico",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\favicon.ico"
     },
     {
       "Identity": "C:\\CareFund\\backend\\wwwroot\\js\\site.js",
@@ -927,6 +908,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\lib\\bootstrap\\LICENSE"
+    },
+    {
+      "Identity": "C:\\CareFund\\backend\\wwwroot\\lib\\favicon.ico",
+      "SourceId": "CareFund",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\CareFund\\backend\\wwwroot\\",
+      "BasePath": "_content/CareFund",
+      "RelativePath": "lib/favicon.ico",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\lib\\favicon.ico"
     },
     {
       "Identity": "C:\\CareFund\\backend\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
