@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\CareFund\\backend\\CareFund.csproj": {}
+    "c:\\CareFund\\backend\\CareFund.csproj": {}
   },
   "projects": {
-    "C:\\CareFund\\backend\\CareFund.csproj": {
+    "c:\\CareFund\\backend\\CareFund.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\CareFund\\backend\\CareFund.csproj",
+        "projectUniqueName": "c:\\CareFund\\backend\\CareFund.csproj",
         "projectName": "CareFund",
-        "projectPath": "C:\\CareFund\\backend\\CareFund.csproj",
+        "projectPath": "c:\\CareFund\\backend\\CareFund.csproj",
         "packagesPath": "C:\\Users\\ullas.sa\\.nuget\\packages\\",
-        "outputPath": "C:\\CareFund\\backend\\obj\\",
+        "outputPath": "c:\\CareFund\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ullas.sa\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -44,6 +44,10 @@
           "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
