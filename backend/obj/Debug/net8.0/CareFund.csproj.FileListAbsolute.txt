@@ -127,3 +127,4 @@ C:\CareFund\backend\obj\Debug\net8.0\refint\CareFund.dll
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.pdb
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.genruntimeconfig.cache
 C:\CareFund\backend\obj\Debug\net8.0\ref\CareFund.dll
+C:\CareFund\backend\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.InMemory.dll
