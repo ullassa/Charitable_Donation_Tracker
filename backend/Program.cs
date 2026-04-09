@@ -1,5 +1,7 @@
 using CareFund.Data;
 using Microsoft.EntityFrameworkCore;
+using CareFund.Models;
+using CareFund.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,7 @@ builder.Services.AddSwaggerGen();
 //db context
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); 
  
 
 // Allow Angular to call the API (CORS)
@@ -44,5 +46,37 @@ app.MapControllers();
 
 
 
+ using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+ 
+// if (!db.Users.Any())
+// {
+//     db.Users.AddRange(
+//         new User
+//         {
+//             UserName = "Ullas",
+//             Email = "ullas@gmail.com",
+//             PhoneNumber = "9999999999",
+//             // UserRole = UserRole.Admin,
+//             PasswordHash = "123456",
+//             CreatedAt = DateTime.UtcNow
+//         },
+//         new User
+//         {
+//             UserName = "Ravi",
+//             Email = "ravi@gmail.com",
+//             PhoneNumber = "8888888888",
+//             // UserRole = UserRole.User,
+//             PasswordHash = "123456",
+//             CreatedAt = DateTime.UtcNow
+//         }
+//     );
+
+// }
+
+ 
+//     db.SaveChanges();
+}
  
 app.Run();
