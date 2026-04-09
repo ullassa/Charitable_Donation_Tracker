@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eaf08af9e0b1f3ffe39700cd0eaab07e752089cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
