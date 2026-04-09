@@ -15,7 +15,7 @@ builder.Services.AddSwaggerGen();
 //db context
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // In-memory for testing; switch to SQL Server in production);
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); 
  
 
 // Allow Angular to call the API (CORS)
