@@ -1,9 +1,14 @@
   <h1>Welcome to CareFund</h1>
 <h2>User List</h2>
-<ul>
-  <li *ngFor="let user of users">
-    {{ user.userName }} | {{ user.phoneNumber }}
-   | {{user.email}} | {{user.createdAt}}
-    
-  </li>
-</ul>
+
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+  </tr>
+  <tr *ngFor="let user of users">
+   <td>{{ user.userName }} | {{ user.phoneNumber }}</td> 
+   <!-- <td>{{user.email}} | {{ user.role }}</td>  -->
+    <p>{{ users | json }}</p>
+  </tr>
+</table>

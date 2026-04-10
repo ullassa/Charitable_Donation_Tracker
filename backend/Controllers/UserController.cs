@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using CareFund.Data;
 using CareFund.Models;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace CareFund.Controllers
         }
  
         // GET: api/users
+        [Authorize]
         [HttpGet]
         public IActionResult GetUsers()
         {
@@ -26,7 +28,8 @@ namespace CareFund.Controllers
         
 
         // POST: api/users
-        [HttpPost]
+        [Authorize]
+        [HttpPost("login")]
         public async Task<IActionResult> CreateUser( User user)
         {
             if (user == null)

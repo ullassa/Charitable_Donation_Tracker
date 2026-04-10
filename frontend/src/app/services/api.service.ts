@@ -13,5 +13,11 @@ export class ApiService {
  
   getUsers(): Observable<any> {
     return this.http.get(`${this.baseUrl}/users`);
+
+
   }
+      login(data:any) {
+
+      return this.http.post(`${this.baseUrl}/auth/login`, data);
+    }
 }

@@ -20,7 +20,7 @@ namespace CareFund.Data
         public DbSet<OTP> OTPs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
  
-        // Relationships (IMPORTANT 🔥)
+        // Relationships 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
