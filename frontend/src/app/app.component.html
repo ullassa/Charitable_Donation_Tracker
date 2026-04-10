@@ -1,14 +1,23 @@
   <h1>Welcome to CareFund</h1>
-<h2>User List</h2>
+<h2>Login</h2>
+<input type="text" [(ngModel)]="email" placeholder="Email"><br><br>
+<!-- <input type="PhoneNumber" [(ngModel)]="phoneNumber" placeholder="PhoneNumber"><br><br> -->
+<input type="password" [(ngModel)]="password" placeholder="Password"><br><br>
+<button (click)="login()">Login</button>
 
+
+<h2>User List</h2>
+<button (click)="getUsers()">Load Users</button>
 <table border="1">
   <tr>
     <th>Name</th>
+    <!-- <tH>Phone Number</tH> -->
     <th>Email</th>
   </tr>
   <tr *ngFor="let user of users">
-   <td>{{ user.userName }} | {{ user.phoneNumber }}</td> 
-   <!-- <td>{{user.email}} | {{ user.role }}</td>  -->
-    <p>{{ users | json }}</p>
+   <td>{{ user.userName }} </td>
+   <!-- <td> {{ user.phoneNumber }}</td>  -->
+   <td>{{user.email}}</td> 
+    
   </tr>
 </table>
