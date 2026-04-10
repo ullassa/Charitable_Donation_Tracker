@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
  
 @Injectable({
   providedIn: 'root'
@@ -11,13 +12,19 @@ export class ApiService {
  
   constructor(private http: HttpClient) {}
  
-  getUsers(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/users`);
-
-
-  }
-      login(data:any) {
+login(data:any) {
 
       return this.http.post(`${this.baseUrl}/auth/login`, data);
     }
+  getUsers() : Observable<any> {
+    const token = localStorage.getItem('token');
+console.log("TOKEN:",token);
+// const headers = new HttpHeaders({
+  Authorization: `Bearer ${token}`
+// });
+
+    return this.http.get(`${this.baseUrl}/users`,);
+    
+}
+      
 }
