@@ -1,7 +1,14 @@
+<<<<<<< HEAD
+  <!-- <h1>Welcome to CareFund</h1>
+<h2>Login</h2>
+<input type="text" [(ngModel)]="email" placeholder="Email"><br><br>
+<input type="PhoneNumber" [(ngModel)]="phoneNumber" placeholder="PhoneNumber"><br><br>
+=======
   <h1>Welcome to CareFund</h1>
 <h2>Login</h2>
 <input type="text" [(ngModel)]="email" placeholder="Email"><br><br>
 <!-- <input type="PhoneNumber" [(ngModel)]="phoneNumber" placeholder="PhoneNumber"><br><br> -->
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
 <input type="password" [(ngModel)]="password" placeholder="Password"><br><br>
 <button (click)="login()">Login</button>
 
@@ -11,13 +18,44 @@
 <table border="1">
   <tr>
     <th>Name</th>
+<<<<<<< HEAD
+    <tH>Phone Number</tH>
+=======
     <!-- <tH>Phone Number</tH> -->
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
     <th>Email</th>
   </tr>
   <tr *ngFor="let user of users">
    <td>{{ user.userName }} </td>
+<<<<<<< HEAD
+   <td> {{ user.phoneNumber }}</td>  -->
+   <!-- <td>{{user.email}}</td>  -->
+    
+  <!-- </tr> -->
+<!-- </table> --> 
+
+
+
+<h2>Login</h2>
+
+<input [(ngModel)]="email" placeholder="Email"><br><br>
+<input [(ngModel)]="password" placeholder="Password"><br><br>
+
+<button (click)="login()">Login</button>
+
+<hr>
+
+<button (click)="getUsers()">Load Users</button>
+
+<table border="1">
+  <tr *ngFor="let user of users">
+    <td>{{user.userName}}</td>
+    <td>{{user.email}}</td>
+=======
    <!-- <td> {{ user.phoneNumber }}</td>  -->
    <td>{{user.email}}</td> 
     
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
   </tr>
 </table>
+<app-charity-register></app-charity-register>

@@ -19,6 +19,7 @@ namespace CareFund.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<OTP> OTPs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
  
         // Relationships 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

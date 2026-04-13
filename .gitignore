@@ -6,6 +6,9 @@ node_modules/
 bin/
 obj/
 dist/
+backend/bin/
+backend/obj/
+frontend/.angular/cache/
 
 
 

@@ -1,0 +1,24 @@
+<h2>Charity Register</h2>
+
+<input name="phone" [(ngModel)]="phone" placeholder="Phone number" />
+<button type="button" (click)="sendPhoneOtp()">Send Phone OTP</button>
+<input name="phoneOtp" [(ngModel)]="phoneOtp" placeholder="Phone OTP" />
+<button type="button" (click)="verifyPhoneOtp()">Verify Phone OTP</button>
+<p *ngIf="phoneVerified">Phone verified ✅</p>
+
+<br /><br />
+
+<input name="email" [(ngModel)]="email" placeholder="Email" />
+<button type="button" (click)="sendEmailOtp()">Send Email OTP</button>
+<input name="emailOtp" [(ngModel)]="emailOtp" placeholder="Email OTP" />
+<button type="button" (click)="verifyEmailOtp()">Verify Email OTP</button>
+<p *ngIf="emailVerified">Email verified ✅</p>
+
+<br /><br />
+
+<input name="password" type="password" [(ngModel)]="password" placeholder="Password" />
+<br /><br />
+<input name="charityName" [(ngModel)]="charityName" placeholder="Charity Name" />
+<br /><br />
+
+<button type="button" (click)="register()">Register</button>

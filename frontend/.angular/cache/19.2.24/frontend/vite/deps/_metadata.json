@@ -2,6 +2,14 @@
   "hash": "fed1f364",
   "configHash": "6c57d567",
   "lockfileHash": "6bf67404",
+<<<<<<< HEAD
+  "browserHash": "5cca8724",
+  "optimized": {
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "fae4a27c",
+=======
   "browserHash": "d8c80ba5",
   "optimized": {
     "@angular/common": {
@@ -14,30 +22,53 @@
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
       "fileHash": "e3ed58b9",
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
+<<<<<<< HEAD
+      "fileHash": "3178ba13",
+=======
       "fileHash": "a9c8e905",
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
+<<<<<<< HEAD
+      "fileHash": "2a9ac177",
+=======
       "fileHash": "45f361c0",
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
+<<<<<<< HEAD
+      "fileHash": "91c9cb25",
+      "needsInterop": false
+    },
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "1c281ee9",
+=======
       "fileHash": "98294bcc",
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
+<<<<<<< HEAD
+      "fileHash": "cf154d18",
+=======
       "fileHash": "59aa2caa",
+>>>>>>> 5d2ace989a224e48618724966e16c2bbd9870d6e
       "needsInterop": false
     }
   },

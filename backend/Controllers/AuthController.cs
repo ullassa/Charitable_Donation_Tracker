@@ -1,59 +1,111 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using CareFund.Data; // your namespace
 using CareFund.Models;
+using CareFund.Services.Auth;
+using CareFund.Services.Jwt;
+using CareFund.Services.Otp;
+using CareFund.DTOs.Auth;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IConfiguration _configuration;
+    private readonly IAuthService _authService;
+    private readonly IJwtService _jwtService;
+    private readonly IOtpService _otpService;
 
-    public AuthController(ApplicationDbContext context, IConfiguration configuration)
+    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService)
     {
-        _context = context;
-        _configuration = configuration;
+        _authService = authService;
+        _jwtService = jwtService;
+        _otpService = otpService;
     }
 
+    // 🔐 LOGIN
     [HttpPost("login")]
     public IActionResult Login(LoginRequest loginUser)
     {
-        var user = _context.Users.FirstOrDefault(u =>
-            u.Email == loginUser.Email &&
-            u.PasswordHash == loginUser.PasswordHash);
+        var user = _authService.AuthenticateUser(loginUser.Email, loginUser.PasswordHash);
 
         if (user == null)
-            return Unauthorized("Invalid credentials");
+            return Unauthorized(new { success = false, message = "Invalid credentials" });
 
-        var token = GenerateJwtToken(user);
-
-        return Ok(new { token });
+        var token = _jwtService.GenerateToken(user);
+        return Ok(new { success = true, token = token, message = "Login successful" });
     }
 
-    private string GenerateJwtToken(User user)
+    // -----------------------
+    // PHONE OTP
+    // -----------------------
+    [HttpPost("send-phone-otp")]
+    public async Task<IActionResult> SendPhoneOtp([FromQuery] string phone)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        if (string.IsNullOrWhiteSpace(phone))
+            return BadRequest(new OtpResponse { Success = false, Message = "Phone is required." });
 
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var (success, message) = await _otpService.SendPhoneOtpAsync(phone);
+        return success ? Ok(new OtpResponse { Success = true, Message = message })
+                       : BadRequest(new OtpResponse
+                       {
+                           Success = false,
+                           Message = message,
+                           Hint = "If using Twilio trial, verify recipient number in Twilio Console and enable SMS for destination country (India)."
+                       });
+    }
 
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
+    [HttpPost("verify-phone-otp")]
+    public IActionResult VerifyPhoneOtp([FromQuery] string phone, [FromQuery] string otp)
+    {
+        if (string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(otp))
+            return BadRequest(new OtpResponse { Success = false, Message = "Phone and OTP are required." });
 
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(1),
-            signingCredentials: creds);
+        var isValid = _otpService.VerifyPhoneOtp(phone, otp);
+        return isValid ? Ok(new OtpResponse { Success = true, Message = "Phone OTP verified" })
+                       : BadRequest(new OtpResponse { Success = false, Message = "Invalid or expired OTP. Request a new one." });
+    }
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+    // -----------------------
+    // EMAIL OTP
+    // -----------------------
+    [HttpPost("send-email-otp")]
+    public async Task<IActionResult> SendEmailOtp([FromQuery] string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest(new OtpResponse { Success = false, Message = "Email is required." });
+
+        var (success, message) = await _otpService.SendEmailOtpAsync(email);
+        return success ? Ok(new OtpResponse { Success = true, Message = message })
+                       : BadRequest(new OtpResponse
+                       {
+                           Success = false,
+                           Message = message,
+                           Hint = "If SMTP is blocked, set Brevo:ApiKey and keep a verified sender in Brevo. Brevo API fallback runs over HTTPS (port 443)."
+                       });
+    }
+
+    [HttpPost("verify-email-otp")]
+    public IActionResult VerifyEmailOtp([FromQuery] string email, [FromQuery] string otp)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(otp))
+            return BadRequest(new OtpResponse { Success = false, Message = "Email and OTP are required." });
+
+        var isValid = _otpService.VerifyEmailOtp(email, otp);
+        return isValid ? Ok(new OtpResponse { Success = true, Message = "Email OTP verified" })
+                       : BadRequest(new OtpResponse { Success = false, Message = "Invalid or expired OTP. Request a new one." });
+    }
+
+    // 🏢 REGISTER CHARITY
+    [HttpPost("register-charity")]
+    public IActionResult RegisterCharity(RegisterCharityDto dto)
+    {
+        if (dto == null)
+            return BadRequest(new { success = false, message = "Request body is required." });
+
+        var user = _authService.RegisterCharity(dto.CharityName, dto.Email, dto.Password,
+            dto.PhoneNumber, _otpService);
+
+        if (user == null)
+            return BadRequest(new { success = false, message = "Registration failed. Verify phone and email first." });
+
+        return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
     }
 }
