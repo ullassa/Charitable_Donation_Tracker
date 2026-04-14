@@ -1,0 +1,98 @@
+Perfect. This class is the full OTP engine for your app: generate, send, verify, and track temporary verification status.
+
+See the file here: OtpService.cs
+
+High-level role
+
+Handles Phone OTP (Twilio SMS)
+Handles Email OTP (SMTP, with Brevo API fallback)
+Stores OTPs in memory for 5 minutes
+Marks phone/email as verified for 10 minutes after correct OTP
+Core fields
+
+_config: reads settings from app configuration (.env + appsettings)
+_httpClientFactory: creates HTTP clients for Twilio and Brevo API calls
+_logger: writes logs for success/failure
+PendingOtps: in-memory OTP store, key -> (otp, expiry)
+VerifiedPhones / VerifiedEmails: in-memory short-term verified flags
+SendPhoneOtpAsync(phone)
+
+Validates empty input
+Normalizes phone format (removes spaces, dashes, brackets)
+Adds + if digits only
+Validates final format and length
+Generates 6-digit OTP
+Saves OTP in PendingOtps for 5 minutes
+Calls SendSmsAsync
+If SMS fails, removes OTP from memory
+Returns success/failure + message
+SendEmailOtpAsync(email)
+
+Validates empty input
+Normalizes to lowercase
+Validates email using MailAddress parser
+Generates 6-digit OTP
+Saves OTP in PendingOtps for 5 minutes
+Calls SendEmailAsync
+If email fails, removes OTP from memory
+VerifyPhoneOtp(phone, otp)
+
+Validates inputs
+Normalizes phone
+Builds phone key
+Calls VerifyOtpInternal(key, otp)
+If valid:
+marks phone verified for 10 minutes in VerifiedPhones
+If invalid:
+logs warning
+VerifyEmailOtp(email, otp)
+
+Same logic as phone verification
+Uses email key and VerifiedEmails dictionary
+IsPhoneVerified / IsEmailVerified
+
+Checks if verification exists and not expired
+Used during registration to allow only verified users
+ClearPhoneVerification / ClearEmailVerification
+
+Removes verified flags after successful registration
+Prevents reuse of old verification state
+Helper methods
+
+NormalizePhone: standardizes phone input
+PhoneKey / EmailKey: creates stable keys
+VerifyOtpInternal:
+checks if OTP exists
+checks expiry
+checks match
+removes OTP once used
+SendSmsAsync(toPhone, otp)
+
+Checks Twilio config exists
+Builds Twilio HTTP request to Messages endpoint
+Sends Basic Auth header using SID:Token
+On failure, tries to parse Twilio JSON error and returns readable message
+SendEmailAsync(toEmail, otp)
+
+Checks SMTP config exists
+Reads SMTP host/port/credentials/from email
+For Brevo relay host, tries ports 587, 2525, 465
+Attempts SMTP send on each port
+If all SMTP attempts fail:
+if Brevo API key exists, tries SendEmailViaBrevoApiAsync over HTTPS
+if no API key, returns clear message that API key is missing
+Handles recipient errors, SMTP errors, and generic exceptions with detailed messages
+Config checkers
+
+IsSmtpConfigured: requires host, username, password, from email
+IsTwilioConfigured: requires account sid, auth token, from phone
+HasBrevoApiKey: checks if Brevo API key is present
+SendEmailViaBrevoApiAsync
+
+Uses Brevo API key
+Sends POST to Brevo transactional email endpoint
+Payload includes sender, recipient, subject, OTP text
+Returns Email sent on success, else status-based failure message
+If you want, next I can explain this same file truly line-by-line in 5 small chunks (about 80-100 lines each) so it is even easier to learn.
+
+GPT-5.3-Codex • 0.9x
