@@ -12,7 +12,7 @@ public class OTP
     public int UserId { get; set; }
  
     [Required]
-    public string OtpCode { get; set; }
+    public string OtpCode { get; set; } = string.Empty;
  
     public OtpType OtpType { get; set; }
  
@@ -23,6 +23,6 @@ public class OTP
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
  
     // Navigation
-    public User User { get; set; }
+    public User? User { get; set; }
 }
   }

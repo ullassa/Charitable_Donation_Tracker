@@ -13,16 +13,16 @@ public class Customer
  
     public DateTime DOB { get; set; }
  
-    public string City { get; set; }
+    public string City { get; set; } = string.Empty;
  
-    public string Gender { get; set; }
+    public string Gender { get; set; } = string.Empty;
  
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
  
     public bool IsAnonymous { get; set; }
  
     // Navigation
-    public User User { get; set; }
-    public ICollection<Donation> Donations { get; set; }
+    public User? User { get; set; }
+    public ICollection<Donation> Donations { get; set; } = new List<Donation>();
 }
   }

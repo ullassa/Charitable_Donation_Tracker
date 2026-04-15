@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
         _context = context;
     }
 
-    // 🔐 LOGIN
+    // LOGIN
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest loginUser)
     {

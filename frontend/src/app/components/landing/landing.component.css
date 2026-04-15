@@ -1,6 +1,6 @@
 .landing-page {
   width: 100%;
-  background: #f6f8fc;
+  background: #f8fafc;
   color: #0f172a;
 }
 
@@ -11,7 +11,7 @@
 }
 
 .hero-shell {
-  padding: 2rem 1rem 1rem;
+  padding: 1.5rem 1rem 1rem;
 }
 
 .hero-card {
@@ -20,11 +20,11 @@
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 1.5rem;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(150deg, #0f172a 0%, #1e293b 65%, #334155 100%);
   color: white;
-  border-radius: 28px;
+  border-radius: 24px;
   padding: 2.25rem;
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
 }
 
 .eyebrow {
@@ -43,8 +43,8 @@
 }
 
 .hero-copy p {
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.6;
   max-width: 58ch;
   color: rgba(255,255,255,0.86);
 }
@@ -62,10 +62,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
+}
+
+.hero-image-square {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transform: scale(1.06);
+  filter: saturate(1.05) contrast(1.02);
 }
 
 .hero-badge {
@@ -73,29 +83,47 @@
   top: 1rem;
   left: 1rem;
   background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   padding: 0.55rem 0.85rem;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .hero-illustration {
-  font-size: 7rem;
-  animation: float 3.6s ease-in-out infinite;
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.65);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.35);
+  overflow: hidden;
+  background: transparent;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+.hero-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.hero-logo-image {
+  padding: 0;
+  background: transparent;
+  transform: scale(1.38);
+  filter: contrast(1.06) saturate(1.04);
 }
 
 .btn {
   padding: 0.9rem 1.2rem;
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 0.98rem;
-  font-weight: 700;
+  font-weight: 600;
   transition: 0.25s ease;
   text-decoration: none;
   display: inline-flex;
@@ -124,9 +152,9 @@
 }
 
 .btn-outline {
-  background: transparent;
+  background: #eff6ff;
   color: #2563eb;
-  border: 1.5px solid #c7d2fe;
+  border: 1px solid #bfdbfe;
 }
 
 .stats-strip {
@@ -141,9 +169,10 @@
 
 .stat-card {
   background: white;
-  border-radius: 18px;
+  border-radius: 14px;
   padding: 1.25rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
 }
 
 .stat-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
@@ -151,7 +180,7 @@
 .stat-label { color: #64748b; margin-top: 0.2rem; }
 
 .discover-section {
-  padding: 1rem 0 2rem;
+  padding: 0.5rem 0 2rem;
 }
 
 .section-head {
@@ -174,8 +203,8 @@
 
 .search-box input {
   width: min(420px, 100%);
-  padding: 0.95rem 1rem;
-  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
   border: 1px solid #dbe3f0;
   background: white;
   outline: none;
@@ -188,10 +217,11 @@
 
 .loading-state, .empty-state {
   background: white;
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.05);
 }
 
 .empty-state p { color: #64748b; }
@@ -204,10 +234,16 @@
 
 .charity-card {
   background: white;
-  border-radius: 22px;
+  border-radius: 16px;
   padding: 1.3rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  border: 1px solid #edf2f7;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.charity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.09);
 }
 
 .charity-top {
@@ -223,8 +259,8 @@
 .status-pill {
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 600;
   background: #f1f5f9;
   color: #334155;
 }
@@ -258,7 +294,7 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .page-indicator {
@@ -266,29 +302,51 @@
   font-weight: 600;
 }
 
-.statistics {
-  padding: 3rem 1rem;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
+.testimonials {
+  padding: 1.2rem 1rem 2.5rem;
 }
 
-.statistics h2, .statistics p {
+.section-head.center {
+  justify-content: center;
   text-align: center;
 }
 
-.statistics p { margin: 0 0 1.5rem; opacity: 0.9; }
-
-.statistics .stat-card {
-  background: rgba(255,255,255,0.12);
-  color: white;
-  backdrop-filter: blur(12px);
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
 }
 
-.statistics .stat-value,
-.statistics .stat-label { color: white; }
+.testimonial-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.2rem;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+}
+
+.testimonial-message {
+  color: #334155;
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}
+
+.testimonial-person {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.testimonial-person strong {
+  color: #0f172a;
+}
+
+.testimonial-person span {
+  color: #64748b;
+  font-size: 0.92rem;
+}
 
 .cta-section {
-  padding: 3rem 1rem 4rem;
+  padding: 2.5rem 1rem 4rem;
   text-align: center;
 }
 
@@ -302,7 +360,7 @@
 }
 
 @media (max-width: 1024px) {
-  .stats-grid, .charity-grid {
+  .stats-grid, .charity-grid, .testimonial-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -319,13 +377,21 @@
 
   .search-box input,
   .stats-grid,
-  .charity-grid {
+  .charity-grid,
+  .testimonial-grid {
     width: 100%;
     grid-template-columns: 1fr;
   }
 
   .hero-card {
     padding: 1.35rem;
+  }
+
+  .hero-illustration {
+    width: 120px;
+    height: 120px;
+    right: 0.75rem;
+    bottom: 0.75rem;
   }
 
   .hero-actions,

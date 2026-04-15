@@ -23,6 +23,28 @@ export class LandingComponent implements OnInit {
   currentPage = 1;
   pageSize = 6;
 
+  heroMainImageCandidates = [
+    '/images/carefund-hero.jpg',
+    '/images/carefund-hero.png',
+    '/images/hero-main.jpg',
+    '/images/hero-main.png',
+    '/images/hero.jpg',
+    '/images/hero.png'
+  ];
+  heroLogoImageCandidates = [
+    '/images/carefund-logo.png',
+    '/images/carefund-logo.jpg',
+    '/images/hero-logo.png',
+    '/images/hero-logo.jpg',
+    '/images/logo.png',
+    '/images/logo.jpg',
+    '/favicon.ico'
+  ];
+  heroMainImageIndex = 0;
+  heroLogoImageIndex = 0;
+  heroMainImageSrc = this.heroMainImageCandidates[0];
+  heroLogoImageSrc = this.heroLogoImageCandidates[0];
+
   heroTitle = 'Make a Difference Today';
   heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
 
@@ -30,7 +52,7 @@ export class LandingComponent implements OnInit {
     { label: 'Charities', value: '0', icon: '🤝' },
     { label: 'Approved', value: '0', icon: '✅' },
     { label: 'Pending', value: '0', icon: '⏳' },
-    { label: 'Active Users', value: '10K+', icon: '👥' }
+    { label: 'Active Users', value: '', icon: '👥' }
   ];
 
   testimonials = [
@@ -142,5 +164,19 @@ export class LandingComponent implements OnInit {
   updateVisibleCharities(): void {
     const start = (this.currentPage - 1) * this.pageSize;
     this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
+  }
+
+  onHeroMainImageError(): void {
+    if (this.heroMainImageIndex < this.heroMainImageCandidates.length - 1) {
+      this.heroMainImageIndex++;
+      this.heroMainImageSrc = this.heroMainImageCandidates[this.heroMainImageIndex];
+    }
+  }
+
+  onHeroLogoImageError(): void {
+    if (this.heroLogoImageIndex < this.heroLogoImageCandidates.length - 1) {
+      this.heroLogoImageIndex++;
+      this.heroLogoImageSrc = this.heroLogoImageCandidates[this.heroLogoImageIndex];
+    }
   }
 }

@@ -21,6 +21,6 @@ public class Payment
     public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
  
     // Navigation
-    public Donation Donation { get; set; }
+    public Donation? Donation { get; set; }
 }
   }

@@ -10,7 +10,7 @@
 
 /* Hero Section */
 .blogs-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #4ba293 100%);
   color: white;
   padding: 6rem 2rem;
   text-align: center;
@@ -314,7 +314,7 @@
 
 .newsletter-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 3px rgba(32, 154, 235, 0.3);
 }
 
 .btn {

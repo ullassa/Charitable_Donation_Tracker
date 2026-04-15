@@ -27,8 +27,8 @@ public class Donation
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
  
     // Navigation
-    public Customer Customer { get; set; }
-    public Charity Charity { get; set; }
+    public Customer? Customer { get; set; }
+    public Charity? Charity { get; set; }
     //public Payment Payment { get; set; }
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 public ICollection<Notification> Notifications { get; set; } = new List<Notification>();

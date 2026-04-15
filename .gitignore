@@ -10,7 +10,7 @@ backend/bin/
 backend/obj/
 frontend/.angular/cache/
 
-frontend/.angular/
+# frontend/.angular/
 
 .env
 # Compiled output

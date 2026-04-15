@@ -14,16 +14,16 @@ public class Notification
     [ForeignKey("Donation")]
     public int DonationId { get; set; }
  
-    public string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
  
     public NotificationType NotificationType { get; set; }
  
     public DateTime SentAt { get; set; }
  
-    public string Status { get; set; }
+    public string Status { get; set; } = string.Empty;
  
     // Navigation
-    public User User { get; set; }
-    public Donation Donation { get; set; }
+    public User? User { get; set; }
+    public Donation? Donation { get; set; }
 }
   }

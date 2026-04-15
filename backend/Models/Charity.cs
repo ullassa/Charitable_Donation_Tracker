@@ -9,20 +9,20 @@ public class Charity
     public int CharityId { get; set; }
  
     [Required]
-    public string RegistrationId { get; set; }
+    public string RegistrationId { get; set; } = string.Empty;
  
     [Required]
-    public string CharityName { get; set; }
+    public string CharityName { get; set; } = string.Empty;
  
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
  
-    public string Cause { get; set; }
+    public string Cause { get; set; } = string.Empty;
  
-    public string Location { get; set; }
+    public string Location { get; set; } = string.Empty;
  
-    public string PhoneNumber { get; set; }
+    public string PhoneNumber { get; set; } = string.Empty;
  
-    public string Email { get; set; }
+    public string Email { get; set; } = string.Empty;
  
     public CharityStatus CharityStatus { get; set; }
  
@@ -33,7 +33,7 @@ public class Charity
     public bool IsActive { get; set; } = true;
  
     // Navigation
-    public User User { get; set; }
+    public User? User { get; set; }
     //public ICollection<Donation> Donations { get; set; }
     public ICollection<Donation> Donations { get; set; } = new List<Donation>();
 }

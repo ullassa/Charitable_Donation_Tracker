@@ -13,10 +13,10 @@ import { FooterComponent } from '../footer/footer.component';
 })
 export class ImpactComponent {
   impactMetrics = [
-    { icon: '💰', label: 'Total Donations', value: '$2,500,000+', description: 'Funds distributed to verified causes' },
-    { icon: '🤝', label: 'Active Charities', value: '150+', description: 'Verified charity partners' },
-    { icon: '❤️', label: 'Lives Impacted', value: '50,000+', description: 'People helped globally' },
-    { icon: '📍', label: 'Reach', value: '25+ Countries', description: 'Global charitable reach' },
+    { icon: '', label: 'Total Donations', value: '$200', description: 'Funds distributed to verified causes' },
+    { icon: '', label: 'Active Charities', value: '2', description: 'Verified charity partners' },
+    { icon: '', label: 'Lives Impacted', value: '5+', description: 'People helped globally' },
+    { icon: '', label: 'Reach', value: '1 Country', description: 'Global charitable reach' },
   ];
 
   impactStories = [
@@ -54,12 +54,12 @@ export class ImpactComponent {
     }
   ];
 
-  milestones = [
-    { year: '2023', event: 'CareFund Platform Launched', icon: '🚀' },
-    { year: '2023', event: 'First 1000 Donors Joined', icon: '👥' },
-    { year: '2024', event: 'Reached 50K Lives Impacted', icon: '🎯' },
-    { year: '2024', event: '150+ Charity Partners Onboarded', icon: '🤝' },
-    { year: '2025', event: 'Expanded to 25+ Countries', icon: '🌏' },
-    { year: '2026', event: '$2.5M+ Total Donations', icon: '💎' }
-  ];
+  // milestones = [
+  //   { year: '20-03-2026', event: 'Started Planning', icon: '🚀' },
+  //   { year: '2023', event: 'First 1000 Donors Joined', icon: '👥' },
+  //   { year: '2024', event: 'Reached 50K Lives Impacted', icon: '🎯' },
+  //   { year: '2024', event: '150+ Charity Partners Onboarded', icon: '🤝' },
+  //   { year: '2025', event: 'Expanded to 25+ Countries', icon: '🌏' },
+  //   { year: '2026', event: '$2.5M+ Total Donations', icon: '💎' }
+  // ];
 }

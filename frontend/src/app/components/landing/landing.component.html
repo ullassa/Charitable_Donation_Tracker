@@ -14,8 +14,21 @@
         </div>
       </div>
       <div class="hero-visual">
-        <div class="hero-badge">❤️ UNTrusted giving</div>
-        <div class="hero-illustration"></div>
+        <div class="hero-badge">❤️ Trusted giving. Saving lives.</div>
+        <img
+          class="hero-image-square"
+          [src]="heroMainImageSrc"
+          (error)="onHeroMainImageError()"
+          alt="CareFund hero image"
+        >
+        <div class="hero-illustration">
+          <img
+            class="hero-logo-image"
+            [src]="heroLogoImageSrc"
+            (error)="onHeroLogoImageError()"
+            alt="CareFund logo"
+          >
+        </div>
       </div>
     </div>
   </section>
@@ -76,22 +89,22 @@
           </div>
 
           <div class="charity-actions">
-              <button
-                class="btn btn-outline"
-                routerLink="/donate"
-                [queryParams]="{
-                  charityId: charity.charityId,
-                  charityName: charity.charityName,
-                  description: charity.description,
-                  cause: charity.cause,
-                  location: charity.location,
-                  email: charity.email,
-                  phone: charity.phoneNumber
-                }"
-              >
-                Donate Now
-              </button>
-            <button class="btn btn-secondary" routerLink="/login">View more</button>
+            <button
+              class="btn btn-outline"
+              routerLink="/donate"
+              [queryParams]="{
+                charityId: charity.charityId,
+                charityName: charity.charityName,
+                description: charity.description,
+                cause: charity.cause,
+                location: charity.location,
+                email: charity.email,
+                phone: charity.phoneNumber
+              }"
+            >
+              Donate now
+            </button>
+            <button class="btn btn-secondary" routerLink="/login">Learn more</button>
           </div>
         </article>
       </div>
@@ -104,32 +117,37 @@
     </div>
   </section>
 
-  <!-- Statistics Section -->
-  <section class="statistics">
+  <section class="testimonials">
     <div class="container">
-      <h2>Our Impact</h2>
-      <div class="stats-grid">
-        <div class="stat-card" *ngFor="let stat of statistics">
-          <div class="stat-icon">{{ stat.icon }}</div>
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-label">{{ stat.label }}</div>
+      <div class="section-head center">
+        <div>
+          <h2>What people say</h2>
+          <p>Real voices from donors, partners, and beneficiaries.</p>
         </div>
+      </div>
+
+      <div class="testimonial-grid">
+        <article class="testimonial-card" *ngFor="let item of testimonials">
+          <p class="testimonial-message">“{{ item.message }}”</p>
+          <div class="testimonial-person">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.role }}</span>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
   <section class="cta-section">
     <div class="container">
       <h2>Ready to make an impact?</h2>
-      <p>Join CareFund and support the charities that matter most to you.</p>
+      <p>Join CareFund and support charities that matter to you.</p>
       <div class="cta-buttons">
         <button class="btn btn-primary" routerLink="/login">Sign in</button>
         <button class="btn btn-secondary" routerLink="/customer-signup">Create donor account</button>
       </div>
     </div>
   </section>
-
 </main>
 
 <app-footer></app-footer>
