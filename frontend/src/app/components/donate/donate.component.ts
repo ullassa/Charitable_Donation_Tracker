@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface PublicCharity {
   id: number;
@@ -25,7 +27,7 @@ interface PublicCharity {
   templateUrl: './donate.component.html',
   styleUrls: ['./donate.component.css']
 })
-export class DonateComponent implements OnInit {
+export class DonateComponent implements OnInit, OnDestroy {
   charities: PublicCharity[] = [];
   availableCauses: string[] = [];
   selectedCharity: PublicCharity | null = null;
@@ -52,6 +54,9 @@ export class DonateComponent implements OnInit {
   bankName = '';
   walletNumber = '';
   predefinedAmounts = [10, 25, 50, 100, 250, 500];
+  
+  private destroy$ = new Subject<void>();
+  isLoggedIn = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -60,7 +65,11 @@ export class DonateComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.checkLoginStatus();
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+      this.cause = typeof params['cause'] === 'string' ? params['cause'] : this.cause;
       const charityId = params['charityId'] ? parseInt(params['charityId'], 10) : null;
 
       if (params['charityName'] || charityId) {
@@ -88,6 +97,19 @@ export class DonateComponent implements OnInit {
     });
 
     this.loadCharities();
+  }
+
+  private getAuthToken(): string | null {
+    return sessionStorage.getItem('token') || localStorage.getItem('token');
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private checkLoginStatus(): void {
+    this.isLoggedIn = !!this.getAuthToken();
   }
 
   private loadCharities(): void {
@@ -198,7 +220,7 @@ export class DonateComponent implements OnInit {
   }
 
   startDonation(): void {
-    if (!localStorage.getItem('token')) {
+    if (!this.getAuthToken()) {
       this.paymentMessage = 'Please login to continue with donation payment.';
       this.router.navigate(['/login']);
       return;
@@ -206,6 +228,16 @@ export class DonateComponent implements OnInit {
 
     if (!this.selectedCharity) {
       this.paymentMessage = 'Please select a charity first.';
+      return;
+    }
+
+    if (this.selectedAmount <= 0) {
+      this.paymentMessage = 'Please choose a donation amount first.';
+      return;
+    }
+
+    if (this.donateAnonymously) {
+      this.proceedToDonate(true);
       return;
     }
 
@@ -228,10 +260,10 @@ export class DonateComponent implements OnInit {
     }
   }
 
-  proceedToDonate(): void {
+  proceedToDonate(skipPaymentDetailValidation = false): void {
     this.paymentMessage = '';
 
-    if (!localStorage.getItem('token')) {
+    if (!this.getAuthToken()) {
       this.router.navigate(['/login']);
       return;
     }
@@ -246,24 +278,24 @@ export class DonateComponent implements OnInit {
       return;
     }
 
-    if (this.paymentMethod === 'upi' && !this.upiId.trim()) {
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'upi' && !this.upiId.trim()) {
       this.paymentMessage = 'Enter your UPI ID to continue.';
       return;
     }
 
-    if (this.paymentMethod === 'card') {
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'card') {
       if (!this.cardHolderName.trim() || !this.cardNumber.trim() || !this.cardExpiry.trim() || !this.cardCvv.trim()) {
         this.paymentMessage = 'Please fill card details to continue.';
         return;
       }
     }
 
-    if (this.paymentMethod === 'netbanking' && !this.bankName.trim()) {
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'netbanking' && !this.bankName.trim()) {
       this.paymentMessage = 'Please select a bank to continue.';
       return;
     }
 
-    if (this.paymentMethod === 'wallet' && !this.walletNumber.trim()) {
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'wallet' && !this.walletNumber.trim()) {
       this.paymentMessage = 'Please enter your wallet number.';
       return;
     }
@@ -281,13 +313,14 @@ export class DonateComponent implements OnInit {
       charityRegistrationId: this.selectedCharity.id,
       amount: this.selectedAmount,
       isAnonymous: this.donateAnonymously,
-      paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
+      paymentMethod: skipPaymentDetailValidation ? 1 : (paymentMethodMap[this.paymentMethod] ?? 1),
       transactionReference: `CF-${Date.now()}`
     };
 
     this.apiService.createDonation(payload).subscribe({
       next: (response: any) => {
         this.paymentProcessing = false;
+        localStorage.setItem('cf:notify:refresh', Date.now().toString());
         this.router.navigate(['/payment-success'], {
           queryParams: {
             charityName: this.selectedCharity?.name,

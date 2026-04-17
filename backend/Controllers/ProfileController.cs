@@ -82,7 +82,7 @@ public class ProfileController : ControllerBase
     }
 
     [HttpPut("customer")]
-    [Authorize(Roles = "Customer")]
+    [Authorize(Roles = "Customer,Admin")]
     public async Task<IActionResult> UpdateCustomer([FromBody] UpdateCustomerProfileRequest request)
     {
         if (request == null)
@@ -94,8 +94,8 @@ public class ProfileController : ControllerBase
 
         var normalizedEmail = email.Trim().ToLowerInvariant();
         var user = await _context.Users.Include(u => u.Customer).FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-        if (user?.Customer == null)
-            return NotFound(new { success = false, message = "Customer profile not found." });
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found." });
 
         var newEmail = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(newEmail) || string.IsNullOrWhiteSpace(request.PhoneNumber))
@@ -108,11 +108,38 @@ public class ProfileController : ControllerBase
         user.UserName = request.Name.Trim();
         user.Email = newEmail;
         user.PhoneNumber = request.PhoneNumber.Trim();
-        user.Customer.City = string.IsNullOrWhiteSpace(request.City) ? user.Customer.City : request.City.Trim();
+
+        if (user.UserRole == UserRole.Customer)
+        {
+            if (user.Customer == null)
+            {
+                user.Customer = new Customer
+                {
+                    UserId = user.UserId,
+                    DateOfBirth = DateTime.UtcNow,
+                    City = string.IsNullOrWhiteSpace(request.City) ? "Unknown" : request.City.Trim(),
+                    Gender = "Other",
+                    CreatedAt = DateTime.UtcNow,
+                    IsAnonymousDefault = false
+                };
+
+                _context.Customers.Add(user.Customer);
+            }
+            else
+            {
+                user.Customer.City = string.IsNullOrWhiteSpace(request.City) ? user.Customer.City : request.City.Trim();
+            }
+        }
 
         await _context.SaveChangesAsync();
 
-        return Ok(new { success = true, message = "Customer profile updated successfully." });
+        return Ok(new
+        {
+            success = true,
+            message = user.UserRole == UserRole.Admin
+                ? "Admin profile updated successfully."
+                : "Customer profile updated successfully."
+        });
     }
 
     [HttpPut("charity")]

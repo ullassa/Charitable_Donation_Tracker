@@ -2,6 +2,7 @@ using CareFund.Data;
 using CareFund.Models;
 using CareFund.Enums;
 using CareFund.Services.Otp;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareFund.Services.Auth
 {
@@ -29,7 +30,7 @@ namespace CareFund.Services.Auth
                 return null;
 
             var normalizedEmail = email.Trim().ToLowerInvariant();
-            var user = _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
+            var user = _context.Users.Include(u => u.Customer).FirstOrDefault(u => u.Email == normalizedEmail);
 
             if (user == null)
             {
@@ -60,6 +61,7 @@ namespace CareFund.Services.Auth
 
             if (isValid)
             {
+                EnsureCustomerProfileForCustomerRole(user);
                 _logger.LogInformation($"User authenticated: {email}");
             }
             else
@@ -202,13 +204,9 @@ namespace CareFund.Services.Auth
                 return null;
             }
 
-            var normalizedGender = (gender ?? string.Empty).Trim().ToLowerInvariant() switch
-            {
-                "male" => "Male",
-                "female" => "Female",
-                "prefer not to say" => "Prefer not to say",
-                _ => "Prefer not to say"
-            };
+            var normalizedGender = NormalizeCustomerGender(gender);
+
+            using var transaction = _context.Database.BeginTransaction();
 
             var user = new User
             {
@@ -237,12 +235,47 @@ namespace CareFund.Services.Auth
 
             _context.Customers.Add(customer);
             _context.SaveChanges();
+            transaction.Commit();
 
             otpService.ClearPhoneVerification(phoneNumber);
             otpService.ClearEmailVerification(email);
 
             _logger.LogInformation($"Customer created: {email}");
             return user;
+        }
+
+        private static string NormalizeCustomerGender(string? gender)
+        {
+            return (gender ?? string.Empty).Trim().ToLowerInvariant() switch
+            {
+                "male" => "Male",
+                "female" => "Female",
+                "prefer not to say" => "Other",
+                "other" => "Other",
+                _ => "Other"
+            };
+        }
+
+        private void EnsureCustomerProfileForCustomerRole(User user)
+        {
+            if (user.UserRole != UserRole.Customer || user.Customer != null)
+                return;
+
+            _logger.LogWarning("Customer profile missing for user {UserId}. Creating fallback customer record.", user.UserId);
+
+            var fallbackCustomer = new Customer
+            {
+                UserId = user.UserId,
+                DateOfBirth = DateTime.UtcNow,
+                City = "Unknown",
+                Gender = "Other",
+                CreatedAt = DateTime.UtcNow,
+                IsAnonymousDefault = false
+            };
+
+            _context.Customers.Add(fallbackCustomer);
+            _context.SaveChanges();
+            user.Customer = fallbackCustomer;
         }
 
         /// <summary>

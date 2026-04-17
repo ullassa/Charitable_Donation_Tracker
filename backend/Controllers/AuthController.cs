@@ -33,7 +33,10 @@ public class AuthController : ControllerBase
         try
         {
             var email = loginUser.Email?.Trim().ToLowerInvariant() ?? string.Empty;
-            var user = _authService.AuthenticateUser(email, loginUser.PasswordHash);
+            var password = !string.IsNullOrWhiteSpace(loginUser.PasswordHash)
+                ? loginUser.PasswordHash
+                : (loginUser.Password ?? string.Empty);
+            var user = _authService.AuthenticateUser(email, password);
 
             if (user == null)
                 return Unauthorized(new { success = false, message = "Invalid credentials" });

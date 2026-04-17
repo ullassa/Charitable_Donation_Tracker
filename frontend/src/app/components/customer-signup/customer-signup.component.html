@@ -3,9 +3,9 @@
 <div class="signup-page">
   <div class="signup-container">
     <!-- Progress Bar -->
-    <div class="progress-section">
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width]="(currentStep / totalSteps * 100) + '%'"></div>
+    <div class="progress-section glass-card">
+      <div class="progress">
+        <div class="progress-bar" [style.width]="(currentStep / totalSteps * 100) + '%'"></div>
       </div>
       <div class="step-indicators">
         <div class="step-indicator" *ngFor="let i of [1, 2, 3, 4]"
@@ -21,7 +21,7 @@
     </div>
 
     <!-- Signup Form Card -->
-    <div class="signup-card">
+    <div class="signup-card glass-card">
       <h1>Create Donor Account</h1>
 
       <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
@@ -41,7 +41,7 @@
               class="form-control"
               [class.is-invalid]="submitted && name?.invalid"
             >
-            <div *ngIf="submitted && name?.invalid" class="error-message">
+            <div *ngIf="submitted && name?.invalid" class="alert alert-error">
               <span *ngIf="name?.errors?.['required']">Name is required</span>
               <span *ngIf="name?.errors?.['minlength']">Name must be at least 3 characters</span>
             </div>

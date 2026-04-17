@@ -3,6 +3,7 @@ using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
 using CareFund.Services.Otp;
 using DotNetEnv;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -113,9 +114,56 @@ var app = builder.Build();
 // Seed default admin user
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var schemaReady = false;
+
     try
     {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.Migrate();
+        schemaReady = true;
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Database migration skipped during startup. Continuing without migration.");
+    }
+
+    if (!schemaReady)
+    {
+        try
+        {
+            _ = db.Users.AsNoTracking().Select(u => u.UserId).Take(1).Any();
+            schemaReady = true;
+        }
+        catch (SqlException ex) when (ex.Number == 208)
+        {
+            app.Logger.LogWarning(ex, "Users table is missing. Attempting database bootstrap via EnsureCreated().");
+
+            try
+            {
+                db.Database.EnsureCreated();
+                _ = db.Users.AsNoTracking().Select(u => u.UserId).Take(1).Any();
+                schemaReady = true;
+                app.Logger.LogInformation("Database schema bootstrap completed successfully.");
+            }
+            catch (Exception bootstrapEx)
+            {
+                app.Logger.LogError(bootstrapEx, "Database bootstrap failed. Ensure the login has CREATE/ALTER permissions in CareFundDb.");
+            }
+        }
+    }
+
+    try
+    {
+        if (!db.Database.CanConnect())
+        {
+            app.Logger.LogWarning("Database is currently unreachable. Skipping startup admin seeding.");
+        }
+        else if (!schemaReady)
+        {
+            app.Logger.LogWarning("Database schema is not ready. Skipping startup admin seeding.");
+        }
+        else
+        {
         db.Database.ExecuteSqlRaw(@"
 IF EXISTS (
     SELECT 1 FROM sys.indexes
@@ -151,6 +199,11 @@ END");
                 db.SaveChanges();
             }
         }
+        }
+    }
+    catch (SqlException ex) when (ex.Number == 4060)
+    {
+        app.Logger.LogError(ex, "Database login succeeded but access to the target database failed. Ensure the database exists and this login has access.");
     }
     catch (Exception ex)
     {

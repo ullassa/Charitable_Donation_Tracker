@@ -57,7 +57,7 @@ export class CustomerSignupComponent implements OnInit {
 
   private getApiErrorMessage(error: any, fallback: string): string {
     if (error?.status === 0) {
-      return 'Cannot connect to backend. Please ensure API is running on http://localhost:5292 and CORS is enabled.';
+      return 'Cannot connect to backend. Please ensure API is running on http://localhost:5294 and CORS is enabled.';
     }
 
     if (typeof error?.error === 'string' && error.error.trim()) {

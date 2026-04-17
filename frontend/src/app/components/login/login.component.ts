@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
@@ -19,14 +19,22 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   submitted = false;
   errorMessage = '';
+  returnUrl = '/';
 
-  constructor(private fb: FormBuilder, private api: ApiService, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private api: ApiService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/';
   }
 
   togglePasswordVisibility(): void {
@@ -42,15 +50,26 @@ export class LoginComponent implements OnInit {
 
       const payload = {
         email: (this.loginForm.get('email')?.value ?? '').trim().toLowerCase(),
-        passwordHash: this.loginForm.get('password')?.value ?? ''
+        passwordHash: this.loginForm.get('password')?.value ?? '',
+        password: this.loginForm.get('password')?.value ?? ''
       };
 
       this.api.login(payload).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           if (response?.success && response?.token) {
-            localStorage.setItem('token', response.token);
+            sessionStorage.setItem('token', response.token);
+            sessionStorage.setItem('role', response?.role || 'Customer');
+            sessionStorage.setItem('userId', response?.userId || '');
+            sessionStorage.setItem('userName', response?.userName || '');
+            localStorage.setItem('cf:auth:changed', Date.now().toString());
+            
             const role = (response?.role || '').toString().toLowerCase();
+
+            if (this.returnUrl && this.returnUrl !== '/' && this.returnUrl !== '/login') {
+              this.router.navigateByUrl(this.returnUrl);
+              return;
+            }
 
             if (role === 'customer') {
               this.router.navigate(['/dashboard/customer']);
@@ -71,7 +90,7 @@ export class LoginComponent implements OnInit {
             return;
           }
 
-          this.errorMessage = response?.message || 'Login failed. Please try again.';
+          this.errorMessage = 'Invalid email or password. Please try again.';
         },
         error: (error) => {
           this.isLoading = false;
@@ -80,32 +99,26 @@ export class LoginComponent implements OnInit {
           const errorNumber = error?.error?.errorNumber;
           const statusCode = error?.status;
 
-          if (backendMessage && backendDetails && errorNumber !== undefined) {
-            this.errorMessage = `${backendMessage} [SQL ${errorNumber}] (${backendDetails})`;
-            return;
-          }
-
-          if (backendMessage && backendDetails) {
-            this.errorMessage = `${backendMessage} (${backendDetails})`;
-            return;
-          }
-
-          if (backendMessage) {
-            this.errorMessage = backendMessage;
+          if (statusCode === 401) {
+            this.errorMessage = 'Invalid email or password. Please try again.';
             return;
           }
 
           if (statusCode === 503) {
-            this.errorMessage = 'Database connection failed. Check SQL Server and connection string.';
+            this.errorMessage = 'Server is temporarily unavailable. Please try again later.';
             return;
           }
 
-          if (statusCode === 500) {
-            this.errorMessage = 'Server error while logging in. Check backend logs for SQL connection failure.';
+          if (backendMessage) {
+            if (backendMessage.toLowerCase().includes('invalid')) {
+              this.errorMessage = 'Invalid email or password. Please try again.';
+            } else {
+              this.errorMessage = backendMessage;
+            }
             return;
           }
 
-          this.errorMessage = 'Invalid email or password.';
+          this.errorMessage = 'Login failed. Please try again.';
         }
       });
     }

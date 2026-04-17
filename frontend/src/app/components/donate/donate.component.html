@@ -2,7 +2,7 @@
 
 <main class="donate-page">
   <div class="donate-container">
-    <section class="charity-list-section">
+    <section class="charity-list-section glass-card">
       <h1>Available Charities</h1>
       <p class="section-subtitle">Choose one charity to view all details and continue.</p>
 
@@ -16,15 +16,15 @@
           <option value="">All causes</option>
           <option *ngFor="let item of availableCauses" [value]="item">{{ item }}</option>
         </select>
-        <button type="button" class="view-btn" (click)="applyFilters()">Filter</button>
+        <button type="button" class="btn" (click)="applyFilters()">Filter</button>
       </div>
 
-      <div *ngIf="charityLoading" class="empty-state">Loading charities...</div>
-      <div *ngIf="!charityLoading && charityError" class="message error">{{ charityError }}</div>
+      <div *ngIf="charityLoading" class="alert alert-info">Loading charities...</div>
+      <div *ngIf="!charityLoading && charityError" class="alert alert-danger">{{ charityError }}</div>
 
       <div class="charity-list" *ngIf="!charityLoading && charities.length > 0">
         <article
-          class="charity-list-item"
+          class="charity-list-item glass-panel"
           *ngFor="let charity of charities"
           [class.active]="selectedCharity?.id === charity.id"
           (click)="openCharityDetails(charity)"
@@ -33,16 +33,16 @@
             <h3>{{ charity.name }}</h3>
             <p>{{ charity.cause || 'Community support' }} • {{ charity.location || 'Location not set' }}</p>
           </div>
-          <button type="button" class="view-btn">View Charity</button>
+          <button type="button" class="btn btn-secondary">View Charity</button>
         </article>
       </div>
 
-      <div *ngIf="!charityLoading && !charityError && charities.length === 0 && !selectedCharity" class="empty-state">
+      <div *ngIf="!charityLoading && !charityError && charities.length === 0 && !selectedCharity" class="alert alert-warning">
         No charities are available right now.
       </div>
     </section>
 
-    <section class="charity-hero" *ngIf="selectedCharity">
+    <section class="charity-hero glass-card" *ngIf="selectedCharity">
       <div class="hero-copy">
         <span class="eyebrow">Charity details</span>
         <h2>{{ selectedCharity.name }}</h2>
@@ -68,7 +68,7 @@
         </div>
       </div>
 
-      <div class="hero-badge">
+      <div class="hero-badge glass-panel">
         <div class="hero-badge-inner">
           <span>Safe giving</span>
           <strong>Secure and simple checkout</strong>
@@ -76,20 +76,20 @@
       </div>
     </section>
 
-    <section class="gallery-section" *ngIf="selectedCharity && selectedCharityImages.length > 0">
+    <section class="gallery-section glass-card" *ngIf="selectedCharity && selectedCharityImages.length > 0">
       <div class="section-head">
         <h2>Charity gallery</h2>
         <p>Swipe through a few images before you donate.</p>
       </div>
 
       <div class="gallery-scroll">
-        <article class="gallery-card" *ngFor="let image of selectedCharityImages">
+        <article class="gallery-card glass-panel" *ngFor="let image of selectedCharityImages">
           <img [src]="image" [alt]="selectedCharity.name || 'Charity image'">
         </article>
       </div>
     </section>
 
-    <section class="amount-section" *ngIf="selectedCharity">
+    <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn">
       <h2>Choose donation amount</h2>
       <p class="section-subtitle">Select a preset amount or type your own.</p>
 
@@ -121,7 +121,23 @@
       </div>
 
       <div class="buttons">
-        <button class="btn btn-primary" (click)="startDonation()">Donate Now</button>
+        <button class="btn" (click)="startDonation()">Pay Now</button>
+        <label class="anon-option">
+          <input type="checkbox" [(ngModel)]="donateAnonymously">
+          Pay anonymously (hide my identity)
+        </label>
+      </div>
+    </section>
+
+    <!-- Login Prompt Section (for non-logged users) -->
+    <section class="login-prompt glass-card" *ngIf="selectedCharity && !isLoggedIn">
+      <div class="prompt-content">
+        <div class="prompt-icon">🔐</div>
+        <h2>Login Now</h2>
+        <p>Please login to complete your donation</p>
+        <a routerLink="/login" class="btn btn-secondary">
+          Login Now ➜
+        </a>
       </div>
     </section>
 

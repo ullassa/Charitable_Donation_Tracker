@@ -4,7 +4,7 @@
   <section class="dashboard-shell" *ngIf="!loading; else loadingView">
     
     <!-- Header Section -->
-    <header class="dash-header">
+    <header class="dash-header glass-card">
       <div class="header-content">
         <div>
           <h1>My Donations</h1>
@@ -14,13 +14,13 @@
     </header>
 
     <!-- Error Message -->
-    <p class="error-banner" *ngIf="error">⚠️ {{ error }}</p>
+    <p class="alert alert-danger" *ngIf="error">⚠️ {{ error }}</p>
 
     <!-- KPI Cards Section -->
     <section class="kpi-section">
       <h2 class="section-title">Donation Summary</h2>
       <div class="kpi-grid">
-        <div class="kpi-card total-card">
+        <div class="kpi-card glass-card total-card">
           <div class="kpi-icon">💰</div>
           <div class="kpi-content">
             <p class="kpi-label">Total Donated</p>
@@ -29,7 +29,7 @@
           </div>
         </div>
 
-        <div class="kpi-card count-card">
+        <div class="kpi-card glass-card count-card">
           <div class="kpi-icon">🤝</div>
           <div class="kpi-content">
             <p class="kpi-label">Donations Made</p>
@@ -38,7 +38,7 @@
           </div>
         </div>
 
-        <div class="kpi-card impact-card">
+        <div class="kpi-card glass-card impact-card">
           <div class="kpi-icon">📊</div>
           <div class="kpi-content">
             <p class="kpi-label">Average Donation</p>
@@ -50,7 +50,7 @@
     </section>
 
     <!-- Bar Chart Section -->
-    <section class="chart-section">
+    <section class="chart-section glass-card">
       <h2 class="section-title">Monthly Breakdown</h2>
 
       <div class="chart-controls">
@@ -63,7 +63,7 @@
             <label for="chart-to-date">To:</label>
             <input type="date" id="chart-to-date" [(ngModel)]="toDate" />
           </div>
-          <button class="btn-download" (click)="applyDateFilter()">Apply Filter</button>
+          <button class="btn" (click)="applyDateFilter()">Apply Filter</button>
         </div>
 
         <div class="date-input-group">

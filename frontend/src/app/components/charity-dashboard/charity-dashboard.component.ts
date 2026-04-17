@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
@@ -12,7 +12,7 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './charity-dashboard.component.html',
   styleUrls: ['./charity-dashboard.component.css']
 })
-export class CharityDashboardComponent implements OnInit {
+export class CharityDashboardComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
 
@@ -26,11 +26,29 @@ export class CharityDashboardComponent implements OnInit {
   toDate = '';
   reportFormat: 'csv' | 'pdf' = 'csv';
   chartType: 'bar' | 'pie' | 'donut' = 'bar';
+  private notificationsPoller: ReturnType<typeof setInterval> | null = null;
+
+  private readonly storageListener = (event: StorageEvent): void => {
+    if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed') {
+      this.loadNotifications();
+    }
+  };
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
+    this.notificationsPoller = setInterval(() => this.loadNotifications(), 15000);
+    window.addEventListener('storage', this.storageListener);
+  }
+
+  ngOnDestroy(): void {
+    if (this.notificationsPoller) {
+      clearInterval(this.notificationsPoller);
+      this.notificationsPoller = null;
+    }
+
+    window.removeEventListener('storage', this.storageListener);
   }
 
   load(): void {
@@ -51,6 +69,10 @@ export class CharityDashboardComponent implements OnInit {
       }
     });
 
+    this.loadNotifications();
+  }
+
+  private loadNotifications(): void {
     this.api.getNotifications().subscribe({
       next: (res: any) => (this.notifications = res?.items ?? [])
     });

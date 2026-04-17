@@ -13,6 +13,53 @@ section {
   margin-bottom: 1.5rem;
 }
 
+/* Login Prompt Section */
+.login-prompt {
+  text-align: center;
+  padding: 3rem!important;
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.6) 0%, rgba(249, 168, 212, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.prompt-content {
+  max-width: 500px;
+}
+
+.prompt-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.login-prompt h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--cf-navy);
+}
+
+.login-prompt p {
+  font-size: 1rem;
+  color: var(--cf-text);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.login-prompt .btn {
+  min-width: 200px;
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+}
+
 .charity-list-section,
 .charity-hero,
 .amount-section,

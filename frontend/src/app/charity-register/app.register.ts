@@ -58,7 +58,7 @@ export class CharityRegisterComponent {
 
   private getApiErrorMessage(error: any, fallback: string): string {
     if (error?.status === 0) {
-      return 'Cannot connect to backend. Ensure API is running on http://localhost:5292.';
+      return 'Cannot connect to backend. Ensure API is running on http://localhost:5294.';
     }
 
     const message = error?.error?.message;

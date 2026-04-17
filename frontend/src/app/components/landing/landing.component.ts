@@ -76,7 +76,7 @@ export class LandingComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = !!sessionStorage.getItem('token') || !!localStorage.getItem('token');
     if (this.isLoggedIn) {
       this.heroTitle = 'Welcome back to CareFund';
       this.heroSubtitle = 'Browse live charities and donate with confidence.';

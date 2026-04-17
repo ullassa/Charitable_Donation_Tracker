@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -12,8 +12,10 @@ import { RouterModule } from '@angular/router';
 export class HeaderComponent {
   donateCausesOpen = false;
 
+  constructor(private elementRef: ElementRef<HTMLElement>) {}
+
   get isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return !!sessionStorage.getItem('token') || !!localStorage.getItem('token');
   }
 
   causes = [
@@ -28,6 +30,10 @@ export class HeaderComponent {
     this.donateCausesOpen = !this.donateCausesOpen;
   }
 
+  openDonateCauses(): void {
+    this.donateCausesOpen = true;
+  }
+
   closeDonateCauses(): void {
     this.donateCausesOpen = false;
   }
@@ -37,7 +43,23 @@ export class HeaderComponent {
   }
 
   logout(): void {
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('role');
+    sessionStorage.removeItem('userId');
+    sessionStorage.removeItem('userName');
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    localStorage.setItem('cf:auth:changed', Date.now().toString());
     window.location.href = '/';
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.elementRef.nativeElement.contains(event.target as Node);
+    if (!clickedInside) {
+      this.closeDonateCauses();
+    }
   }
 }

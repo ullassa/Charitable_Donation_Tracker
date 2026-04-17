@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  baseUrl = 'http://localhost:5292/api';
+  baseUrl = 'http://localhost:5294/api';
 
   constructor(private http: HttpClient) {}
 
@@ -16,7 +16,7 @@ export class ApiService {
   }
 
   getUsers(): Observable<any> {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.get(`${this.baseUrl}/users`, { headers });
   }

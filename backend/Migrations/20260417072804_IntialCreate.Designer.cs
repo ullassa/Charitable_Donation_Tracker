@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareFund.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260416092614_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260417072804_IntialCreate")]
+    partial class IntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

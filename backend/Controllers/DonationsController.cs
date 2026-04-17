@@ -30,8 +30,27 @@ public class DonationsController : ControllerBase
 
         var email = User.FindFirstValue(ClaimTypes.Email);
         var user = await _context.Users.Include(u => u.Customer).FirstOrDefaultAsync(u => u.Email == email);
-        if (user?.Customer == null)
-            return NotFound(new { success = false, message = "Customer profile not found." });
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found." });
+
+        if (user.UserRole != UserRole.Customer)
+            return Forbid();
+
+        if (user.Customer == null)
+        {
+            user.Customer = new Customer
+            {
+                UserId = user.UserId,
+                DateOfBirth = DateTime.UtcNow,
+                City = "Unknown",
+                Gender = "Other",
+                CreatedAt = DateTime.UtcNow,
+                IsAnonymousDefault = false
+            };
+
+            _context.Customers.Add(user.Customer);
+            await _context.SaveChangesAsync();
+        }
 
         var charity = await _context.Charities.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.CharityRegistrationId == request.CharityRegistrationId && c.Status == CharityStatus.Approved);

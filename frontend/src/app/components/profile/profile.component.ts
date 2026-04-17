@@ -101,6 +101,8 @@ export class ProfileComponent implements OnInit {
         next: (res: any) => {
           this.saving = false;
           this.message = res?.message || 'Charity profile update submitted for approval.';
+          sessionStorage.setItem('userName', this.profile.name || '');
+          localStorage.setItem('cf:auth:changed', Date.now().toString());
           this.load();
         },
         error: (err) => {
@@ -121,6 +123,8 @@ export class ProfileComponent implements OnInit {
       next: (res: any) => {
         this.saving = false;
         this.message = res?.message || 'Profile updated successfully.';
+        sessionStorage.setItem('userName', this.profile.name || '');
+        localStorage.setItem('cf:auth:changed', Date.now().toString());
       },
       error: (err) => {
         this.saving = false;

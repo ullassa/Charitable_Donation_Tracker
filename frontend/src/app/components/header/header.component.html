@@ -1,4 +1,4 @@
-<header class="header">
+<header class="header glass-panel">
   <div class="header-container">
     <!-- Logo -->
     <div class="logo">
@@ -9,13 +9,20 @@
     <!-- Navigation Menu -->
     <nav class="nav-menu">
       <div class="nav-item donate-dropdown" (mouseleave)="closeDonateCauses()">
-        <button class="nav-link" (mouseenter)="donateCausesOpen = true">
+        <button
+          type="button"
+          class="nav-link"
+          (click)="toggleDonateCauses()"
+          (focus)="openDonateCauses()"
+          [attr.aria-expanded]="donateCausesOpen"
+          aria-haspopup="true"
+        >
           💳 Donate
           <span class="dropdown-arrow">▼</span>
         </button>
         
-        <div class="dropdown-menu" *ngIf="donateCausesOpen">
-          <a routerLink="/donate" [queryParams]="{ causeId: cause.id }"
+        <div class="dropdown-menu glass-panel" *ngIf="donateCausesOpen">
+           <a routerLink="/donate" [queryParams]="{ cause: cause.name }"
              *ngFor="let cause of causes"
              class="dropdown-item"
              (click)="closeDonateCauses()">
@@ -30,9 +37,12 @@
 
     <!-- Auth Buttons -->
     <div class="auth-buttons">
-      <a *ngIf="!isLoggedIn" routerLink="/login" class="btn btn-outline">Login</a>
-      <a *ngIf="isLoggedIn" routerLink="/profile" class="btn btn-outline profile-btn">👤 Profile</a>
-      <button *ngIf="isLoggedIn" type="button" class="btn btn-outline" (click)="logout()">Logout</button>
+      <a *ngIf="!isLoggedIn" routerLink="/login" class="btn btn-secondary">Login</a>
+      <a *ngIf="isLoggedIn" routerLink="/profile" class="btn btn-secondary profile-btn">
+        <span class="profile-icon" aria-hidden="true"></span>
+        Profile
+      </a>
+      <button *ngIf="isLoggedIn" type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
     </div>
   </div>
 </header>

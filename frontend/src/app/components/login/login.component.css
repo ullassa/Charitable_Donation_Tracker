@@ -231,3 +231,46 @@
     font-size: 1.5rem;
   }
 }
+
+/* Neumorphism overrides */
+.login-page {
+  background: linear-gradient(145deg, #e7ecf4, #f1f5fb);
+}
+
+.login-card {
+  background: #eef2f7;
+  box-shadow: 10px 10px 20px rgba(163, 177, 198, 0.65), -10px -10px 20px rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+}
+
+.login-card h1,
+.subtitle,
+.form-group label,
+.forgot-password a,
+.signup-section p {
+  color: var(--cf-text);
+}
+
+.form-control {
+  background: #f3f6fb;
+  border: none;
+  box-shadow: inset 6px 6px 12px rgba(163, 177, 198, 0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.85);
+  border-radius: 14px;
+}
+
+.btn-primary,
+.btn-secondary {
+  box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.55), -8px -8px 16px rgba(255, 255, 255, 0.95);
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.alert-error {
+  background: linear-gradient(145deg, #fdecef, #f9dfe5);
+  color: #a83257;
+  border: none;
+}

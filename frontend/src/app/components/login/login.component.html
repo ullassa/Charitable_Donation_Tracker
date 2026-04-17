@@ -2,25 +2,25 @@
 
 <div class="login-page">
   <div class="login-container">
-    <div class="login-card">
-      <h1>Welcome Back</h1>
-      <p class="subtitle">Login to your CareFund account</p>
+    <div class="login-card glass-card">
+      <h1>Login 🔐</h1>
+      <p class="subtitle">Enter your email</p>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
         <!-- Email -->
         <div class="form-group">
-          <label for="email">Email Address</label>
+          <label for="email">Email</label>
           <input
             type="email"
             id="email"
             formControlName="email"
-            placeholder="your.email@example.com"
+            placeholder="Enter your email"
             class="form-control"
             [class.is-invalid]="submitted && email?.invalid"
           >
-          <div *ngIf="submitted && email?.invalid" class="error-message">
-            <span *ngIf="email?.errors?.['required']">Email is required</span>
-            <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+          <div *ngIf="submitted && email?.invalid" class="alert alert-error">
+            <span *ngIf="email?.errors?.['required']">This field is required</span>
+            <span *ngIf="email?.errors?.['email']">Please enter a valid email address</span>
           </div>
         </div>
 
@@ -40,42 +40,42 @@
               type="button"
               class="password-toggle"
               (click)="togglePasswordVisibility()"
-              title="Toggle password visibility"
+              title="Password"
             >
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
-          <div *ngIf="submitted && password?.invalid" class="error-message">
-            <span *ngIf="password?.errors?.['required']">Password is required</span>
+          <div *ngIf="submitted && password?.invalid" class="alert alert-error">
+            <span *ngIf="password?.errors?.['required']">This field is required</span>
             <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
           </div>
         </div>
 
         <!-- Error Message -->
-        <div *ngIf="errorMessage" class="alert alert-error">
+        <div *ngIf="errorMessage" class="alert alert-danger">
           {{ errorMessage }}
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-          {{ isLoading ? 'Logging in...' : 'Login' }}
+        <button type="submit" class="btn" [disabled]="isLoading">
+          {{ isLoading ? 'Loading...' : 'Login' }}
         </button>
       </form>
 
       <!-- Forgot Password Link -->
       <div class="forgot-password">
-        <a routerLink="/forgot-password">Forgot your password?</a>
+        <a routerLink="/forgot-password" class="link-primary">Forgot Password?</a>
       </div>
 
       <!-- Signup Links -->
       <div class="signup-section">
-        <p>Don't have an account?</p>
+        <p>Create Account?</p>
         <div class="signup-buttons">
           <a routerLink="/customer-signup" class="btn btn-secondary btn-block">
-            Signup as Donor
+            💳 Create Donor Account
           </a>
           <a routerLink="/charity-signup" class="btn btn-secondary btn-block">
-            Signup as Charity
+            🏢 Create Charity Account
           </a>
         </div>
       </div>

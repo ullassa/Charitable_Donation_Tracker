@@ -9,6 +9,8 @@ using System.ComponentModel.DataAnnotations;
  
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
+
+         public string? Password { get; set; }
     }
  }
     
