@@ -17,19 +17,21 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   error = '';
 
   stats = { totalDonations: 0, donationsCount: 0 };
-  monthly: Array<{ label: string; amount: number }> = [];
+  trend: Array<{ label: string; amount: number }> = [];
   recent: Array<{ donationId: number; amount: number; donationDate: string; charityName: string }> = [];
   notifications: Array<{ notificationId: number; message: string; sentAt: string; type: string }> = [];
 
   fromDate = '';
   toDate = '';
   reportFormat: 'csv' | 'pdf' = 'csv';
-  chartType: 'bar' | 'pie' | 'donut' = 'bar';
+  trendGroupBy: 'day' | 'week' | 'month' | 'year' = 'month';
   private notificationsPoller: ReturnType<typeof setInterval> | null = null;
+  private fallbackTrend: Array<{ label: string; amount: number }> = [];
 
   private readonly storageListener = (event: StorageEvent): void => {
-    if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed') {
+    if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed' || event.key === 'cf:profile:refresh') {
       this.loadNotifications();
+      this.load();
     }
   };
 
@@ -37,7 +39,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.notificationsPoller = setInterval(() => this.loadNotifications(), 15000);
+    this.notificationsPoller = setInterval(() => this.loadNotifications(), 2000);
     window.addEventListener('storage', this.storageListener);
   }
 
@@ -57,8 +59,12 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.api.getCustomerDashboard(this.fromDate || undefined, this.toDate || undefined).subscribe({
       next: (res: any) => {
         this.stats = res?.stats ?? this.stats;
-        this.monthly = res?.monthly ?? [];
         this.recent = res?.recent ?? [];
+        this.fallbackTrend = (res?.monthly ?? []).map((item: any) => ({
+          label: String(item?.label ?? ''),
+          amount: Number(item?.amount ?? 0)
+        }));
+        this.loadTrend(this.fallbackTrend);
         this.loading = false;
       },
       error: (err) => {
@@ -70,36 +76,90 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadNotifications();
   }
 
-  private loadNotifications(): void {
-    this.api.getNotifications().subscribe({
+  private loadTrend(fallback: Array<{ label: string; amount: number }> = []): void {
+    this.api.getCustomerTrend(this.trendGroupBy, this.fromDate || undefined, this.toDate || undefined).subscribe({
       next: (res: any) => {
-        this.notifications = res?.items ?? [];
+        const items = (res?.items ?? []).map((item: any) => ({
+          label: String(item?.label ?? ''),
+          amount: Number(item?.amount ?? 0)
+        }));
+        this.trend = items.length ? items : fallback;
+      },
+      error: () => {
+        this.trend = fallback;
       }
     });
   }
 
-  get maxMonthlyAmount(): number {
-    return Math.max(1, ...this.monthly.map(item => item.amount || 0));
+  private loadNotifications(): void {
+    this.api.getNotifications().subscribe({
+      next: (res: any) => {
+        const rawItems = Array.isArray(res?.items) ? res.items : [];
+        const mapped = rawItems
+          .map((item: any) => ({
+            notificationId: Number(item?.notificationId ?? 0),
+            message: String(item?.message ?? ''),
+            sentAt: String(item?.sentAt ?? ''),
+            type: String(item?.type ?? 'General')
+          }))
+          .filter((item: any) => item.message || item.sentAt || item.notificationId > 0);
+
+        const uniqueByKey = new Map<string, { notificationId: number; message: string; sentAt: string; type: string }>();
+        for (const item of mapped) {
+          const normalizedMessage = item.message.trim().toLowerCase().replace(/\s+/g, ' ');
+          const normalizedType = item.type.trim().toLowerCase();
+          const key = normalizedMessage
+            ? `msg:${normalizedMessage}|type:${normalizedType}`
+            : (item.notificationId > 0 ? `id:${item.notificationId}` : `fallback:${item.sentAt}`);
+
+          const existing = uniqueByKey.get(key);
+          if (!existing || new Date(item.sentAt).getTime() > new Date(existing.sentAt).getTime()) {
+            uniqueByKey.set(key, item);
+          }
+        }
+
+        this.notifications = Array.from(uniqueByKey.values())
+          .sort((left, right) => new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime())
+          .slice(0, 20);
+      },
+      error: () => {
+        this.notifications = [];
+      }
+    });
+  }
+
+  get maxTrendAmount(): number {
+    return Math.max(1, ...this.trend.map(item => item.amount || 0));
   }
 
   barWidth(amount: number): string {
-    const width = (amount / this.maxMonthlyAmount) * 100;
-    return `${Math.max(8, width)}%`;
+    const width = (Math.max(0, amount) / this.maxTrendAmount) * 100;
+    return `${Math.max(12, width)}%`;
   }
 
-  get latestMonthShare(): number {
-    if (!this.monthly.length || !this.stats.totalDonations) return 0;
-    const latest = this.monthly[this.monthly.length - 1]?.amount ?? 0;
-    return Math.round((latest / this.stats.totalDonations) * 100);
-  }
-
-  get donutStyle(): string {
-    const pct = Math.max(0, Math.min(100, this.latestMonthShare));
-    return `conic-gradient(#3b82f6 0 ${pct}%, #e5e7eb ${pct}% 100%)`;
+  barHeight(amount: number): string {
+    const height = (Math.max(0, amount) / this.maxTrendAmount) * 100;
+    return `${Math.max(10, height)}%`;
   }
 
   applyDateFilter(): void {
     this.load();
+  }
+
+  onTrendGroupChanged(): void {
+    this.loadTrend(this.fallbackTrend);
+  }
+
+  itemTrackBy(index: number, item: { label: string; amount: number }): string {
+    return `${item.label}-${item.amount}-${index}`;
+  }
+
+  notificationTrackBy(index: number, item: { notificationId: number; sentAt: string; message: string }): string {
+    if (item.notificationId > 0) {
+      return `n-${item.notificationId}`;
+    }
+
+    return `n-${item.sentAt}-${item.message}-${index}`;
   }
 
   downloadReport(): void {

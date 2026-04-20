@@ -56,12 +56,16 @@
               formControlName="email"
               placeholder="john@example.com"
               class="form-control"
+              (blur)="checkEmailExists()"
               [class.is-invalid]="submitted && email?.invalid"
             >
             <div *ngIf="submitted && email?.invalid" class="error-message">
               <span *ngIf="email?.errors?.['required']">Email is required</span>
               <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
             </div>
+              <div *ngIf="emailExistsError" class="error-message">
+                {{ emailExistsError }}
+              </div>
           </div>
 
           <!-- Email OTP -->
@@ -209,9 +213,9 @@
                 {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
               </button>
             </div>
-            <div *ngIf="submitted && (confirmPassword?.invalid || !passwordsMatch())" class="error-message">
-              <span *ngIf="confirmPassword?.errors?.['required']">Confirm password is required</span>
-              <span *ngIf="!passwordsMatch()">Passwords do not match</span>
+            <div *ngIf="(submitted && confirmPassword?.invalid) || showPasswordMismatch" class="error-message">
+              <span *ngIf="submitted && confirmPassword?.errors?.['required']">Confirm password is required</span>
+              <span *ngIf="showPasswordMismatch">password does not match</span>
             </div>
           </div>
         </div>
@@ -298,6 +302,16 @@
             >
             <div *ngIf="submitted && country?.invalid" class="error-message">
               <span *ngIf="country?.errors?.['required']">Country is required</span>
+            </div>
+          </div>
+
+          <div class="form-group terms-group">
+            <label class="terms-checkbox">
+              <input type="checkbox" formControlName="termsAccepted">
+              I accept the <a routerLink="/terms">terms and conditions</a> before creating my donor account.
+            </label>
+            <div *ngIf="submitted && termsAccepted?.invalid" class="error-message">
+              <span *ngIf="termsAccepted?.errors?.['required']">You must accept the terms to continue.</span>
             </div>
           </div>
         </div>

@@ -128,7 +128,7 @@ html {
   background: rgba(255, 255, 255, 0.85);
   border-color: rgba(255, 255, 255, 0.35);
   box-shadow: var(--glass-shadow-lg);
-  transform: translateY(-4px);
+  transform: translateY(-2px);
 }
 
 /* Glass Panel */
@@ -161,13 +161,13 @@ button, .btn {
   cursor: pointer;
   font-weight: 500;
   font-size: 0.95rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, backdrop-filter 0.2s ease;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, backdrop-filter 0.16s ease;
   backdrop-filter: blur(10px);
   box-shadow: var(--glass-shadow-sm);
 }
 
 button:hover:not(:disabled), .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   background: rgba(30, 58, 140, 0.95);
   border-color: rgba(30, 58, 140, 0.4);
   box-shadow: var(--glass-shadow);
@@ -519,38 +519,25 @@ nav a:hover::after, nav .nav-link:hover::after {
   }
 }
 
-/* ===== Neumorphism Override Theme ===== */
+/* ===== Unified Theme Refresh ===== */
 :root {
-  --cf-bg: #e9edf5;
-  --cf-surface: #eef2f7;
-  --cf-surface-2: #f7f9fc;
-  --cf-text: #24324a;
-  --cf-muted: #6b7a90;
-  --cf-navy: #2457c5;
-  --cf-wine-red: #8f2d56;
-  --neo-shadow: 10px 10px 20px rgba(163, 177, 198, 0.65), -10px -10px 20px rgba(255, 255, 255, 0.95);
-  --neo-shadow-inset: inset 6px 6px 12px rgba(163, 177, 198, 0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.8);
-  --neo-shadow-soft: 6px 6px 12px rgba(163, 177, 198, 0.45), -6px -6px 12px rgba(255, 255, 255, 0.75);
+  --cf-bg: #f4f7ff;
+  --cf-surface: #ffffff;
+  --cf-surface-2: #f8faff;
+  --cf-text: #1f2937;
+  --cf-muted: #6b7280;
+  --cf-navy: #2f4fd3;
+  --cf-wine-red: #9f2350;
 }
 
 body {
-  background: linear-gradient(145deg, #e7ecf4 0%, #f1f5fb 100%);
+  background: linear-gradient(180deg, #f5f8ff 0%, #f8fbff 45%, #f4f7ff 100%);
   color: var(--cf-text);
 }
 
 body::before {
-  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.85) 0%, transparent 42%),
-              radial-gradient(circle at 80% 80%, rgba(224,231,244,0.8) 0%, transparent 45%);
-}
-
-section {
-  padding: 1.5rem 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  background: radial-gradient(circle at 18% 12%, rgba(191, 219, 254, 0.28) 0%, transparent 42%),
+              radial-gradient(circle at 82% 82%, rgba(199, 210, 254, 0.2) 0%, transparent 40%);
 }
 
 .glass-card,
@@ -562,55 +549,57 @@ section {
 table,
 nav,
 .alert,
-.progress,
 .badge,
-.btn,
-button,
 .header,
 .footer {
-  background: var(--cf-surface);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: var(--neo-shadow);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
 .glass-card,
+.glass-panel,
 .card,
 .modal,
 .dialog,
 .dropdown-menu,
 table,
 .alert,
-.badge,
-.btn,
-button,
-.header,
-.footer {
-  border-radius: 18px;
+.badge {
+  border-radius: 14px;
 }
 
-.glass-card:hover,
 .card:hover,
-.btn:hover:not(:disabled),
-button:hover:not(:disabled) {
-  box-shadow: 6px 6px 14px rgba(163, 177, 198, 0.55), -6px -6px 14px rgba(255, 255, 255, 0.95);
+.glass-card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
 }
 
 button, .btn {
-  background: linear-gradient(145deg, #f4f7fc, #dfe7f2);
-  color: var(--cf-navy);
-  border: none;
-  font-weight: 600;
+  background: linear-gradient(135deg, #3b57d8, #4f46e5);
+  color: #ffffff;
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25);
+}
+
+button:hover:not(:disabled), .btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #334ecf, #4338ca);
 }
 
 .btn-secondary {
-  background: linear-gradient(145deg, #f9fbff, #e1e8f3);
-  color: var(--cf-navy);
+  background: #ffffff;
+  color: #2f4fd3;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background: #eef2ff;
 }
 
 .btn-danger {
-  background: linear-gradient(145deg, #fce8ef, #f2d2df);
-  color: var(--cf-wine-red);
+  background: linear-gradient(135deg, #be185d, #9f1239);
+  border-color: rgba(190, 24, 93, 0.25);
 }
 
 input[type="text"],
@@ -621,10 +610,10 @@ input[type="date"],
 input[type="tel"],
 textarea,
 select {
-  background: var(--cf-surface-2);
-  border: none;
-  border-radius: 14px;
-  box-shadow: var(--neo-shadow-inset);
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 10px;
+  box-shadow: none;
   color: var(--cf-text);
 }
 
@@ -633,65 +622,16 @@ textarea:focus-visible,
 select:focus-visible,
 button:focus-visible {
   outline: none;
-  box-shadow: var(--neo-shadow-inset), 0 0 0 3px rgba(36, 87, 197, 0.12);
-}
-
-.alert {
-  border-radius: 16px;
-  border: none;
-}
-
-.alert-success,
-.badge-success {
-  background: linear-gradient(145deg, #e8f7ee, #d7f0e0);
-  color: #1f7a4d;
-}
-
-.alert-error,
-.alert-danger,
-.badge-danger {
-  background: linear-gradient(145deg, #fdecef, #f9dfe5);
-  color: #a83257;
-}
-
-.alert-warning {
-  background: linear-gradient(145deg, #fff7e6, #f4ead0);
-  color: #a87512;
-}
-
-.alert-info {
-  background: linear-gradient(145deg, #e9f2ff, #dce8fb);
-  color: var(--cf-navy);
-}
-
-.progress {
-  padding: 4px;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--cf-surface-2);
-}
-
-.progress-bar {
-  background: linear-gradient(90deg, var(--cf-navy), #5b86e5);
-  border-radius: 999px;
-}
-
-.badge {
-  padding: 0.35rem 0.8rem;
-  color: var(--cf-text);
-}
-
-.dropdown-item:hover {
-  background-color: rgba(36, 87, 197, 0.08);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.16);
 }
 
 ::-webkit-scrollbar-track {
-  background: #e0e6ef;
+  background: #e8edff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #c6d2e3, #aab9d1);
-  border: 2px solid #e0e6ef;
+  background: linear-gradient(180deg, #a5b4fc, #818cf8);
+  border: 2px solid #e8edff;
 }
 
 @media (max-width: 768px) {
@@ -700,23 +640,16 @@ button:focus-visible {
   .card {
     padding: 1rem;
   }
-}
 
-/* Responsive Glassmorphism */
-@media (max-width: 768px) {
-  .glass-card, .glass-panel, .card {
-    padding: 1rem;
-  }
-  
   button, .btn {
     padding: 0.625rem 1.25rem;
     font-size: 0.9rem;
   }
-  
+
   table {
     font-size: 0.85rem;
   }
-  
+
   table th, table td {
     padding: 0.5rem;
   }

@@ -29,8 +29,9 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   private notificationsPoller: ReturnType<typeof setInterval> | null = null;
 
   private readonly storageListener = (event: StorageEvent): void => {
-    if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed') {
+    if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed' || event.key === 'cf:profile:refresh') {
       this.loadNotifications();
+      this.load();
     }
   };
 
@@ -38,7 +39,7 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.notificationsPoller = setInterval(() => this.loadNotifications(), 15000);
+    this.notificationsPoller = setInterval(() => this.loadNotifications(), 2000);
     window.addEventListener('storage', this.storageListener);
   }
 
@@ -74,8 +75,47 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
 
   private loadNotifications(): void {
     this.api.getNotifications().subscribe({
-      next: (res: any) => (this.notifications = res?.items ?? [])
+      next: (res: any) => {
+        const rawItems = Array.isArray(res?.items) ? res.items : [];
+        const mapped = rawItems
+          .map((item: any) => ({
+            notificationId: Number(item?.notificationId ?? 0),
+            message: String(item?.message ?? ''),
+            sentAt: String(item?.sentAt ?? ''),
+            type: String(item?.type ?? 'General')
+          }))
+          .filter((item: any) => item.message || item.sentAt || item.notificationId > 0);
+
+        const uniqueByKey = new Map<string, { notificationId: number; message: string; sentAt: string; type: string }>();
+        for (const item of mapped) {
+          const normalizedMessage = item.message.trim().toLowerCase().replace(/\s+/g, ' ');
+          const normalizedType = item.type.trim().toLowerCase();
+          const key = normalizedMessage
+            ? `msg:${normalizedMessage}|type:${normalizedType}`
+            : (item.notificationId > 0 ? `id:${item.notificationId}` : `fallback:${item.sentAt}`);
+
+          const existing = uniqueByKey.get(key);
+          if (!existing || new Date(item.sentAt).getTime() > new Date(existing.sentAt).getTime()) {
+            uniqueByKey.set(key, item);
+          }
+        }
+
+        this.notifications = Array.from(uniqueByKey.values())
+          .sort((left, right) => new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime())
+          .slice(0, 25);
+      },
+      error: () => {
+        this.notifications = [];
+      }
     });
+  }
+
+  notificationTrackBy(index: number, item: { notificationId: number; sentAt: string; message: string }): string {
+    if (item.notificationId > 0) {
+      return `n-${item.notificationId}`;
+    }
+
+    return `n-${item.sentAt}-${item.message}-${index}`;
   }
 
   get latestMonthShare(): number {

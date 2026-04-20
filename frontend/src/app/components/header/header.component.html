@@ -8,28 +8,7 @@
 
     <!-- Navigation Menu -->
     <nav class="nav-menu">
-      <div class="nav-item donate-dropdown" (mouseleave)="closeDonateCauses()">
-        <button
-          type="button"
-          class="nav-link"
-          (click)="toggleDonateCauses()"
-          (focus)="openDonateCauses()"
-          [attr.aria-expanded]="donateCausesOpen"
-          aria-haspopup="true"
-        >
-          💳 Donate
-          <span class="dropdown-arrow">▼</span>
-        </button>
-        
-        <div class="dropdown-menu glass-panel" *ngIf="donateCausesOpen">
-           <a routerLink="/donate" [queryParams]="{ cause: cause.name }"
-             *ngFor="let cause of causes"
-             class="dropdown-item"
-             (click)="closeDonateCauses()">
-            {{ cause.name }}
-          </a>
-        </div>
-      </div>
+      <a *ngIf="role !== 'charitymanager'" routerLink="/donate" class="nav-link">💳 Donate</a>
 
       <a routerLink="/impact" class="nav-link">📊 Our Impact</a>
       <a routerLink="/blogs" class="nav-link">📝 Blogs</a>
@@ -42,6 +21,7 @@
         <span class="profile-icon" aria-hidden="true"></span>
         Profile
       </a>
+      <a *ngIf="isLoggedIn && dashboardLink" [routerLink]="dashboardLink" class="btn btn-secondary">Dashboard</a>
       <button *ngIf="isLoggedIn" type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
     </div>
   </div>

@@ -4,6 +4,7 @@ using CareFund.Models;
 using CareFund.Data;
 using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
+using CareFund.Services.Notifications;
 using CareFund.Services.Otp;
 using CareFund.DTOs.Auth;
 using CareFund.Enums;
@@ -16,13 +17,15 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authService;
     private readonly IJwtService _jwtService;
     private readonly IOtpService _otpService;
+    private readonly INotificationEmailService _notifications;
     private readonly ApplicationDbContext _context;
 
-    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, ApplicationDbContext context)
+    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, INotificationEmailService notifications, ApplicationDbContext context)
     {
         _authService = authService;
         _jwtService = jwtService;
         _otpService = otpService;
+        _notifications = notifications;
         _context = context;
     }
 
@@ -107,7 +110,7 @@ public class AuthController : ControllerBase
                        {
                            Success = false,
                            Message = message,
-                           Hint = "If SMTP is blocked, set Brevo:ApiKey and keep a verified sender in Brevo. Brevo API fallback runs over HTTPS (port 443)."
+                           Hint = "Set Brevo:ApiKey plus a verified Brevo sender email in appsettings.json. Email delivery uses Brevo API only."
                        });
     }
 
@@ -122,9 +125,23 @@ public class AuthController : ControllerBase
                        : BadRequest(new OtpResponse { Success = false, Message = "Invalid or expired OTP. Request a new one." });
     }
 
+    [HttpGet("check-email-exists")]
+    public IActionResult CheckEmailExists([FromQuery] string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest(new { success = false, message = "Email is required." });
+
+        var normalized = email.Trim().ToLowerInvariant();
+        return Ok(new
+        {
+            success = true,
+            exists = _authService.EmailExists(normalized)
+        });
+    }
+
     // 🏢 REGISTER CHARITY
     [HttpPost("register-charity")]
-    public IActionResult RegisterCharity([FromBody] RegisterCharityDto dto)
+    public async Task<IActionResult> RegisterCharity([FromBody] RegisterCharityDto dto)
     {
         if (dto == null)
             return BadRequest(new { success = false, message = "Request body is required." });
@@ -186,7 +203,7 @@ public class AuthController : ControllerBase
                 .Where(url => !string.IsNullOrWhiteSpace(url))
                 .Select(url => url.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Take(10)
+                .Take(25)
                 .ToList();
 
             if (imageUrls.Count > 0)
@@ -208,13 +225,10 @@ public class AuthController : ControllerBase
                 }
             }
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = user.UserId,
-                NotificationType = NotificationType.Email,
-                Message = "Thank you for registering with CareFund. Your charity profile is pending admin approval."
-            });
-            _context.SaveChanges();
+            await _notifications.NotifyUserAsync(
+                user,
+                "Welcome to CareFund",
+                "Thank you for registering with CareFund. Your charity profile is pending admin approval.");
 
             return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
         }
@@ -233,7 +247,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register-customer")]
-    public IActionResult RegisterCustomer([FromBody] RegisterCustomerDto dto)
+    public async Task<IActionResult> RegisterCustomer([FromBody] RegisterCustomerDto dto)
     {
         if (dto == null)
             return BadRequest(new { success = false, message = "Request body is required." });
@@ -282,13 +296,10 @@ public class AuthController : ControllerBase
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = user.UserId,
-                NotificationType = NotificationType.Email,
-                Message = "Thank you for registering with CareFund."
-            });
-            _context.SaveChanges();
+            await _notifications.NotifyUserAsync(
+                user,
+                "Welcome to CareFund",
+                "Thank you for registering with CareFund. Your customer account is now active.");
 
             return Ok(new { success = true, message = "Customer registered successfully", userId = user.UserId });
         }

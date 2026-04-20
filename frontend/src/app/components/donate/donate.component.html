@@ -89,9 +89,10 @@
       </div>
     </section>
 
-    <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn">
+    <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate">
       <h2>Choose donation amount</h2>
       <p class="section-subtitle">Select a preset amount or type your own.</p>
+      <p class="average-amount-note">Average amount paid by users: <strong>₹{{ averageDonationByUsers }}</strong></p>
 
       <div class="amount-grid">
         <button
@@ -101,14 +102,14 @@
           [class.active]="selectedAmount === amount"
           (click)="selectAmount(amount)"
         >
-          ${{ amount }}
+          ₹{{ amount }}
         </button>
       </div>
 
       <div class="custom-amount">
         <label for="customAmount">Custom amount</label>
         <div class="input-wrapper">
-          <span class="currency">$</span>
+          <span class="currency">₹</span>
           <input
             type="number"
             id="customAmount"
@@ -120,12 +121,37 @@
         </div>
       </div>
 
+      <section class="amount-generator" aria-label="Donation amount generator">
+        <h3>Confused about amount? Use Donation Amount Generator</h3>
+        <p>Add min and max limits, generate a random amount, then pay that generated amount.</p>
+        <div class="generator-grid">
+          <label>
+            Min limit
+            <input type="number" [(ngModel)]="generatorMinLimit" min="1" />
+          </label>
+          <label>
+            Max limit
+            <input type="number" [(ngModel)]="generatorMaxLimit" min="1" />
+          </label>
+          <button type="button" class="btn btn-secondary" (click)="generateDonationAmount()">Generate Amount</button>
+        </div>
+        <p class="generated-note" *ngIf="generatedAmountMode">Generated amount: <strong>₹{{ generatedAmount }}</strong>. This amount is set in your payment.</p>
+      </section>
+
       <div class="buttons">
         <button class="btn" (click)="startDonation()">Pay Now</button>
         <label class="anon-option">
           <input type="checkbox" [(ngModel)]="donateAnonymously">
           Pay anonymously (hide my identity)
         </label>
+      </div>
+    </section>
+
+    <section class="login-prompt glass-card" *ngIf="selectedCharity && isLoggedIn && !canDonate">
+      <div class="prompt-content">
+        <div class="prompt-icon">ℹ️</div>
+        <h2>Donate option unavailable</h2>
+        <p>Charity accounts cannot donate. Please login using a donor account to continue.</p>
       </div>
     </section>
 
@@ -148,6 +174,8 @@
           <p>Choose a payment option and complete your donation.</p>
         </div>
       </div>
+
+      <p class="generated-note" *ngIf="generatedAmountMode">Please pay the generated amount: <strong>₹{{ selectedAmount }}</strong></p>
 
       <div class="payment-methods">
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
@@ -203,16 +231,16 @@
         </div>
         <div class="summary-row">
           <span class="label">Donation</span>
-          <span class="value">${{ selectedAmount || 0 }}</span>
+          <span class="value">₹{{ selectedAmount || 0 }}</span>
         </div>
         <div class="summary-row">
           <span class="label">Platform fee</span>
-          <span class="value">${{ ((selectedAmount || 0) * 0.02).toFixed(2) }}</span>
+          <span class="value">₹{{ ((selectedAmount || 0) * 0.02).toFixed(2) }}</span>
         </div>
         <div class="divider"></div>
         <div class="summary-row total">
           <span class="label">Total</span>
-          <span class="value">${{ ((selectedAmount || 0) * 1.02).toFixed(2) }}</span>
+          <span class="value">₹{{ ((selectedAmount || 0) * 1.02).toFixed(2) }}</span>
         </div>
       </div>
 

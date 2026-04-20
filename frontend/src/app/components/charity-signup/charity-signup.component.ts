@@ -36,6 +36,26 @@ export class CharitySignupComponent implements OnInit {
   previewAcknowledged = false;
   emailResendCooldown = 0;
   phoneResendCooldown = 0;
+  emailExistsError = '';
+  charityTypeOptions = [
+    { label: 'Education', value: 'Education' },
+    { label: 'Healthcare', value: 'Healthcare' },
+    { label: 'Women Empowerment', value: 'WomenEmpowerment' },
+    { label: 'Child Care', value: 'ChildCare' },
+    { label: 'Orphanage Support', value: 'OrphanageSupport' },
+    { label: 'Elderly Care', value: 'ElderlyCare' },
+    { label: 'Animal Welfare', value: 'AnimalWelfare' },
+    { label: 'Disaster Relief', value: 'DisasterRelief' },
+    { label: 'Food Donation', value: 'FoodDonation' },
+    { label: 'Environmental Protection', value: 'EnvironmentalProtection' },
+    { label: 'Disability Support', value: 'DisabilitySupport' },
+    { label: 'Rural Development', value: 'RuralDevelopment' },
+    { label: 'Mental Health Support', value: 'MentalHealthSupport' },
+    { label: 'Homeless Support', value: 'HomelessSupport' },
+    { label: 'Tribal Support', value: 'TribalSupport' },
+    { label: 'Skill Development', value: 'SkillDevelopment' },
+    { label: 'General Charity', value: 'GeneralCharity' }
+  ];
   private emailResendTimer: ReturnType<typeof setInterval> | null = null;
   private phoneResendTimer: ReturnType<typeof setInterval> | null = null;
   selectedTaxExemptCertificateName = 'No file chosen';
@@ -76,7 +96,8 @@ export class CharitySignupComponent implements OnInit {
       focusAreas: ['', [Validators.required]],
       description: [''],
       website: ['', Validators.pattern(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)],
-      taxExemptCertificate: ['']
+      taxExemptCertificate: [''],
+      termsAccepted: [false, [Validators.requiredTrue]]
     });
   }
 
@@ -133,6 +154,15 @@ export class CharitySignupComponent implements OnInit {
   }
 
   nextStep(): void {
+    if (this.currentStep === 1) {
+      this.validateEmailAvailability(() => {
+        if (this.isCurrentStepValid()) {
+          this.currentStep++;
+        }
+      });
+      return;
+    }
+
     if (this.isCurrentStepValid()) {
       this.currentStep++;
     }
@@ -174,7 +204,8 @@ export class CharitySignupComponent implements OnInit {
       this.signupForm.get('confirmPassword')?.valid &&
       this.passwordsMatch() &&
       this.emailOtpVerified &&
-      this.phoneOtpVerified
+      this.phoneOtpVerified &&
+      this.signupForm.get('termsAccepted')?.value === true
     );
   }
 
@@ -183,6 +214,7 @@ export class CharitySignupComponent implements OnInit {
     const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
     this.signupForm.get('email')?.setValue(email);
     if (email && this.signupForm.get('email')?.valid) {
+      this.validateEmailAvailability(() => {
       this.isLoading = true;
       this.emailOtpError = '';
       this.emailOtpInfo = '';
@@ -204,6 +236,7 @@ export class CharitySignupComponent implements OnInit {
           this.emailOtpError = this.getApiErrorMessage(error, 'Error sending OTP. Please try again.');
           console.error('Error sending email OTP:', error);
         }
+      });
       });
     }
   }
@@ -299,6 +332,54 @@ export class CharitySignupComponent implements OnInit {
     return password === confirmPassword && password !== '';
   }
 
+  checkEmailExists(): void {
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    this.signupForm.get('email')?.setValue(email, { emitEvent: false });
+
+    if (!email || this.signupForm.get('email')?.invalid) {
+      this.emailExistsError = '';
+      return;
+    }
+
+    this.api.checkEmailExists(email).subscribe({
+      next: (res: any) => {
+        this.emailExistsError = res?.exists ? 'Email already exists.' : '';
+      },
+      error: () => {
+        this.emailExistsError = '';
+      }
+    });
+  }
+
+  private validateEmailAvailability(onAvailable: () => void): void {
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    if (!email || this.signupForm.get('email')?.invalid) {
+      return;
+    }
+
+    this.api.checkEmailExists(email).subscribe({
+      next: (res: any) => {
+        this.emailExistsError = res?.exists ? 'Email already exists.' : '';
+        if (!this.emailExistsError) {
+          onAvailable();
+        }
+      },
+      error: () => {
+        this.emailExistsError = '';
+        onAvailable();
+      }
+    });
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  get showPasswordMismatch(): boolean {
+    const confirmValue = this.signupForm.get('confirmPassword')?.value;
+    return !!confirmValue && !this.passwordsMatch();
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -334,6 +415,13 @@ export class CharitySignupComponent implements OnInit {
 
   addImageField(): void {
     this.charityImageUrls.push('');
+  }
+
+  addMultipleImageFields(count: number): void {
+    const safeCount = Math.max(1, Math.min(10, count));
+    for (let i = 0; i < safeCount; i++) {
+      this.charityImageUrls.push('');
+    }
   }
 
   removeImageField(index: number): void {
@@ -464,6 +552,7 @@ export class CharitySignupComponent implements OnInit {
   get focusAreas() { return this.signupForm.get('focusAreas'); }
   get description() { return this.signupForm.get('description'); }
   get taxExemptCertificate() { return this.signupForm.get('taxExemptCertificate'); }
+  get termsAccepted() { return this.signupForm.get('termsAccepted'); }
 
   get previewSummary(): string {
     return [

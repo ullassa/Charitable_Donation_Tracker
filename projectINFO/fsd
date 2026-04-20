@@ -1,0 +1,300 @@
+# Week 1 Full Plan: HTTP, REST, JSON, Status Codes, Request/Response Flow, Postman
+
+## Goal of Week 1
+By the end of this week, you should be able to:
+- Explain how a frontend request reaches backend and database, then returns to UI.
+- Read and write REST APIs with correct HTTP methods and status codes.
+- Understand JSON request/response bodies and validation errors.
+- Test APIs in Postman with headers, params, body, auth token, and environment variables.
+
+---
+
+## Daily Time Split (2.5 to 3 hours)
+- 90 min: Practical API work in your CareFund project
+- 45 min: Interview concepts + notes
+- 30 min: Postman exercises and debugging
+- 15 min: Daily summary log
+
+---
+
+## Day 1 - End-to-End Request/Response Flow
+
+### Theory (45 min)
+Learn these concepts:
+- Client, server, API, database roles
+- Stateless request model
+- What happens in one HTTP round-trip
+- URL, method, headers, body, response, latency
+
+### Practical (90 min)
+Use your project flow: Customer Signup.
+
+Do this mapping:
+1. Frontend component/form that triggers signup
+2. Angular service method that calls API
+3. Backend controller endpoint receiving request
+4. Service layer business logic
+5. DbContext/model save operation
+6. Response sent back (success/error)
+
+Output to write in your notes:
+- One simple diagram: Frontend -> API -> Service -> DB -> API -> Frontend
+- 10 lines: "How signup works in CareFund"
+
+### Postman (30 min)
+- Create collection: CareFund APIs
+- Add one request: Signup endpoint
+- Send valid payload and capture response
+
+### Day 1 Deliverable
+- You can clearly explain one full API flow in your own words.
+
+---
+
+## Day 2 - HTTP Methods + REST Basics
+
+### Theory (45 min)
+Understand when to use:
+- GET: read data
+- POST: create data
+- PUT: full update
+- PATCH: partial update
+- DELETE: remove data
+
+REST naming rules:
+- Use nouns in endpoints, not verbs
+- Examples: /api/users, /api/donations/{id}
+
+### Practical (90 min)
+Review existing backend controllers and classify each endpoint by method.
+
+Create a small table in notes:
+- Endpoint
+- Method
+- Purpose
+- Is it RESTful? (Yes/No)
+
+Then improve at least 3 non-REST-style endpoint names in your notes (do not refactor code yet unless needed).
+
+### Postman (30 min)
+Send one request for each method:
+- GET list
+- POST create
+- PUT or PATCH update
+- DELETE item
+
+### Day 2 Deliverable
+- You can choose the correct HTTP method for any CRUD operation.
+
+---
+
+## Day 3 - JSON Deep Understanding
+
+### Theory (45 min)
+Learn:
+- JSON object, array, number, string, boolean, null
+- Nested JSON structures
+- Difference between DTO and Entity
+- Why backend should not expose internal entities directly
+
+### Practical (90 min)
+Pick 3 real request/response models from CareFund:
+- Signup request
+- Login request/response
+- Donation create request
+
+For each model, document:
+- Required fields
+- Optional fields
+- Field types
+- Validation constraints
+
+### Postman (30 min)
+Test JSON cases:
+- Valid body
+- Missing required field
+- Wrong type (string instead of number)
+- Extra unsupported field
+
+Write observed responses and messages.
+
+### Day 3 Deliverable
+- You can design valid JSON payloads and identify malformed payloads quickly.
+
+---
+
+## Day 4 - Status Codes + Error Handling
+
+### Theory (45 min)
+Master these status codes first:
+- 200 OK
+- 201 Created
+- 204 No Content
+- 400 Bad Request
+- 401 Unauthorized
+- 403 Forbidden
+- 404 Not Found
+- 409 Conflict
+- 422 Unprocessable Entity (if used)
+- 500 Internal Server Error
+
+### Practical (90 min)
+Take 5 existing endpoints and define:
+- Expected success code
+- Expected failure codes
+- Exact reason for each failure
+
+Then trigger at least 4 errors intentionally (bad payload, unauthorized request, invalid id, duplicate data).
+
+### Postman (30 min)
+Create folder: Negative Tests
+- Add requests that intentionally fail
+- Save each response example with notes
+
+### Day 4 Deliverable
+- You can map business scenarios to correct status codes confidently.
+
+---
+
+## Day 5 - Headers, Params, Query, Body, Auth Token
+
+### Theory (45 min)
+Learn request parts clearly:
+- Path params: /users/{id}
+- Query params: /donations?page=1&pageSize=10
+- Headers: Content-Type, Authorization
+- Body: mainly for POST/PUT/PATCH
+
+JWT basics for now:
+- What token contains
+- Why Authorization header is needed
+
+### Practical (90 min)
+In CareFund, identify endpoints using:
+- Route params
+- Query params
+- Request body
+- Auth token
+
+Document examples for each.
+
+### Postman (30 min)
+- Use environment variable for baseUrl
+- Store JWT token after login
+- Reuse token for protected endpoint testing
+
+### Day 5 Deliverable
+- You can test authenticated APIs and explain every part of the request.
+
+---
+
+## Day 6 - Postman Professional Workflow
+
+### Theory (30 min)
+Understand Postman features:
+- Collections
+- Environments
+- Variables
+- Pre-request scripts (basic)
+- Tests tab (basic assertions)
+
+### Practical (120 min)
+Build one structured collection:
+- Auth folder: signup, login, verify
+- Charity folder: create, list, status check
+- Donation folder: create, list, details
+- Admin folder: pending charities, approve/reject
+
+Add at least 5 test assertions, for example:
+- status is 200/201
+- response has expected field
+- token exists after login
+
+### Day 6 Deliverable
+- You have a reusable Postman collection that behaves like mini API regression checks.
+
+---
+
+## Day 7 - Revision + Interview Simulation
+
+### Revision (60 min)
+Review all week notes and convert into one-page cheat sheet:
+- HTTP methods
+- Status code map
+- JSON checklist
+- Request anatomy
+- Postman workflow
+
+### Mock Interview Practice (60 min)
+Answer verbally (record yourself):
+1. Explain REST API in simple terms.
+2. Difference between 401 and 403?
+3. POST vs PUT vs PATCH?
+4. What happens from clicking submit on UI to DB save?
+5. How do you test APIs without frontend?
+
+### Practical (45 min)
+Run your best 10 Postman requests in sequence and ensure they all pass.
+
+### Day 7 Deliverable
+- You can explain and demonstrate full request lifecycle confidently in interview style.
+
+---
+
+## Week 1 Mini Project Task (Compulsory)
+Create API documentation for one feature: Customer Signup + Login.
+
+Include:
+- Endpoint URL and method
+- Request JSON with field explanation
+- Success response example
+- Error response examples
+- Status code list and meanings
+- Authentication requirement
+
+Target length: 1-2 pages.
+
+---
+
+## Interview-Focused Questions to Practice Daily
+- What makes an API RESTful?
+- Why should APIs be stateless?
+- Why do we return 201 after create?
+- What is the use of idempotency in PUT/DELETE?
+- When should we return 400 vs 422?
+- How do frontend and backend share data contracts?
+
+---
+
+## Common Mistakes to Avoid
+- Using POST for every operation
+- Returning 200 for all outcomes including errors
+- Sending vague error messages
+- Mixing entities directly in API responses
+- Hardcoding URLs/tokens in Postman instead of variables
+- Not testing negative scenarios
+
+---
+
+## Daily Log Template (Use Every Day)
+Date:
+Topic:
+What I built:
+What I understood deeply:
+What confused me:
+How I solved/debugged:
+Interview question practiced:
+Tomorrow focus:
+
+---
+
+## End-of-Week Success Checklist
+Mark done only if true:
+- I can explain request/response flow with real project example.
+- I know when to use each HTTP method.
+- I can choose correct status code for common scenarios.
+- I can create and validate JSON payloads.
+- I can test APIs in Postman with token and environments.
+- I can explain all above clearly in interview language.
+
+If all are done, move to Week 2: .NET API architecture (Controller -> Service -> Repository/DbContext -> DTO -> Validation -> Exception handling).

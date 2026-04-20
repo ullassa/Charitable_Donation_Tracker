@@ -5,7 +5,7 @@
     <div class="title-row">
       <div>
         <h1>Profile</h1>
-        <p>Edit your details here. DOB stays read-only.</p>
+        <p>Edit your details here. Changes are saved instantly and shared across tabs.</p>
       </div>
       <span class="role-badge">{{ role || 'User' }}</span>
     </div>
@@ -16,22 +16,22 @@
     <div class="profile-grid">
       <label>
         Name
-        <input [(ngModel)]="profile.name" type="text" />
+        <input [(ngModel)]="profile.name" type="text" [disabled]="!isEditing" />
       </label>
 
       <label>
         Email
-        <input [(ngModel)]="profile.email" type="email" />
+        <input [(ngModel)]="profile.email" type="email" [disabled]="!isEditing" />
       </label>
 
       <label>
         Phone
-        <input [(ngModel)]="profile.phoneNumber" type="text" />
+        <input [(ngModel)]="profile.phoneNumber" type="text" [disabled]="!isEditing" />
       </label>
 
       <label>
         City / Address
-        <input [(ngModel)]="profile.city" type="text" placeholder="City" />
+        <input [(ngModel)]="profile.city" type="text" placeholder="City" [disabled]="!isEditing" />
       </label>
     </div>
 
@@ -42,37 +42,39 @@
       <div class="profile-grid">
         <label>
           Address Line
-          <input [(ngModel)]="charityProfile.addressLine" type="text" />
+          <input [(ngModel)]="charityProfile.addressLine" type="text" [disabled]="!isEditing" />
         </label>
 
         <label>
           Cause Type
-          <input [(ngModel)]="charityProfile.causeType" type="text" />
+          <input [(ngModel)]="charityProfile.causeType" type="text" [disabled]="!isEditing" />
         </label>
 
         <label class="full">
           Mission
-          <textarea [(ngModel)]="charityProfile.mission" rows="3"></textarea>
+          <textarea [(ngModel)]="charityProfile.mission" rows="3" [disabled]="!isEditing"></textarea>
         </label>
 
         <label class="full">
           About
-          <textarea [(ngModel)]="charityProfile.about" rows="3"></textarea>
+          <textarea [(ngModel)]="charityProfile.about" rows="3" [disabled]="!isEditing"></textarea>
         </label>
 
         <label class="full">
           Activities
-          <textarea [(ngModel)]="charityProfile.activities" rows="3"></textarea>
+          <textarea [(ngModel)]="charityProfile.activities" rows="3" [disabled]="!isEditing"></textarea>
         </label>
 
         <label class="full">
           Social Media Link
-          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" />
+          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" [disabled]="!isEditing" />
         </label>
       </div>
     </section>
 
     <div class="actions">
+      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="!isEditing">Edit</button>
+      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="isEditing">Cancel</button>
       <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
         {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>

@@ -1,0 +1,32 @@
+.info-page {
+  min-height: 60vh;
+  padding: 2rem 1rem 3rem;
+}
+
+.info-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+.info-card h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.info-card p {
+  margin: 0 0 1rem;
+  line-height: 1.8;
+  color: #334155;
+}
+
+.quote {
+  margin-top: 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2563eb;
+}

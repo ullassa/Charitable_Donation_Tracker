@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,36 +10,28 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent {
-  donateCausesOpen = false;
-
-  constructor(private elementRef: ElementRef<HTMLElement>) {}
-
   get isLoggedIn(): boolean {
-    return !!sessionStorage.getItem('token') || !!localStorage.getItem('token');
+    return !!sessionStorage.getItem('token');
   }
 
-  causes = [
-    { id: 1, name: 'Medical' },
-    { id: 2, name: 'Education' },
-    { id: 3, name: 'Food & Hunger' },
-    { id: 4, name: 'Disaster Relief' },
-    { id: 5, name: 'Environmental' }
-  ];
-
-  toggleDonateCauses(): void {
-    this.donateCausesOpen = !this.donateCausesOpen;
+  get role(): string {
+    return (sessionStorage.getItem('role') || '').trim().toLowerCase();
   }
 
-  openDonateCauses(): void {
-    this.donateCausesOpen = true;
-  }
+  get dashboardLink(): string | null {
+    if (this.role === 'customer') {
+      return '/dashboard/customer';
+    }
 
-  closeDonateCauses(): void {
-    this.donateCausesOpen = false;
-  }
+    if (this.role === 'charitymanager') {
+      return '/dashboard/charity';
+    }
 
-  navigateToDonate(causeId: number): void {
-    this.closeDonateCauses();
+    if (this.role === 'admin') {
+      return '/dashboard/admin';
+    }
+
+    return null;
   }
 
   logout(): void {
@@ -53,13 +45,5 @@ export class HeaderComponent {
     localStorage.removeItem('userName');
     localStorage.setItem('cf:auth:changed', Date.now().toString());
     window.location.href = '/';
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    const clickedInside = this.elementRef.nativeElement.contains(event.target as Node);
-    if (!clickedInside) {
-      this.closeDonateCauses();
-    }
   }
 }

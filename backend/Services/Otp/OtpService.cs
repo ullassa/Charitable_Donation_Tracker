@@ -76,7 +76,7 @@ namespace CareFund.Services.Otp
         }
 
         /// <summary>
-        /// Sends OTP to email address via SMTP
+        /// Sends OTP to email address via Brevo API
         /// </summary>
         public async Task<(bool Success, string Message)> SendEmailOtpAsync(string email)
         {
@@ -433,88 +433,12 @@ namespace CareFund.Services.Otp
         {
             try
             {
-                if (!IsSmtpConfigured())
-                {
-                    _logger.LogWarning("SMTP not configured");
-                    return (false, "Email service not configured");
-                }
+                var apiResult = await SendEmailViaBrevoApiAsync(
+                    toEmail,
+                    "Your CareFund OTP",
+                    $"Your OTP is {otp}. It expires in 5 minutes.");
 
-                var host = _config["Smtp:Host"]!;
-                var portText = _config["Smtp:Port"];
-                var username = _config["Smtp:Username"]!;
-                var password = _config["Smtp:Password"]!;
-                var fromEmail = _config["Smtp:FromEmail"]!;
-                var enableSsl = bool.TryParse(_config["Smtp:EnableSsl"], out var ssl) ? ssl : true;
-                var configuredPort = int.TryParse(portText, out var p) ? p : 587;
-
-                var portsToTry = new List<int> { configuredPort };
-                if (host.Equals("smtp-relay.brevo.com", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!portsToTry.Contains(587)) portsToTry.Add(587);
-                    if (!portsToTry.Contains(2525)) portsToTry.Add(2525);
-                    if (!portsToTry.Contains(465)) portsToTry.Add(465);
-                }
-
-                Exception? lastException = null;
-                foreach (var port in portsToTry)
-                {
-                    try
-                    {
-                        using var client = new SmtpClient(host, port)
-                        {
-                            DeliveryMethod = SmtpDeliveryMethod.Network,
-                            UseDefaultCredentials = false,
-                            Credentials = new NetworkCredential(username, password),
-                            EnableSsl = enableSsl,
-                            Timeout = 20000
-                        };
-
-                        using var message = new MailMessage(fromEmail, toEmail)
-                        {
-                            Subject = "Your CareFund OTP",
-                            Body = $"Your OTP is {otp}. It expires in 5 minutes."
-                        };
-
-                        _logger.LogInformation($"Attempting SMTP send to {toEmail} via {host}:{port}");
-                        await client.SendMailAsync(message);
-                        _logger.LogInformation($"Email sent to {toEmail} via {host}:{port}");
-                        return (true, "Email sent");
-                    }
-                    catch (Exception ex)
-                    {
-                        lastException = ex;
-                        _logger.LogWarning($"SMTP attempt failed on {host}:{port} - {ex.Message}");
-                    }
-                }
-
-                if (HasBrevoApiKey())
-                {
-                    _logger.LogInformation("Attempting Brevo API fallback for email delivery");
-                    var apiResult = await SendEmailViaBrevoApiAsync(toEmail, otp, fromEmail);
-                    if (apiResult.Success)
-                    {
-                        return apiResult;
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("SMTP failed and Brevo:ApiKey is not configured. API fallback skipped.");
-                    return (false, "SMTP connection blocked and Brevo API key is missing. Set Brevo:ApiKey in appsettings.json.");
-                }
-
-                throw lastException ?? new SmtpException(SmtpStatusCode.GeneralFailure, "SMTP send failed on all configured ports");
-            }
-            catch (SmtpFailedRecipientException ex)
-            {
-                _logger.LogError($"Email recipient failed: {toEmail} - {ex.Message}");
-                return (false, "Email rejected by recipient server. Check email address.");
-            }
-            catch (SmtpException ex)
-            {
-                _logger.LogError($"SMTP exception: {ex.StatusCode} - {ex.Message}");
-                var inner = ex.InnerException?.Message;
-                var details = string.IsNullOrWhiteSpace(inner) ? ex.Message : $"{ex.Message} | {inner}";
-                return (false, $"Email delivery failed ({ex.StatusCode}): {details}");
+                return apiResult;
             }
             catch (Exception ex)
             {
@@ -573,12 +497,6 @@ namespace CareFund.Services.Otp
             _context.SaveChanges();
             return true;
         }
-
-        private bool IsSmtpConfigured() =>
-            !string.IsNullOrWhiteSpace(_config["Smtp:Host"]) &&
-            !string.IsNullOrWhiteSpace(_config["Smtp:Username"]) &&
-            !string.IsNullOrWhiteSpace(_config["Smtp:Password"]) &&
-            !string.IsNullOrWhiteSpace(_config["Smtp:FromEmail"]);
 
         private bool IsTwilioConfigured() =>
             !string.IsNullOrWhiteSpace(_config["Twilio:AccountSid"]) &&
@@ -648,11 +566,14 @@ namespace CareFund.Services.Otp
             }
         }
 
-        private async Task<(bool Success, string Message)> SendEmailViaBrevoApiAsync(string toEmail, string otp, string fromEmail)
+        private async Task<(bool Success, string Message)> SendEmailViaBrevoApiAsync(string toEmail, string subject, string htmlContent)
         {
             try
             {
                 var apiKey = _config["Brevo:ApiKey"];
+                var fromEmail = _config["Brevo:FromEmail"] ?? "noreply@carefund.com";
+                var fromName = _config["Brevo:FromName"] ?? "CareFund";
+
                 if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     return (false, "Brevo API key not configured");
@@ -664,10 +585,10 @@ namespace CareFund.Services.Otp
 
                 var payload = new
                 {
-                    sender = new { name = "CareFund", email = fromEmail },
+                    sender = new { name = fromName, email = fromEmail },
                     to = new[] { new { email = toEmail } },
-                    subject = "Your CareFund OTP",
-                    textContent = $"Your OTP is {otp}. It expires in 5 minutes."
+                    subject,
+                    htmlContent
                 };
 
                 request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");

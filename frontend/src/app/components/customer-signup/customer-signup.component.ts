@@ -35,6 +35,7 @@ export class CustomerSignupComponent implements OnInit {
   phoneOtpInfo = '';
   emailResendCooldown = 0;
   phoneResendCooldown = 0;
+  emailExistsError = '';
   private emailResendTimer: ReturnType<typeof setInterval> | null = null;
   private phoneResendTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -114,11 +115,21 @@ export class CustomerSignupComponent implements OnInit {
       gender: ['', [Validators.required]],
       city: ['', [Validators.required]],
       state: ['', [Validators.required]],
-      country: ['', [Validators.required]]
+      country: ['', [Validators.required]],
+      termsAccepted: [false, [Validators.requiredTrue]]
     });
   }
 
   nextStep(): void {
+    if (this.currentStep === 1) {
+      this.validateEmailAvailability(() => {
+        if (this.isCurrentStepValid()) {
+          this.currentStep++;
+        }
+      });
+      return;
+    }
+
     if (this.isCurrentStepValid()) {
       this.currentStep++;
     }
@@ -158,6 +169,7 @@ export class CustomerSignupComponent implements OnInit {
     const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
     this.signupForm.get('email')?.setValue(email);
     if (email && this.signupForm.get('email')?.valid) {
+      this.validateEmailAvailability(() => {
       this.isLoading = true;
       this.emailOtpError = '';
       this.emailOtpInfo = '';
@@ -179,6 +191,7 @@ export class CustomerSignupComponent implements OnInit {
           this.emailOtpError = this.getApiErrorMessage(error, 'Error sending OTP. Please try again.');
           console.error('Error sending email OTP:', error);
         }
+      });
       });
     }
   }
@@ -284,6 +297,50 @@ export class CustomerSignupComponent implements OnInit {
     return password === confirmPassword && password !== '';
   }
 
+  checkEmailExists(): void {
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    this.signupForm.get('email')?.setValue(email, { emitEvent: false });
+
+    if (!email || this.signupForm.get('email')?.invalid) {
+      this.emailExistsError = '';
+      return;
+    }
+
+    this.api.checkEmailExists(email).subscribe({
+      next: (res: any) => {
+        this.emailExistsError = res?.exists ? 'Email already exists.' : '';
+      },
+      error: () => {
+        this.emailExistsError = '';
+      }
+    });
+  }
+
+  private validateEmailAvailability(onAvailable: () => void): void {
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    if (!email || this.signupForm.get('email')?.invalid) {
+      return;
+    }
+
+    this.api.checkEmailExists(email).subscribe({
+      next: (res: any) => {
+        this.emailExistsError = res?.exists ? 'Email already exists.' : '';
+        if (!this.emailExistsError) {
+          onAvailable();
+        }
+      },
+      error: () => {
+        this.emailExistsError = '';
+        onAvailable();
+      }
+    });
+  }
+
+  get showPasswordMismatch(): boolean {
+    const confirmValue = this.signupForm.get('confirmPassword')?.value;
+    return !!confirmValue && !this.passwordsMatch();
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -380,4 +437,5 @@ export class CustomerSignupComponent implements OnInit {
   get city() { return this.signupForm.get('city'); }
   get state() { return this.signupForm.get('state'); }
   get country() { return this.signupForm.get('country'); }
+  get termsAccepted() { return this.signupForm.get('termsAccepted'); }
 }

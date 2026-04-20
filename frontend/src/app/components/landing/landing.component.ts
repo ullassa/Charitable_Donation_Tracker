@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
@@ -13,7 +14,7 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css']
 })
-export class LandingComponent implements OnInit {
+export class LandingComponent implements OnInit, OnDestroy {
   charities: any[] = [];
   filteredCharities: any[] = [];
   visibleCharities: any[] = [];
@@ -44,6 +45,22 @@ export class LandingComponent implements OnInit {
   heroLogoImageIndex = 0;
   heroMainImageSrc = this.heroMainImageCandidates[0];
   heroLogoImageSrc = this.heroLogoImageCandidates[0];
+  heroSlides = [
+    {
+      title: 'CareFund keeps every donation visible',
+      subtitle: 'See real charities, live updates, and meaningful impact in one place.'
+    },
+    {
+      title: 'Donate with confidence',
+      subtitle: 'Every contribution is tracked, notified by email, and synced across dashboards.'
+    },
+    {
+      title: 'Support causes that matter',
+      subtitle: 'Medical, education, food, disaster relief, and more. Pick your cause and give.'
+    }
+  ];
+  currentHeroSlide = 0;
+  private heroRotationTimer: ReturnType<typeof setInterval> | null = null;
 
   heroTitle = 'Make a Difference Today';
   heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
@@ -73,15 +90,49 @@ export class LandingComponent implements OnInit {
     }
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = !!sessionStorage.getItem('token') || !!localStorage.getItem('token');
+    this.isLoggedIn = !!sessionStorage.getItem('token');
+    const role = (sessionStorage.getItem('role') || '').trim().toLowerCase();
+
+    if (this.isLoggedIn && role === 'customer') {
+      this.router.navigate(['/dashboard/customer']);
+      return;
+    }
+
+    if (this.isLoggedIn && role === 'charitymanager') {
+      this.router.navigate(['/dashboard/charity']);
+      return;
+    }
+
+    if (this.isLoggedIn && role === 'admin') {
+      this.router.navigate(['/dashboard/admin']);
+      return;
+    }
+
     if (this.isLoggedIn) {
       this.heroTitle = 'Welcome back to CareFund';
       this.heroSubtitle = 'Browse live charities and donate with confidence.';
     }
     this.loadCharities();
+    this.startHeroRotation();
+  }
+
+  ngOnDestroy(): void {
+    if (this.heroRotationTimer) {
+      clearInterval(this.heroRotationTimer);
+      this.heroRotationTimer = null;
+    }
+  }
+
+  private startHeroRotation(): void {
+    this.heroRotationTimer = setInterval(() => {
+      this.currentHeroSlide = (this.currentHeroSlide + 1) % this.heroSlides.length;
+      const slide = this.heroSlides[this.currentHeroSlide];
+      this.heroTitle = slide.title;
+      this.heroSubtitle = slide.subtitle;
+    }, 5000);
   }
 
   loadCharities(): void {

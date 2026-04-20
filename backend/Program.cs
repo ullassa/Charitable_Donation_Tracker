@@ -1,6 +1,7 @@
 using CareFund.Data;
 using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
+using CareFund.Services.Notifications;
 using CareFund.Services.Otp;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
@@ -34,6 +35,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotificationEmailService, NotificationEmailService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

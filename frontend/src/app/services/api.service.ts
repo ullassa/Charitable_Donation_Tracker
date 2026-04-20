@@ -16,7 +16,7 @@ export class ApiService {
   }
 
   getUsers(): Observable<any> {
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.get(`${this.baseUrl}/users`, { headers });
   }
@@ -47,6 +47,10 @@ export class ApiService {
       `${this.baseUrl}/auth/verify-email-otp?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`,
       {}
     );
+  }
+
+  checkEmailExists(email: string) {
+    return this.http.get(`${this.baseUrl}/auth/check-email-exists?email=${encodeURIComponent(email)}`);
   }
 
   registerCharity(data: any) {
@@ -100,6 +104,15 @@ export class ApiService {
     if (to) params.set('to', to);
     const suffix = params.toString() ? `?${params.toString()}` : '';
     return this.http.get(`${this.baseUrl}/dashboard/customer${suffix}`);
+  }
+
+  getCustomerTrend(groupBy: 'day' | 'week' | 'month' | 'year', from?: string, to?: string) {
+    const params = new URLSearchParams();
+    params.set('groupBy', groupBy);
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const suffix = `?${params.toString()}`;
+    return this.http.get(`${this.baseUrl}/dashboard/customer/trend${suffix}`);
   }
 
   getCharityDashboard(from?: string, to?: string) {

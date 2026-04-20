@@ -62,9 +62,10 @@ export class LoginComponent implements OnInit {
             sessionStorage.setItem('role', response?.role || 'Customer');
             sessionStorage.setItem('userId', response?.userId || '');
             sessionStorage.setItem('userName', response?.userName || '');
+            localStorage.removeItem('token');
             localStorage.setItem('cf:auth:changed', Date.now().toString());
             
-            const role = (response?.role || '').toString().toLowerCase();
+            const role = (response?.role || '').toString().trim().toLowerCase();
 
             if (this.returnUrl && this.returnUrl !== '/' && this.returnUrl !== '/login') {
               this.router.navigateByUrl(this.returnUrl);

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,12 @@ public class DonationsController : ControllerBase
 {
     private const decimal CharitySufficientAmountThreshold = 100000m;
     private readonly ApplicationDbContext _context;
+    private readonly INotificationEmailService _notifications;
 
-    public DonationsController(ApplicationDbContext context)
+    public DonationsController(ApplicationDbContext context, INotificationEmailService notifications)
     {
         _context = context;
+        _notifications = notifications;
     }
 
     [HttpPost]
@@ -81,30 +84,20 @@ public class DonationsController : ControllerBase
         };
 
         _context.Donations.Add(donation);
-
-        _context.Notifications.Add(new Notification
-        {
-            UserId = user.UserId,
-            NotificationType = NotificationType.Email,
-            Message = "Thank you for donating through CareFund."
-        });
-
         await _context.SaveChangesAsync();
+
+        var donorMessage = $"You donated ₹{request.Amount:n2} to {charity.User?.UserName ?? "a charity"} on CareFund. Transaction reference: {payment.TransactionReference}.";
+        await _notifications.NotifyUserAsync(user, "Donation received", donorMessage, donation.DonationId);
 
         var totalCollected = await _context.Donations
             .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId)
             .SumAsync(d => (decimal?)d.Amount) ?? 0;
 
+        await _notifications.NotifyUserAsync(charity.User!, "New donation received", $"Your charity received a donation of ₹{request.Amount:n2} from a CareFund donor. Total collected so far is ₹{totalCollected:n2}.", donation.DonationId);
+
         if (totalCollected >= CharitySufficientAmountThreshold)
         {
-            _context.Notifications.Add(new Notification
-            {
-                UserId = charity.UserId,
-                NotificationType = NotificationType.Email,
-                Message = $"Your charity has reached sufficient fundraising amount (₹{totalCollected:n2})."
-            });
-
-            await _context.SaveChangesAsync();
+            await _notifications.NotifyUserAsync(charity.User!, "Fundraising milestone reached", $"Your charity has reached the CareFund fundraising milestone with ₹{totalCollected:n2} collected.", donation.DonationId);
         }
 
         return Ok(new

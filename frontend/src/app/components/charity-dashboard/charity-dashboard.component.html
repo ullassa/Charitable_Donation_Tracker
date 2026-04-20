@@ -140,11 +140,12 @@
           <span class="notification-count">{{ notifications.length }}</span>
         </div>
         <div class="notification-list">
-          <div *ngFor="let note of notifications" class="notification-item">
+          <div *ngFor="let note of notifications; trackBy: notificationTrackBy" class="notification-item">
             <div class="notification-dot"></div>
             <div>
-              <p class="notification-message">{{ note.message }}</p>
+              <p class="notification-message">{{ note.message || note.type || 'Notification received' }}</p>
               <p class="notification-time">{{ note.sentAt | date:'short' }}</p>
+              <p class="notification-time">Type: {{ note.type || 'General' }}</p>
             </div>
           </div>
           <div *ngIf="notifications.length === 0" class="no-notifications">

@@ -1,200 +1,105 @@
 <app-header></app-header>
 
-<main class="dashboard-page">
-  <section class="dashboard-shell" *ngIf="!loading; else loadingView">
-    
-    <!-- Header Section -->
-    <header class="dash-header glass-card">
-      <div class="header-content">
-        <div>
-          <h1>My Donations</h1>
-          <p class="subtitle">Track your contributions to social causes</p>
-        </div>
-      </div>
-    </header>
+<section class="dashboard-wrap">
+  <header class="page-head card">
+    <div>
+      <h1>Donor Dashboard</h1>
+      <p class="muted">View your contribution insights and latest updates in one place.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-ghost" type="button" (click)="load()" [disabled]="loading">Refresh</button>
+      <button class="btn btn-primary" type="button" (click)="downloadReport()">Download {{ reportFormat.toUpperCase() }}</button>
+      <select [(ngModel)]="reportFormat" aria-label="Report Format">
+        <option value="csv">CSV</option>
+        <option value="pdf">PDF</option>
+      </select>
+    </div>
+  </header>
 
-    <!-- Error Message -->
-    <p class="alert alert-danger" *ngIf="error">⚠️ {{ error }}</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
 
-    <!-- KPI Cards Section -->
-    <section class="kpi-section">
-      <h2 class="section-title">Donation Summary</h2>
-      <div class="kpi-grid">
-        <div class="kpi-card glass-card total-card">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Total Donated</p>
-            <h3 class="kpi-value">₹{{ (stats.totalDonations || 0) | number:'1.0-0' }}</h3>
-            <p class="kpi-subtitle">Lifetime contribution</p>
-          </div>
-        </div>
+  <div class="stats-grid">
+    <article class="stat card">
+      <h3>Total Donations</h3>
+      <p>₹{{ stats.totalDonations | number:'1.0-0' }}</p>
+    </article>
+    <article class="stat card">
+      <h3>Donations Count</h3>
+      <p>{{ stats.donationsCount }}</p>
+    </article>
+  </div>
 
-        <div class="kpi-card glass-card count-card">
-          <div class="kpi-icon">🤝</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Donations Made</p>
-            <h3 class="kpi-value">{{ stats.donationsCount || 0 }}</h3>
-            <p class="kpi-subtitle">{{ stats.donationsCount ? 'Charities supported' : 'Get started' }}</p>
-          </div>
-        </div>
-
-        <div class="kpi-card glass-card impact-card">
-          <div class="kpi-icon">📊</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Average Donation</p>
-            <h3 class="kpi-value">₹{{ (stats.donationsCount ? stats.totalDonations / stats.donationsCount : 0) | number:'1.0-0' }}</h3>
-            <p class="kpi-subtitle">Per donation</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bar Chart Section -->
-    <section class="chart-section glass-card">
-      <h2 class="section-title">Monthly Breakdown</h2>
-
-      <div class="chart-controls">
-        <div class="date-range-filter">
-          <div class="date-input-group">
-            <label for="chart-from-date">From:</label>
-            <input type="date" id="chart-from-date" [(ngModel)]="fromDate" />
-          </div>
-          <div class="date-input-group">
-            <label for="chart-to-date">To:</label>
-            <input type="date" id="chart-to-date" [(ngModel)]="toDate" />
-          </div>
-          <button class="btn" (click)="applyDateFilter()">Apply Filter</button>
-        </div>
-
-        <div class="date-input-group">
-          <label for="chartType">Chart Type</label>
-          <select id="chartType" [(ngModel)]="chartType">
-            <option value="bar">Bar</option>
-            <option value="pie">Pie</option>
-            <option value="donut">Donut</option>
+  <section class="card trend-card">
+    <div class="trend-head">
+      <h2>Donation Trend</h2>
+      <div class="trend-controls">
+        <label>
+          <span>Group</span>
+          <select [(ngModel)]="trendGroupBy" (change)="onTrendGroupChanged()">
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
           </select>
+        </label>
+        <label>
+          <span>From</span>
+          <input type="date" [(ngModel)]="fromDate" />
+        </label>
+        <label>
+          <span>To</span>
+          <input type="date" [(ngModel)]="toDate" />
+        </label>
+        <button class="btn btn-primary" type="button" (click)="applyDateFilter()">Apply</button>
+      </div>
+    </div>
+    <p class="muted trend-note" *ngIf="trend.length">Bar chart shows {{ trendGroupBy }}-wise donation totals for selected range.</p>
+
+    <div *ngIf="trend.length; else noTrend" class="bar-chart">
+      <div class="bar-columns">
+        <div class="bar-col" *ngFor="let item of trend; trackBy: itemTrackBy">
+          <div class="bar-track">
+            <div class="bar-fill" [style.height]="barHeight(item.amount)"></div>
+          </div>
+          <span class="value">₹{{ item.amount | number:'1.0-0' }}</span>
+          <span class="label">{{ item.label }}</span>
         </div>
       </div>
-
-      <div class="bar-chart-container" *ngIf="monthly.length > 0 && chartType === 'bar'; else noData">
-        <div *ngFor="let item of monthly" class="bar-item">
-          <div class="bar-wrapper">
-            <div class="bar-track">
-              <div class="bar-fill" [style.width]="barWidth(item.amount)"></div>
-            </div>
-            <span class="bar-label">{{ item.label }}</span>
-          </div>
-          <span class="bar-amount">₹{{ item.amount | number:'1.0-0' }}</span>
-        </div>
-      </div>
-
-      <div class="donut-card" *ngIf="monthly.length > 0 && chartType !== 'bar'">
-        <div class="donut-visual" [class.pie-visual]="chartType === 'pie'" [style.background]="donutStyle">
-          <span *ngIf="chartType === 'donut'">{{ latestMonthShare }}%</span>
-        </div>
-        <div>
-          <h4>{{ chartType === 'pie' ? 'Pie' : 'Donut' }} View</h4>
-          <p>Latest month contribution: {{ latestMonthShare }}% of selected period donations.</p>
-        </div>
-      </div>
-
-      <ng-template #noData>
-        <div class="empty-data">
-          <p>📊 No donation data for the selected period</p>
-        </div>
-      </ng-template>
-    </section>
-
-    <!-- Recent Activity & Notifications -->
-    <section class="activity-section">
-      <div class="activity-grid">
-        <!-- Recent Donations -->
-        <div class="activity-card">
-          <div class="activity-header">
-            <h3>Recent Donations</h3>
-            <span class="pill">{{ recent.length }}</span>
-          </div>
-          <div class="activity-list" *ngIf="recent.length > 0; else noDonations">
-            <div *ngFor="let item of recent" class="activity-item">
-              <div class="item-icon">🎯</div>
-              <div class="item-content">
-                <p class="item-title">{{ item.charityName }}</p>
-                <p class="item-date">{{ item.donationDate | date:'mediumDate' }}</p>
-              </div>
-              <div class="item-amount">
-                <strong>₹{{ item.amount | number:'1.0-0' }}</strong>
-              </div>
-            </div>
-          </div>
-          <ng-template #noDonations>
-            <div class="empty-list">
-              <p>📭 No donations yet</p>
-            </div>
-          </ng-template>
-        </div>
-
-        <!-- Notifications -->
-        <div class="activity-card">
-          <div class="activity-header">
-            <h3>Notifications</h3>
-            <span class="pill">{{ notifications.length }}</span>
-          </div>
-          <div class="activity-list" *ngIf="notifications.length > 0; else noNotifications">
-            <div *ngFor="let note of notifications" class="activity-item notification-item">
-              <div class="item-icon">📬</div>
-              <div class="item-content">
-                <p class="item-title">{{ note.message }}</p>
-                <p class="item-date">{{ note.sentAt | date:'short' }}</p>
-              </div>
-            </div>
-          </div>
-          <ng-template #noNotifications>
-            <div class="empty-list">
-              <p>📭 No notifications</p>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-    </section>
-
-    <!-- Report Download Section -->
-    <section class="report-section">
-      <h2 class="section-title">Generate Report</h2>
-      <div class="report-container">
-        <p class="report-description">Download your donation history as CSV or PDF acknowledgement receipt.</p>
-        <div class="date-range-filter">
-          <div class="date-input-group">
-            <label for="from-date">From:</label>
-            <input type="date" id="from-date" [(ngModel)]="fromDate" />
-          </div>
-          <div class="date-input-group">
-            <label for="to-date">To:</label>
-            <input type="date" id="to-date" [(ngModel)]="toDate" />
-          </div>
-
-          <div class="date-input-group">
-            <label for="report-format">Format:</label>
-            <select id="report-format" [(ngModel)]="reportFormat">
-              <option value="csv">CSV</option>
-              <option value="pdf">PDF</option>
-            </select>
-          </div>
-
-          <button class="btn-download" (click)="downloadReport()">
-            📥 Download {{ reportFormat.toUpperCase() }} Report
-          </button>
-        </div>
-      </div>
-    </section>
-
+    </div>
+    <ng-template #noTrend>
+      <p class="muted">No trend data available for selected range.</p>
+    </ng-template>
   </section>
 
-  <ng-template #loadingView>
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading your dashboard...</p>
-    </div>
-  </ng-template>
-</main>
+  <div class="grid-2">
+    <section class="card list-card">
+      <h2>Recent Donations</h2>
+      <ul *ngIf="recent.length; else noRecent">
+        <li *ngFor="let d of recent">
+          <div>
+            <p class="title">{{ d.charityName }}</p>
+            <p class="muted">{{ d.donationDate | date:'mediumDate' }}</p>
+          </div>
+          <strong>₹{{ d.amount | number:'1.0-0' }}</strong>
+        </li>
+      </ul>
+      <ng-template #noRecent><p class="muted">No recent donations.</p></ng-template>
+    </section>
+
+    <section class="card list-card">
+      <h2>Notifications</h2>
+      <ul *ngIf="notifications.length; else noNotif">
+        <li *ngFor="let n of notifications; trackBy: notificationTrackBy">
+          <div>
+            <p class="title">{{ n.message || n.type || 'Notification' }}</p>
+            <p class="muted">{{ n.sentAt | date:'medium' }}</p>
+          </div>
+          <span class="chip">{{ n.type || 'General' }}</span>
+        </li>
+      </ul>
+      <ng-template #noNotif><p class="muted">No notifications.</p></ng-template>
+    </section>
+  </div>
+</section>
 
 <app-footer></app-footer>

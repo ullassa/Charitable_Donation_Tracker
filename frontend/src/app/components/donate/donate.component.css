@@ -225,6 +225,60 @@ section {
   margin: 0;
 }
 
+.average-amount-note {
+  margin: 0.7rem 0 0;
+  color: #334155;
+}
+
+.amount-generator {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.amount-generator h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+  color: #1e3a8a;
+}
+
+.amount-generator p {
+  margin: 0;
+  color: #475569;
+}
+
+.generator-grid {
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.generator-grid label {
+  display: grid;
+  gap: 0.35rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.generator-grid input {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.generated-note {
+  margin-top: 0.8rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  color: #155e75;
+}
+
 .gallery-scroll {
   display: grid;
   grid-auto-flow: column;
@@ -454,7 +508,8 @@ section {
     grid-template-columns: 1fr;
   }
 
-  .grid-2 {
+  .grid-2,
+  .generator-grid {
     grid-template-columns: 1fr;
   }
 }

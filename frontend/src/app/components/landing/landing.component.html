@@ -8,9 +8,26 @@
         <h1>{{ heroTitle }}</h1>
         <p>{{ heroSubtitle }}</p>
 
+        <div class="hero-carousel-dots">
+          <button
+            type="button"
+            class="dot"
+            *ngFor="let slide of heroSlides; let i = index"
+            [class.active]="currentHeroSlide === i"
+            (click)="currentHeroSlide = i; heroTitle = slide.title; heroSubtitle = slide.subtitle"
+            [attr.aria-label]="slide.title"
+          ></button>
+        </div>
+
         <div class="hero-actions">
           <button class="btn btn-primary" routerLink="/donate">Donate now</button>
           <button class="btn btn-secondary" routerLink="/charity-signup">Start a charity</button>
+        </div>
+
+        <div class="hero-highlights">
+          <span>✅ Verified charities</span>
+          <span>⚡ Fast donations</span>
+          <span>📩 Email updates</span>
         </div>
       </div>
       <div class="hero-visual">
@@ -138,7 +155,7 @@
     </div>
   </section>
 
-  <section class="cta-section">
+  <section class="cta-section" *ngIf="!isLoggedIn">
     <div class="container">
       <h2>Ready to make an impact?</h2>
       <p>Join CareFund and support charities that matter to you.</p>

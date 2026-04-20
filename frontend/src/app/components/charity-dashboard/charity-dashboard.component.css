@@ -1,6 +1,6 @@
 .dashboard-page {
   padding: 2rem 1rem;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #eef4ff 0%, #f0fdfa 55%, #f8fafc 100%);
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -18,8 +18,8 @@
   background: white;
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border-left: 5px solid #f5576c;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  border-left: 5px solid #4f46e5;
 }
 
 .header-content {
@@ -135,19 +135,19 @@
 }
 
 .collected-card::before {
-  background: linear-gradient(90deg, #f093fb, #f5576c);
+  background: linear-gradient(90deg, #4f46e5, #2563eb);
 }
 
 .donors-card::before {
-  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  background: linear-gradient(90deg, #0ea5e9, #06b6d4);
 }
 
 .avg-card::before {
-  background: linear-gradient(90deg, #43e97b, #38f9d7);
+  background: linear-gradient(90deg, #10b981, #22c55e);
 }
 
 .month-card::before {
-  background: linear-gradient(90deg, #fa709a, #fee140);
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
 }
 
 .kpi-icon {
@@ -210,7 +210,7 @@
 
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #f093fb, #f5576c);
+  background: linear-gradient(90deg, #4f46e5, #0ea5e9);
 }
 
 .bar-label {
@@ -298,8 +298,8 @@
 
 .donation-card:hover {
   background: white;
-  border-color: #f5576c;
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.15);
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
   transform: translateY(-2px);
 }
 
@@ -317,7 +317,7 @@
 .donation-amount {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #f5576c;
+  color: #4f46e5;
 }
 
 .donation-date {
@@ -326,7 +326,7 @@
 }
 
 .donation-arrow {
-  color: #f5576c;
+  color: #4f46e5;
   font-weight: bold;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -378,7 +378,7 @@
 }
 
 .notification-count {
-  background: #f5576c;
+  background: #4f46e5;
   color: white;
   padding: 0.35rem 0.7rem;
   border-radius: 20px;
@@ -397,16 +397,17 @@
 .notification-item {
   display: flex;
   gap: 1rem;
-  padding: 1rem;
-  background: #f9fafb;
+  padding: 0.9rem 1rem;
+  background: #f8faff;
   border-radius: 10px;
-  border-left: 3px solid #f5576c;
+  border: 1px solid #dbeafe;
+  border-left: 3px solid #4f46e5;
 }
 
 .notification-dot {
   width: 12px;
   height: 12px;
-  background: #f5576c;
+  background: #4f46e5;
   border-radius: 50%;
   min-width: 12px;
   margin-top: 2px;
@@ -414,14 +415,14 @@
 
 .notification-message {
   margin: 0 0 0.3rem 0;
-  color: #1a1a1a;
+  color: #0f172a;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .notification-time {
   margin: 0;
-  color: #999;
+  color: #475569;
   font-size: 0.875rem;
 }
 
@@ -466,13 +467,13 @@
 
 .date-input-group input:focus {
   outline: none;
-  border-color: #f5576c;
-  box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 .btn-download {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #f093fb, #f5576c);
+  background: linear-gradient(135deg, #4f46e5, #2563eb);
   color: white;
   border: none;
   border-radius: 8px;
@@ -484,7 +485,7 @@
 
 .btn-download:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(245, 87, 108, 0.4);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
 }
 
 /* ===== Loading State ===== */

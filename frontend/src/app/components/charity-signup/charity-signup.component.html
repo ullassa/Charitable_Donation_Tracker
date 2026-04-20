@@ -56,11 +56,15 @@
               formControlName="email"
               placeholder="contact@charity.com"
               class="form-control"
+              (blur)="checkEmailExists()"
               [class.is-invalid]="submitted && email?.invalid"
             >
             <div *ngIf="submitted && email?.invalid" class="error-message">
               <span *ngIf="email?.errors?.['required']">Email is required</span>
               <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+            </div>
+            <div *ngIf="emailExistsError" class="error-message">
+              {{ emailExistsError }}
             </div>
           </div>
 
@@ -204,9 +208,9 @@
                 {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
               </button>
             </div>
-            <div *ngIf="submitted && (confirmPassword?.invalid || !passwordsMatch())" class="error-message">
-              <span *ngIf="confirmPassword?.errors?.['required']">Confirm password is required</span>
-              <span *ngIf="!passwordsMatch()">Passwords do not match</span>
+            <div *ngIf="(submitted && confirmPassword?.invalid) || showPasswordMismatch" class="error-message">
+              <span *ngIf="submitted && confirmPassword?.errors?.['required']">Confirm password is required</span>
+              <span *ngIf="showPasswordMismatch">password does not match</span>
             </div>
           </div>
         </div>
@@ -309,16 +313,12 @@
               [class.is-invalid]="submitted && charityType?.invalid"
             >
               <option value="">Select charity type</option>
-              <option value="medical">Medical & Health</option>
-              <option value="education">Education</option>
-              <option value="food">Food & Hunger</option>
-              <option value="environment">Environmental</option>
-              <option value="disaster">Disaster Relief</option>
-              <option value="other">Other</option>
+              <option *ngFor="let option of charityTypeOptions" [value]="option.value">{{ option.label }}</option>
             </select>
             <div *ngIf="submitted && charityType?.invalid" class="error-message">
               <span *ngIf="charityType?.errors?.['required']">Please select a charity type</span>
             </div>
+            <small class="help-text">If your type is not listed, select General Charity and mention details in Focus Areas.</small>
           </div>
 
           <div class="form-group">
@@ -355,7 +355,7 @@
           <div class="form-group">
             <label>Websites</label>
             <div class="dynamic-list">
-              <div class="dynamic-row" *ngFor="let website of websiteLinks; let i = index">
+              <div class="dynamic-row" *ngFor="let website of websiteLinks; let i = index; trackBy: trackByIndex">
                 <input
                   type="url"
                   [(ngModel)]="websiteLinks[i]"
@@ -372,7 +372,7 @@
           <div class="form-group">
             <label>Charity Image URLs</label>
             <div class="dynamic-list">
-              <div class="dynamic-row" *ngFor="let imageUrl of charityImageUrls; let i = index">
+              <div class="dynamic-row" *ngFor="let imageUrl of charityImageUrls; let i = index; trackBy: trackByIndex">
                 <input
                   type="url"
                   [(ngModel)]="charityImageUrls[i]"
@@ -384,6 +384,7 @@
               </div>
             </div>
             <button type="button" class="btn btn-outline add-more-btn" (click)="addImageField()">+ Add New Image</button>
+            <button type="button" class="btn btn-outline add-more-btn" (click)="addMultipleImageFields(5)">+ Add 5 Image Fields</button>
           </div>
 
           <div class="form-group">
@@ -405,6 +406,16 @@
 
           <div class="approval-notice">
             <p><strong>⏳ Note:</strong> Your registration will be reviewed by our admin team within 3-5 business days.</p>
+          </div>
+
+          <div class="form-group terms-group">
+            <label class="terms-checkbox">
+              <input type="checkbox" formControlName="termsAccepted">
+              I agree to the <a routerLink="/terms">terms and conditions</a> and privacy policy before submitting this charity application.
+            </label>
+            <div *ngIf="submitted && termsAccepted?.invalid" class="error-message">
+              <span *ngIf="termsAccepted?.errors?.['required']">You must accept the terms to continue.</span>
+            </div>
           </div>
         </div>
 

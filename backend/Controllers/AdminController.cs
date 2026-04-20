@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ namespace CareFund.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly INotificationEmailService _notifications;
 
-    public AdminController(ApplicationDbContext context)
+    public AdminController(ApplicationDbContext context, INotificationEmailService notifications)
     {
         _context = context;
+        _notifications = notifications;
     }
 
     [HttpGet("dashboard")]
@@ -115,16 +118,13 @@ public class AdminController : ControllerBase
         entity.AdminComment = dto.AdminComment;
         entity.ReviewedAt = DateTime.UtcNow;
 
-        _context.Notifications.Add(new Notification
-        {
-            UserId = entity.UserId,
-            NotificationType = NotificationType.Email,
-            Message = action == "approve"
-                ? "Your charity registration has been approved by admin."
-                : "Your charity registration has been rejected by admin."
-        });
-
-        await _context.SaveChangesAsync();
+        await _notifications.NotifyUserAsync(
+            entity.User!,
+            action == "approve" ? "Charity application approved" : "Charity application rejected",
+            action == "approve"
+                ? $"Your charity registration for {entity.User?.UserName ?? "CareFund"} has been approved by admin. You can now continue using the platform as an approved charity."
+                : $"Your charity registration for {entity.User?.UserName ?? "CareFund"} has been rejected by admin. Comment: {dto.AdminComment ?? "No comment provided."}"
+        );
 
         return Ok(new { success = true, message = $"Charity request {action}d successfully." });
     }

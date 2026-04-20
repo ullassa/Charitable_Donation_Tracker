@@ -39,6 +39,11 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   showPaymentSection = false;
   selectedAmount = 0;
+  generatedAmount = 0;
+  generatorMinLimit = 100;
+  generatorMaxLimit = 2000;
+  generatedAmountMode = false;
+  readonly averageDonationByUsers = 500;
   selectedCharityImages: string[] = [];
 
   paymentMethod: 'upi' | 'card' | 'netbanking' | 'wallet' = 'upi';
@@ -57,6 +62,7 @@ export class DonateComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
   isLoggedIn = false;
+  currentRole = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -100,7 +106,7 @@ export class DonateComponent implements OnInit, OnDestroy {
   }
 
   private getAuthToken(): string | null {
-    return sessionStorage.getItem('token') || localStorage.getItem('token');
+    return sessionStorage.getItem('token');
   }
 
   ngOnDestroy(): void {
@@ -110,6 +116,11 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   private checkLoginStatus(): void {
     this.isLoggedIn = !!this.getAuthToken();
+    this.currentRole = (sessionStorage.getItem('role') || '').trim().toLowerCase();
+  }
+
+  get canDonate(): boolean {
+    return !this.isLoggedIn || this.currentRole === 'customer';
   }
 
   private loadCharities(): void {
@@ -217,6 +228,24 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   selectAmount(amount: number): void {
     this.selectedAmount = amount;
+    this.generatedAmountMode = false;
+    this.generatedAmount = 0;
+  }
+
+  generateDonationAmount(): void {
+    const min = Math.max(1, Number(this.generatorMinLimit) || 0);
+    const max = Math.max(1, Number(this.generatorMaxLimit) || 0);
+
+    if (min > max) {
+      this.paymentMessage = 'Minimum limit cannot be greater than maximum limit.';
+      return;
+    }
+
+    const generated = Math.floor(Math.random() * (max - min + 1)) + min;
+    this.generatedAmount = generated;
+    this.selectedAmount = generated;
+    this.generatedAmountMode = true;
+    this.paymentMessage = '';
   }
 
   startDonation(): void {
@@ -228,6 +257,11 @@ export class DonateComponent implements OnInit, OnDestroy {
 
     if (!this.selectedCharity) {
       this.paymentMessage = 'Please select a charity first.';
+      return;
+    }
+
+    if (!this.canDonate) {
+      this.paymentMessage = 'Charity accounts cannot make donations. Please login with a donor account.';
       return;
     }
 
@@ -270,6 +304,11 @@ export class DonateComponent implements OnInit, OnDestroy {
 
     if (!this.selectedCharity) {
       this.paymentMessage = 'Please choose a charity first.';
+      return;
+    }
+
+    if (!this.canDonate) {
+      this.paymentMessage = 'Charity accounts cannot make donations. Please login with a donor account.';
       return;
     }
 

@@ -178,6 +178,12 @@ select.form-control {
   margin-top: 0.25rem;
 }
 
+.help-text {
+  margin-top: 0.3rem;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
 /* OTP Group */
 .otp-group {
   gap: 0.75rem;

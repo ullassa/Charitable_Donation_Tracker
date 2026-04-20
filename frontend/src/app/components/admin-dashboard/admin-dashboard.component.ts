@@ -64,7 +64,10 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.api.reviewCharityRequest(id, action, this.commentDraft[id] ?? '').subscribe({
-      next: () => this.load(),
+      next: () => {
+        localStorage.setItem('cf:notify:refresh', Date.now().toString());
+        this.load();
+      },
       error: (err) => {
         this.error = err?.error?.message || `Failed to ${action} request.`;
       }

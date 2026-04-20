@@ -17,6 +17,9 @@
           <li *ngFor="let link of quickLinks">
             <a [routerLink]="link.path">{{ link.label }}</a>
           </li>
+          <li>
+            <button type="button" class="footer-link-button" (click)="openContact()">Contact Us</button>
+          </li>
         </ul>
       </div>
 
@@ -61,3 +64,29 @@
     </div>
   </div>
 </footer>
+
+<div class="contact-overlay" *ngIf="contactOpen" (click)="closeContact()"></div>
+<section class="contact-modal" *ngIf="contactOpen" aria-modal="true" role="dialog">
+  <header class="contact-modal-head">
+    <h3>Contact Us</h3>
+    <button type="button" class="icon-button" (click)="closeContact()">✕</button>
+  </header>
+
+  <p class="contact-modal-copy">Share your email and reason for contact. We will review your message shortly.</p>
+
+  <div class="contact-success" *ngIf="contactSubmitted">Thank you for contacting us</div>
+
+  <form class="contact-form" (ngSubmit)="submitContact()" *ngIf="!contactSubmitted">
+    <label>
+      Email
+      <input type="email" [(ngModel)]="contactForm.email" name="contactEmail" placeholder="your@email.com">
+    </label>
+
+    <label>
+      Reason
+      <textarea [(ngModel)]="contactForm.reason" name="contactReason" rows="4" placeholder="Tell us how we can help"></textarea>
+    </label>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</section>

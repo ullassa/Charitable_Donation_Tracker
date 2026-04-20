@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ namespace CareFund.Controllers;
 public class ProfileController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly INotificationEmailService _notifications;
 
-    public ProfileController(ApplicationDbContext context)
+    public ProfileController(ApplicationDbContext context, INotificationEmailService notifications)
     {
         _context = context;
+        _notifications = notifications;
     }
 
     [HttpGet("me")]
@@ -133,6 +136,13 @@ public class ProfileController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        await _notifications.NotifyUserAsync(
+            user,
+            "Profile updated",
+            user.UserRole == UserRole.Admin
+                ? "Your admin profile has been updated successfully on CareFund."
+                : "Your customer profile has been updated successfully on CareFund.");
+
         return Ok(new
         {
             success = true,
@@ -199,14 +209,12 @@ public class ProfileController : ControllerBase
             });
         }
 
-        _context.Notifications.Add(new Notification
-        {
-            UserId = user.UserId,
-            NotificationType = NotificationType.Email,
-            Message = "Your charity profile update was submitted and is pending admin approval."
-        });
-
         await _context.SaveChangesAsync();
+
+        await _notifications.NotifyUserAsync(
+            user,
+            "Charity profile update submitted",
+            "Your charity profile update was submitted and is pending admin approval.");
 
         return Ok(new { success = true, message = "Charity profile update submitted for admin approval." });
     }

@@ -19,6 +19,13 @@ export class ProfileComponent implements OnInit {
   error = '';
   message = '';
   role = '';
+  isEditing = false;
+
+  private readonly storageListener = (event: StorageEvent): void => {
+    if (event.key === 'cf:profile:refresh' || event.key === 'cf:auth:changed') {
+      this.load();
+    }
+  };
 
   profile: any = {
     name: '',
@@ -40,6 +47,11 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    window.addEventListener('storage', this.storageListener);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('storage', this.storageListener);
   }
 
   load(): void {
@@ -67,6 +79,7 @@ export class ProfileComponent implements OnInit {
         };
 
         this.loading = false;
+        this.isEditing = false;
       },
       error: (err) => {
         this.loading = false;
@@ -102,6 +115,7 @@ export class ProfileComponent implements OnInit {
           this.saving = false;
           this.message = res?.message || 'Charity profile update submitted for approval.';
           sessionStorage.setItem('userName', this.profile.name || '');
+          localStorage.setItem('cf:profile:refresh', Date.now().toString());
           localStorage.setItem('cf:auth:changed', Date.now().toString());
           this.load();
         },
@@ -124,12 +138,24 @@ export class ProfileComponent implements OnInit {
         this.saving = false;
         this.message = res?.message || 'Profile updated successfully.';
         sessionStorage.setItem('userName', this.profile.name || '');
-        localStorage.setItem('cf:auth:changed', Date.now().toString());
+          localStorage.setItem('cf:profile:refresh', Date.now().toString());
+          localStorage.setItem('cf:auth:changed', Date.now().toString());
+          this.isEditing = false;
       },
       error: (err) => {
         this.saving = false;
         this.error = err?.error?.message || 'Unable to update profile.';
       }
     });
+  }
+
+  enableEdit(): void {
+    this.isEditing = true;
+    this.message = '';
+  }
+
+  cancelEdit(): void {
+    this.isEditing = false;
+    this.load();
   }
 }

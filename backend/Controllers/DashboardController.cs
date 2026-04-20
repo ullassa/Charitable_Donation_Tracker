@@ -20,6 +20,76 @@ public class DashboardController : ControllerBase
         _context = context;
     }
 
+    [HttpGet("customer/trend")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> GetCustomerTrend(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] string groupBy = "month")
+    {
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(userEmail))
+            return Unauthorized(new { success = false, message = "Invalid token claims." });
+
+        var user = await _context.Users.Include(u => u.Customer).FirstOrDefaultAsync(u => u.Email == userEmail);
+        if (user is null || user.Customer is null)
+            return NotFound(new { success = false, message = "Customer profile not found." });
+
+        var normalizedGroupBy = (groupBy ?? "month").Trim().ToLowerInvariant();
+        var start = from ?? DateTime.UtcNow.AddMonths(-6);
+        var end = to ?? DateTime.UtcNow;
+
+        var donations = await _context.Donations
+            .AsNoTracking()
+            .Where(d => d.CustomerId == user.Customer.CustomerId && d.DonationDate >= start && d.DonationDate <= end)
+            .OrderBy(d => d.DonationDate)
+            .ToListAsync();
+
+        var grouped = normalizedGroupBy switch
+        {
+            "day" => donations
+                .GroupBy(d => d.DonationDate.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = g.Key.ToString("yyyy-MM-dd"),
+                    amount = g.Sum(x => x.Amount)
+                }),
+            "week" => donations
+                .GroupBy(d => StartOfWeek(d.DonationDate))
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = $"{g.Key:yyyy-MM-dd}",
+                    amount = g.Sum(x => x.Amount)
+                }),
+            "year" => donations
+                .GroupBy(d => d.DonationDate.Year)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = g.Key.ToString(),
+                    amount = g.Sum(x => x.Amount)
+                }),
+            _ => donations
+                .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new
+                {
+                    label = $"{g.Key.Year}-{g.Key.Month:00}",
+                    amount = g.Sum(x => x.Amount)
+                })
+        };
+
+        return Ok(new
+        {
+            success = true,
+            groupBy = normalizedGroupBy,
+            period = new { from = start, to = end },
+            items = grouped
+        });
+    }
+
     [HttpGet("customer")]
     [Authorize(Roles = "Customer")]
     public async Task<IActionResult> GetCustomerDashboard([FromQuery] DateTime? from, [FromQuery] DateTime? to)
@@ -364,5 +434,12 @@ public class DashboardController : ControllerBase
         }
 
         return value;
+    }
+
+    private static DateTime StartOfWeek(DateTime value)
+    {
+        var date = value.Date;
+        var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
+        return date.AddDays(-diff);
     }
 }
