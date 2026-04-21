@@ -61,7 +61,6 @@ export class CharitySignupComponent implements OnInit {
   selectedTaxExemptCertificateName = 'No file chosen';
   selectedTaxExemptCertificateFile: File | null = null;
   websiteLinks: string[] = [''];
-  charityImageUrls: string[] = [''];
 
   constructor(private fb: FormBuilder, private api: ApiService, private router: Router) {}
 
@@ -91,6 +90,10 @@ export class CharitySignupComponent implements OnInit {
       country: [''],
       
       // Step 5: Charity Details (for admin approval)
+      addressLine: [''],
+      pincode: [''],
+      managerName: [''],
+      managerPhone: [''],
       charityRegistrationNumber: ['', [Validators.required]],
       charityType: ['', [Validators.required]],
       focusAreas: ['', [Validators.required]],
@@ -413,26 +416,6 @@ export class CharitySignupComponent implements OnInit {
     this.websiteLinks.splice(index, 1);
   }
 
-  addImageField(): void {
-    this.charityImageUrls.push('');
-  }
-
-  addMultipleImageFields(count: number): void {
-    const safeCount = Math.max(1, Math.min(10, count));
-    for (let i = 0; i < safeCount; i++) {
-      this.charityImageUrls.push('');
-    }
-  }
-
-  removeImageField(index: number): void {
-    if (this.charityImageUrls.length === 1) {
-      this.charityImageUrls[0] = '';
-      return;
-    }
-
-    this.charityImageUrls.splice(index, 1);
-  }
-
   private startEmailCooldown(): void {
     this.emailResendCooldown = 30;
     if (this.emailResendTimer) {
@@ -503,9 +486,14 @@ export class CharitySignupComponent implements OnInit {
         registrationId: this.signupForm.get('charityRegistrationNumber')?.value ?? '',
         causeType: this.signupForm.get('charityType')?.value ?? '',
         city: this.signupForm.get('city')?.value ?? '',
+        state: this.signupForm.get('state')?.value ?? '',
+        country: this.signupForm.get('country')?.value ?? '',
+        addressLine: this.signupForm.get('addressLine')?.value ?? '',
+        pincode: this.signupForm.get('pincode')?.value ?? '',
+        managerName: this.signupForm.get('managerName')?.value ?? charityName,
+        managerPhone: this.signupForm.get('managerPhone')?.value ?? phone,
         socialMediaLink: this.websiteLinks.find(link => !!(link || '').trim()) ?? this.signupForm.get('website')?.value ?? '',
         websiteLinks: this.websiteLinks.map(link => (link || '').trim()).filter(link => link.length > 0),
-        imageUrls: this.charityImageUrls.map(link => (link || '').trim()).filter(link => link.length > 0),
         mission: this.signupForm.get('focusAreas')?.value ?? '',
         about: this.signupForm.get('description')?.value ?? '',
         activities: this.signupForm.get('focusAreas')?.value ?? ''
@@ -547,6 +535,10 @@ export class CharitySignupComponent implements OnInit {
   get city() { return this.signupForm.get('city'); }
   get state() { return this.signupForm.get('state'); }
   get country() { return this.signupForm.get('country'); }
+  get addressLine() { return this.signupForm.get('addressLine'); }
+  get pincode() { return this.signupForm.get('pincode'); }
+  get managerName() { return this.signupForm.get('managerName'); }
+  get managerPhone() { return this.signupForm.get('managerPhone'); }
   get charityRegistrationNumber() { return this.signupForm.get('charityRegistrationNumber'); }
   get charityType() { return this.signupForm.get('charityType'); }
   get focusAreas() { return this.signupForm.get('focusAreas'); }
@@ -562,6 +554,10 @@ export class CharitySignupComponent implements OnInit {
       `City: ${this.signupForm.get('city')?.value ?? ''}`,
       `State: ${this.signupForm.get('state')?.value ?? ''}`,
       `Country: ${this.signupForm.get('country')?.value ?? ''}`,
+      `Address: ${this.signupForm.get('addressLine')?.value ?? ''}`,
+      `Pincode: ${this.signupForm.get('pincode')?.value ?? ''}`,
+      `Manager: ${this.signupForm.get('managerName')?.value ?? this.signupForm.get('organizationName')?.value ?? ''}`,
+      `Manager phone: ${this.signupForm.get('managerPhone')?.value ?? this.normalizePhone(this.signupForm.get('phone')?.value ?? '')}`,
       `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
       `Focus areas: ${this.signupForm.get('focusAreas')?.value ?? ''}`,
       `Registration number: ${this.signupForm.get('charityRegistrationNumber')?.value ?? ''}`

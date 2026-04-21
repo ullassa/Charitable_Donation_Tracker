@@ -73,6 +73,8 @@ public class ProfileController : ControllerBase
                 charity.Activities,
                 charity.AddressLine,
                 charity.City,
+                charity.IndianState,
+                charity.Pincode,
                 charity.ManagerName,
                 charity.ManagerPhone,
                 charity.SocialMediaLink,

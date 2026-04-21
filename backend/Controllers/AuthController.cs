@@ -186,11 +186,21 @@ public class AuthController : ControllerBase
                 websiteLinks = websiteLinks.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             }
 
+            var resolvedAddress = !string.IsNullOrWhiteSpace(dto.AddressLine)
+                ? dto.AddressLine.Trim()
+                : string.Join(", ", new[] { dto.City, dto.State, dto.Country }.Where(part => !string.IsNullOrWhiteSpace(part)));
+
             var user = _authService.RegisterCharity(charityName, email, dto.Password,
                 phone, _otpService,
                 dto.RegistrationId,
                 parsedCause,
                 dto.City,
+                dto.State,
+                dto.Country,
+                resolvedAddress,
+                dto.Pincode,
+                dto.ManagerName,
+                dto.ManagerPhone,
                 websiteLinks.Count > 0 ? string.Join(", ", websiteLinks) : null,
                 dto.Mission,
                 dto.About,
@@ -198,32 +208,6 @@ public class AuthController : ControllerBase
 
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
-
-            var imageUrls = (dto.ImageUrls ?? new List<string>())
-                .Where(url => !string.IsNullOrWhiteSpace(url))
-                .Select(url => url.Trim())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Take(25)
-                .ToList();
-
-            if (imageUrls.Count > 0)
-            {
-                var charity = _context.Charities.FirstOrDefault(c => c.UserId == user.UserId);
-                if (charity != null)
-                {
-                    foreach (var imageUrl in imageUrls)
-                    {
-                        _context.CharityImage.Add(new CharityImage
-                        {
-                            CharityRegistrationId = charity.CharityRegistrationId,
-                            ImageUrl = imageUrl,
-                    
-                         
-                            CreatedAt = DateTime.UtcNow
-                        });
-                    }
-                }
-            }
 
             await _notifications.NotifyUserAsync(
                 user,
@@ -341,7 +325,17 @@ public class AuthController : ControllerBase
                     description = c.About,
                     cause = c.CauseType.ToString(),
                     location = c.City,
+                    registrationId = c.RegistrationId,
+                    mission = c.Mission,
+                    about = c.About,
+                    activities = c.Activities,
+                    addressLine = c.AddressLine,
+                    managerName = c.ManagerName,
                     phoneNumber = c.ManagerPhone,
+                    managerPhone = c.ManagerPhone,
+                    pincode = c.Pincode,
+                    state = c.IndianState.ToString(),
+                    icon = c.CauseType.ToString(),
                     email = c.User != null ? c.User.Email : string.Empty,
                     status = c.Status.ToString(),
                     isActive = c.IsActive

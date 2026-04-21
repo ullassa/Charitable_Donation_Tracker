@@ -162,6 +162,19 @@ section {
   line-height: 1.7;
 }
 
+.hero-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 0.7rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .meta-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -297,11 +310,22 @@ section {
   min-height: 220px;
 }
 
-.gallery-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+.icon-grid {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.icon-card {
+  display: grid;
+  place-items: center;
+  gap: 0.65rem;
+  text-align: center;
+  padding: 1.1rem;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+}
+
+.icon {
+  font-size: 2.1rem;
 }
 
 .amount-grid {

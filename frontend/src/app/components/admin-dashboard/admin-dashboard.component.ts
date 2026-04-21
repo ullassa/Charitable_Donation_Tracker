@@ -16,6 +16,7 @@ export class AdminDashboardComponent implements OnInit {
   loading = false;
   error = '';
   commentDraft: Record<number, string> = {};
+  expandedRequestId: number | null = null;
 
   statusFilter = '';
   stats: any = { pending: 0, approved: 0, rejected: 0, totalCustomers: 0, totalCharities: 0, totalDonation: 0 };
@@ -49,11 +50,22 @@ export class AdminDashboardComponent implements OnInit {
     this.api.getAdminCharityRequests(this.statusFilter || undefined).subscribe({
       next: (res: any) => {
         this.requests = res?.items ?? [];
+        if (this.expandedRequestId !== null && !this.requests.some(item => item.charityRegistrationId === this.expandedRequestId)) {
+          this.expandedRequestId = null;
+        }
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to load charity requests.';
       }
     });
+  }
+
+  toggleDetails(id: number): void {
+    this.expandedRequestId = this.expandedRequestId === id ? null : id;
+  }
+
+  isDetailsOpen(id: number): boolean {
+    return this.expandedRequestId === id;
   }
 
   review(id: number, action: 'approve' | 'reject'): void {
@@ -87,5 +99,19 @@ export class AdminDashboardComponent implements OnInit {
   get approvalStyle(): string {
     const pct = Math.max(0, Math.min(100, this.approvalPercent));
     return `conic-gradient(#16a34a 0 ${pct}%, #ef4444 ${pct}% 100%)`;
+  }
+
+  getCharityIcon(cause: string | undefined | null): string {
+    const normalized = (cause || '').toLowerCase();
+    if (normalized.includes('education')) return '📚';
+    if (normalized.includes('health')) return '🩺';
+    if (normalized.includes('child')) return '🧒';
+    if (normalized.includes('women')) return '♀️';
+    if (normalized.includes('animal')) return '🐾';
+    if (normalized.includes('food')) return '🍱';
+    if (normalized.includes('environment')) return '🌱';
+    if (normalized.includes('disaster')) return '🚨';
+    if (normalized.includes('elder')) return '🤝';
+    return '🤝';
   }
 }

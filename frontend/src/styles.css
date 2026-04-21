@@ -113,6 +113,31 @@ html {
   padding: 0 1rem;
 }
 
+/* Shared Dashboard Design System */
+.dashboard-page {
+  padding: 1.25rem 1rem 2rem;
+  min-height: 100vh;
+}
+
+.dashboard-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-shell.ds-theme-admin {
+  --ds-accent: #3b82f6;
+}
+
+.dashboard-shell.ds-theme-customer {
+  --ds-accent: #6366f1;
+}
+
+.dashboard-shell.ds-theme-charity {
+  --ds-accent: #0ea5e9;
+}
+
 /* Glass Card Component */
 .glass-card {
   background: var(--glass-bg);

@@ -45,6 +45,7 @@
     <section class="charity-hero glass-card" *ngIf="selectedCharity">
       <div class="hero-copy">
         <span class="eyebrow">Charity details</span>
+        <div class="hero-icon">{{ getCharityIcon(selectedCharity.cause) }}</div>
         <h2>{{ selectedCharity.name }}</h2>
         <p>{{ selectedCharity.description || 'This charity is ready to receive your support.' }}</p>
 
@@ -65,6 +66,22 @@
             <span class="meta-label">Phone</span>
             <strong>{{ selectedCharity.phoneNumber || 'Not set' }}</strong>
           </div>
+          <div>
+            <span class="meta-label">Registration ID</span>
+            <strong>{{ selectedCharity.registrationId || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">Manager</span>
+            <strong>{{ selectedCharity.managerName || selectedCharity.name || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">Address</span>
+            <strong>{{ selectedCharity.addressLine || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">State / Pincode</span>
+            <strong>{{ (selectedCharity.state || 'NA') + ' / ' + (selectedCharity.pincode || 'NA') }}</strong>
+          </div>
         </div>
       </div>
 
@@ -76,15 +93,28 @@
       </div>
     </section>
 
-    <section class="gallery-section glass-card" *ngIf="selectedCharity && selectedCharityImages.length > 0">
+    <section class="gallery-section glass-card" *ngIf="selectedCharity">
       <div class="section-head">
-        <h2>Charity gallery</h2>
-        <p>Swipe through a few images before you donate.</p>
+        <h2>Charity highlights</h2>
+        <p>Icon-based summary instead of image previews.</p>
       </div>
 
-      <div class="gallery-scroll">
-        <article class="gallery-card glass-panel" *ngFor="let image of selectedCharityImages">
-          <img [src]="image" [alt]="selectedCharity.name || 'Charity image'">
+      <div class="gallery-scroll icon-grid">
+        <article class="gallery-card glass-panel icon-card">
+          <span class="icon">{{ getCharityIcon(selectedCharity.cause) }}</span>
+          <strong>{{ selectedCharity.cause || 'General Charity' }}</strong>
+        </article>
+        <article class="gallery-card glass-panel icon-card">
+          <span class="icon">📍</span>
+          <strong>{{ selectedCharity.location || 'Location not set' }}</strong>
+        </article>
+        <article class="gallery-card glass-panel icon-card">
+          <span class="icon">✉️</span>
+          <strong>{{ selectedCharity.email || 'Email not set' }}</strong>
+        </article>
+        <article class="gallery-card glass-panel icon-card">
+          <span class="icon">📞</span>
+          <strong>{{ selectedCharity.phoneNumber || 'Phone not set' }}</strong>
         </article>
       </div>
     </section>

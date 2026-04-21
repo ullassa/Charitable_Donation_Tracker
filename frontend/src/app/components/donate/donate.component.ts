@@ -14,6 +14,15 @@ interface PublicCharity {
   description: string;
   cause: string;
   location: string;
+  registrationId: string;
+  mission: string;
+  about: string;
+  activities: string;
+  addressLine: string;
+  managerName: string;
+  managerPhone: string;
+  pincode: string;
+  state: string;
   email: string;
   phoneNumber: string;
   isActive: boolean;
@@ -44,7 +53,6 @@ export class DonateComponent implements OnInit, OnDestroy {
   generatorMaxLimit = 2000;
   generatedAmountMode = false;
   readonly averageDonationByUsers = 500;
-  selectedCharityImages: string[] = [];
 
   paymentMethod: 'upi' | 'card' | 'netbanking' | 'wallet' = 'upi';
   paymentProcessing = false;
@@ -85,6 +93,15 @@ export class DonateComponent implements OnInit, OnDestroy {
           description: params['description'] || '',
           cause: params['cause'] || '',
           location: params['location'] || '',
+          registrationId: params['registrationId'] || '',
+          mission: params['mission'] || '',
+          about: params['about'] || '',
+          activities: params['activities'] || '',
+          addressLine: params['addressLine'] || '',
+          managerName: params['managerName'] || '',
+          managerPhone: params['managerPhone'] || params['phone'] || '',
+          pincode: params['pincode'] || '',
+          state: params['state'] || '',
           email: params['email'] || '',
           phoneNumber: params['phone'] || '',
           isActive: true,
@@ -190,6 +207,15 @@ export class DonateComponent implements OnInit, OnDestroy {
       description: item.description ?? '',
       cause: item.cause ?? '',
       location: item.location ?? '',
+      registrationId: item.registrationId ?? '',
+      mission: item.mission ?? '',
+      about: item.about ?? '',
+      activities: item.activities ?? '',
+      addressLine: item.addressLine ?? '',
+      managerName: item.managerName ?? '',
+      managerPhone: item.managerPhone ?? item.phoneNumber ?? item.phone ?? '',
+      pincode: item.pincode ?? '',
+      state: item.state ?? '',
       email: item.email ?? '',
       phoneNumber: item.phoneNumber ?? item.phone ?? '',
       isActive: item.isActive ?? true,
@@ -212,16 +238,22 @@ export class DonateComponent implements OnInit, OnDestroy {
     }
   }
 
-  private buildCharityImages(seedId: number, name: string): string[] {
-    const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    return Array.from({ length: 5 }, (_, index) =>
-      `https://picsum.photos/seed/${safeName}-${seedId}-${index + 1}/900/600`
-    );
+  getCharityIcon(cause: string | undefined | null): string {
+    const normalized = (cause || '').toLowerCase();
+    if (normalized.includes('education')) return '📚';
+    if (normalized.includes('health')) return '🩺';
+    if (normalized.includes('child')) return '🧒';
+    if (normalized.includes('women')) return '♀️';
+    if (normalized.includes('animal')) return '🐾';
+    if (normalized.includes('food')) return '🍱';
+    if (normalized.includes('environment')) return '🌱';
+    if (normalized.includes('disaster')) return '🚨';
+    if (normalized.includes('elder')) return '🤝';
+    return '🤝';
   }
 
   openCharityDetails(charity: PublicCharity): void {
     this.selectedCharity = charity;
-    this.selectedCharityImages = this.buildCharityImages(charity.id, charity.name || 'charity');
     this.showPaymentSection = false;
     this.paymentMessage = '';
   }
