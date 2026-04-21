@@ -82,6 +82,12 @@ namespace CareFund.Services.Auth
             string? registrationId = null,
             CauseType causeType = CauseType.GeneralCharity,
             string? city = null,
+            string? state = null,
+            string? country = null,
+            string? addressLine = null,
+            string? pincode = null,
+            string? managerName = null,
+            string? managerPhone = null,
             string? socialMediaLink = null,
             string? mission = null,
             string? about = null,
@@ -117,6 +123,16 @@ namespace CareFund.Services.Auth
                 return null;
             }
 
+            var parsedState = IndianState.TamilNadu;
+            if (!string.IsNullOrWhiteSpace(state) && Enum.TryParse<IndianState>(state.Replace(" ", string.Empty), true, out var stateValue))
+            {
+                parsedState = stateValue;
+            }
+
+            var resolvedAddress = string.IsNullOrWhiteSpace(addressLine)
+                ? string.Join(", ", new[] { city, state, country }.Where(part => !string.IsNullOrWhiteSpace(part)))
+                : addressLine.Trim();
+
             // Create user
             var user = new User
             {
@@ -146,12 +162,12 @@ namespace CareFund.Services.Auth
                 About = string.IsNullOrWhiteSpace(about) ? "This organization has submitted details and awaits admin review." : about,
                 Activities = string.IsNullOrWhiteSpace(activities) ? "Activity information will be updated by the organization after onboarding." : activities,
                 CauseType = causeType,
-                AddressLine = "Address details pending",
+                AddressLine = string.IsNullOrWhiteSpace(resolvedAddress) ? "Address details pending" : resolvedAddress,
                 City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
-                IndianState = IndianState.TamilNadu,
-                Pincode = "600001",
-                ManagerName = charityName,
-                ManagerPhone = phoneNumber,
+                IndianState = parsedState,
+                Pincode = string.IsNullOrWhiteSpace(pincode) ? "600001" : pincode.Trim(),
+                ManagerName = string.IsNullOrWhiteSpace(managerName) ? charityName : managerName.Trim(),
+                ManagerPhone = string.IsNullOrWhiteSpace(managerPhone) ? phoneNumber : managerPhone.Trim(),
                 SocialMediaLink = string.IsNullOrWhiteSpace(socialMediaLink) ? "https://carefund.example/charity" : socialMediaLink,
                 Status = CharityStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,

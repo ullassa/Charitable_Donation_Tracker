@@ -42,7 +42,17 @@ namespace CareFund.Controllers
                     PhoneNumber = c.ManagerPhone,
                     Email = c.User != null ? c.User.Email : string.Empty,
                     Status = c.Status.ToString(),
-                    IsActive = c.IsActive
+                    IsActive = c.IsActive,
+                    RegistrationId = c.RegistrationId,
+                    Mission = c.Mission,
+                    About = c.About,
+                    Activities = c.Activities,
+                    AddressLine = c.AddressLine,
+                    ManagerName = c.ManagerName,
+                    ManagerPhone = c.ManagerPhone,
+                    Pincode = c.Pincode,
+                    State = c.IndianState.ToString(),
+                    Icon = c.CauseType.ToString()
                 })
                 .ToListAsync();
 

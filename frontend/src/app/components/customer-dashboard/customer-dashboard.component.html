@@ -1,105 +1,96 @@
 <app-header></app-header>
 
-<section class="dashboard-wrap">
-  <header class="page-head card">
-    <div>
-      <h1>Donor Dashboard</h1>
-      <p class="muted">View your contribution insights and latest updates in one place.</p>
-    </div>
-    <div class="head-actions">
-      <button class="btn btn-ghost" type="button" (click)="load()" [disabled]="loading">Refresh</button>
-      <button class="btn btn-primary" type="button" (click)="downloadReport()">Download {{ reportFormat.toUpperCase() }}</button>
-      <select [(ngModel)]="reportFormat" aria-label="Report Format">
-        <option value="csv">CSV</option>
-        <option value="pdf">PDF</option>
-      </select>
-    </div>
-  </header>
-
-  <p class="error" *ngIf="error">{{ error }}</p>
-
-  <div class="stats-grid">
-    <article class="stat card">
-      <h3>Total Donations</h3>
-      <p>₹{{ stats.totalDonations | number:'1.0-0' }}</p>
-    </article>
-    <article class="stat card">
-      <h3>Donations Count</h3>
-      <p>{{ stats.donationsCount }}</p>
-    </article>
-  </div>
-
-  <section class="card trend-card">
-    <div class="trend-head">
-      <h2>Donation Trend</h2>
-      <div class="trend-controls">
-        <label>
-          <span>Group</span>
-          <select [(ngModel)]="trendGroupBy" (change)="onTrendGroupChanged()">
-            <option value="day">Day</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
-          </select>
-        </label>
-        <label>
-          <span>From</span>
-          <input type="date" [(ngModel)]="fromDate" />
-        </label>
-        <label>
-          <span>To</span>
-          <input type="date" [(ngModel)]="toDate" />
-        </label>
-        <button class="btn btn-primary" type="button" (click)="applyDateFilter()">Apply</button>
+<main class="dashboard-page">
+  <section class="dashboard-shell customer-v2 ds-theme-customer">
+    <header class="hero-panel">
+      <div>
+        <h1>Donor Dashboard</h1>
+        <p>Track your giving, watch donation patterns, and manage reports.</p>
       </div>
-    </div>
-    <p class="muted trend-note" *ngIf="trend.length">Bar chart shows {{ trendGroupBy }}-wise donation totals for selected range.</p>
+      <div class="hero-actions">
+        <button class="btn btn-ghost" type="button" (click)="load()" [disabled]="loading">Refresh</button>
+        <select [(ngModel)]="reportFormat" aria-label="Report Format">
+          <option value="csv">CSV</option>
+          <option value="pdf">PDF</option>
+        </select>
+        <button class="btn btn-primary" type="button" (click)="downloadReport()">Download {{ reportFormat.toUpperCase() }}</button>
+      </div>
+    </header>
 
-    <div *ngIf="trend.length; else noTrend" class="bar-chart">
-      <div class="bar-columns">
-        <div class="bar-col" *ngFor="let item of trend; trackBy: itemTrackBy">
-          <div class="bar-track">
-            <div class="bar-fill" [style.height]="barHeight(item.amount)"></div>
-          </div>
-          <span class="value">₹{{ item.amount | number:'1.0-0' }}</span>
-          <span class="label">{{ item.label }}</span>
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <section class="quick-stats">
+      <article class="quick-card">
+        <span>Total Donations</span>
+        <h3>₹{{ stats.totalDonations | number:'1.0-0' }}</h3>
+      </article>
+      <article class="quick-card">
+        <span>Contributions</span>
+        <h3>{{ stats.donationsCount }}</h3>
+      </article>
+      <article class="quick-card">
+        <span>Average Donation</span>
+        <h3>₹{{ (stats.donationsCount ? stats.totalDonations / stats.donationsCount : 0) | number:'1.0-0' }}</h3>
+      </article>
+    </section>
+
+    <section class="trend-surface">
+      <div class="trend-top">
+        <h2>Donation Trend</h2>
+        <div class="trend-controls">
+          <label>
+            <span>Group</span>
+            <select [(ngModel)]="trendGroupBy" (change)="onTrendGroupChanged()">
+              <option value="day">Day</option>
+              <option value="week">Week</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </select>
+          </label>
+          <label>
+            <span>From</span>
+            <input type="date" [(ngModel)]="fromDate" />
+          </label>
+          <label>
+            <span>To</span>
+            <input type="date" [(ngModel)]="toDate" />
+          </label>
+          <button class="btn btn-primary" type="button" (click)="applyDateFilter()">Apply</button>
         </div>
       </div>
+
+      <p class="trend-note" *ngIf="trend.length">Color bars show {{ trendGroupBy }}-wise donation totals for selected dates.</p>
+
+      <div *ngIf="trend.length; else noTrend" class="bar-chart">
+        <div class="bar-columns">
+          <div class="bar-col" *ngFor="let item of trend; let i = index; trackBy: itemTrackBy">
+            <div class="bar-track">
+              <div class="bar-fill" [style.height]="barHeight(item.amount)" [style.background]="barColor(i)"></div>
+            </div>
+            <span class="value">₹{{ item.amount | number:'1.0-0' }}</span>
+            <span class="label">{{ item.label }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #noTrend><p class="empty-copy">No trend data available for selected range.</p></ng-template>
+    </section>
+
+    <div class="split-panels single">
+      <section class="panel">
+        <div class="panel-head"><h2>Recent Donations</h2></div>
+        <ul *ngIf="recent.length; else noRecent">
+          <li *ngFor="let d of recent">
+            <div>
+              <p class="title">{{ d.charityName }}</p>
+              <p class="meta">{{ d.donationDate | date:'mediumDate' }}</p>
+            </div>
+            <strong>₹{{ d.amount | number:'1.0-0' }}</strong>
+          </li>
+        </ul>
+        <ng-template #noRecent><p class="empty-copy">No recent donations.</p></ng-template>
+      </section>
     </div>
-    <ng-template #noTrend>
-      <p class="muted">No trend data available for selected range.</p>
-    </ng-template>
   </section>
-
-  <div class="grid-2">
-    <section class="card list-card">
-      <h2>Recent Donations</h2>
-      <ul *ngIf="recent.length; else noRecent">
-        <li *ngFor="let d of recent">
-          <div>
-            <p class="title">{{ d.charityName }}</p>
-            <p class="muted">{{ d.donationDate | date:'mediumDate' }}</p>
-          </div>
-          <strong>₹{{ d.amount | number:'1.0-0' }}</strong>
-        </li>
-      </ul>
-      <ng-template #noRecent><p class="muted">No recent donations.</p></ng-template>
-    </section>
-
-    <section class="card list-card">
-      <h2>Notifications</h2>
-      <ul *ngIf="notifications.length; else noNotif">
-        <li *ngFor="let n of notifications; trackBy: notificationTrackBy">
-          <div>
-            <p class="title">{{ n.message || n.type || 'Notification' }}</p>
-            <p class="muted">{{ n.sentAt | date:'medium' }}</p>
-          </div>
-          <span class="chip">{{ n.type || 'General' }}</span>
-        </li>
-      </ul>
-      <ng-template #noNotif><p class="muted">No notifications.</p></ng-template>
-    </section>
-  </div>
-</section>
+</main>
 
 <app-footer></app-footer>

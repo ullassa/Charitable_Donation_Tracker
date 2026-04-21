@@ -32,19 +32,9 @@
       </div>
       <div class="hero-visual">
         <div class="hero-badge">❤️ Trusted giving. Saving lives.</div>
-        <img
-          class="hero-image-square"
-          [src]="heroMainImageSrc"
-          (error)="onHeroMainImageError()"
-          alt="CareFund hero image"
-        >
+        <div class="hero-image-square icon-visual">🤝</div>
         <div class="hero-illustration">
-          <img
-            class="hero-logo-image"
-            [src]="heroLogoImageSrc"
-            (error)="onHeroLogoImageError()"
-            alt="CareFund logo"
-          >
+          <div class="hero-logo-image icon-visual">❤️</div>
         </div>
       </div>
     </div>
@@ -115,6 +105,15 @@
                 description: charity.description,
                 cause: charity.cause,
                 location: charity.location,
+                registrationId: charity.registrationId,
+                mission: charity.mission,
+                about: charity.about,
+                activities: charity.activities,
+                addressLine: charity.addressLine,
+                managerName: charity.managerName,
+                managerPhone: charity.managerPhone,
+                pincode: charity.pincode,
+                state: charity.state,
                 email: charity.email,
                 phone: charity.phoneNumber
               }"

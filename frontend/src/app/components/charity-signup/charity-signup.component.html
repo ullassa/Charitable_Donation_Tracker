@@ -277,6 +277,50 @@
               <span *ngIf="country?.errors?.['required']">Country is required</span>
             </div>
           </div>
+
+          <div class="form-group">
+            <label for="addressLine">Address Line</label>
+            <input
+              type="text"
+              id="addressLine"
+              formControlName="addressLine"
+              placeholder="Street, area, landmark"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input
+              type="text"
+              id="pincode"
+              formControlName="pincode"
+              placeholder="6-digit pincode"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="managerName">Manager Name</label>
+            <input
+              type="text"
+              id="managerName"
+              formControlName="managerName"
+              placeholder="Manager full name"
+              class="form-control"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="managerPhone">Manager Phone</label>
+            <input
+              type="tel"
+              id="managerPhone"
+              formControlName="managerPhone"
+              placeholder="+919876543210"
+              class="form-control"
+            >
+          </div>
         </div>
 
         <!-- Step 5: Charity Details -->
@@ -367,24 +411,6 @@
               </div>
             </div>
             <button type="button" class="btn btn-outline add-more-btn" (click)="addWebsiteField()">+ Add New Website</button>
-          </div>
-
-          <div class="form-group">
-            <label>Charity Image URLs</label>
-            <div class="dynamic-list">
-              <div class="dynamic-row" *ngFor="let imageUrl of charityImageUrls; let i = index; trackBy: trackByIndex">
-                <input
-                  type="url"
-                  [(ngModel)]="charityImageUrls[i]"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="https://example.com/charity-image.jpg"
-                  class="form-control"
-                >
-                <button type="button" class="btn btn-outline dynamic-btn" (click)="removeImageField(i)">Remove</button>
-              </div>
-            </div>
-            <button type="button" class="btn btn-outline add-more-btn" (click)="addImageField()">+ Add New Image</button>
-            <button type="button" class="btn btn-outline add-more-btn" (click)="addMultipleImageFields(5)">+ Add 5 Image Fields</button>
           </div>
 
           <div class="form-group">

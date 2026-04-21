@@ -1,157 +1,120 @@
 <app-header></app-header>
 
 <main class="dashboard-page">
-  <section class="dashboard-shell" *ngIf="!loading; else loadingView">
-    
-    <!-- Header Section -->
+  <section class="dashboard-shell ds-theme-admin" *ngIf="!loading; else loadingView">
     <header class="dash-header">
-      <div class="header-content">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p class="subtitle">Manage charity registrations and monitor platform metrics</p>
-        </div>
-        <div class="filter-section">
-          <label for="status-filter">Filter by Status:</label>
-          <select id="status-filter" [(ngModel)]="statusFilter" (change)="fetchRequests()" class="filter-select">
-            <option value="">📋 All Requests</option>
-            <option value="Pending">⏳ Pending Review</option>
-            <option value="Approved">✅ Approved</option>
-            <option value="Rejected">❌ Rejected</option>
-          </select>
-        </div>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle">Professional table view for charity approval workflow</p>
+      </div>
+      <div class="filter-section">
+        <label for="status-filter">Status</label>
+        <select id="status-filter" [(ngModel)]="statusFilter" (change)="fetchRequests()" class="filter-select">
+          <option value="">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
       </div>
     </header>
 
-    <!-- Error Message -->
-    <p class="error-banner" *ngIf="error">⚠️ {{ error }}</p>
+    <p class="error-banner" *ngIf="error">{{ error }}</p>
 
-    <!-- KPI Cards Section -->
     <section class="kpi-section">
-      <h2 class="section-title">Platform Metrics</h2>
       <div class="kpi-grid">
-        <div class="kpi-card pending-card">
-          <div class="kpi-icon">⏳</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Pending Review</p>
-            <h3 class="kpi-value">{{ stats.pending }}</h3>
-            <p class="kpi-subtitle">Awaiting approval</p>
-          </div>
-        </div>
-
-        <div class="kpi-card approved-card">
-          <div class="kpi-icon">✅</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Approved</p>
-            <h3 class="kpi-value">{{ stats.approved }}</h3>
-            <p class="kpi-subtitle">Active charities</p>
-          </div>
-        </div>
-
-        <div class="kpi-card rejected-card">
-          <div class="kpi-icon">❌</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Rejected</p>
-            <h3 class="kpi-value">{{ stats.rejected }}</h3>
-            <p class="kpi-subtitle">Not approved</p>
-          </div>
-        </div>
-
-        <div class="kpi-card users-card">
-          <div class="kpi-icon">👥</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Total Users</p>
-            <h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3>
-            <p class="kpi-subtitle">{{ stats.totalCustomers }} customers · {{ stats.totalCharities }} charities</p>
-          </div>
-        </div>
-
-        <div class="kpi-card donation-card">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Total Donations</p>
-            <h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3>
-            <p class="kpi-subtitle">Platform revenue</p>
-          </div>
-        </div>
-
-        <div class="kpi-card ratio-card">
-          <div class="kpi-icon">📊</div>
-          <div class="kpi-content">
-            <p class="kpi-label">Approval Rate</p>
-            <h3 class="kpi-value">{{ approvalPercent }}%</h3>
-            <p class="kpi-subtitle">{{ totalReviewed }} of {{ totalReviewed }} reviewed</p>
-          </div>
-        </div>
+        <article class="kpi-card pending-card"><p class="kpi-label">Pending</p><h3 class="kpi-value">{{ stats.pending }}</h3></article>
+        <article class="kpi-card approved-card"><p class="kpi-label">Approved</p><h3 class="kpi-value">{{ stats.approved }}</h3></article>
+        <article class="kpi-card rejected-card"><p class="kpi-label">Rejected</p><h3 class="kpi-value">{{ stats.rejected }}</h3></article>
+        <article class="kpi-card neutral-card"><p class="kpi-label">Users</p><h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3></article>
+        <article class="kpi-card neutral-card"><p class="kpi-label">Donations</p><h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3></article>
+        <article class="kpi-card neutral-card"><p class="kpi-label">Approval %</p><h3 class="kpi-value">{{ approvalPercent }}%</h3></article>
       </div>
     </section>
 
-    <!-- Charity Requests Section -->
     <section class="requests-section">
-      <h2 class="section-title">Charity Registration Requests</h2>
-      
-      <div class="requests-container" *ngIf="requests.length > 0; else noRequests">
-        <div class="request-card" *ngFor="let item of requests">
-          <div class="request-header">
-            <div class="request-title">
-              <h3>{{ item.charityName }}</h3>
-              <span class="status-badge" [ngClass]="'status-' + item.status.toLowerCase()">
-                {{ item.status }}
-              </span>
-            </div>
-            <div class="request-meta">
-              <span class="meta-item">📂 {{ item.cause }}</span>
-              <span class="meta-item">📍 {{ item.city }}</span>
-              <span class="meta-item">📧 {{ item.email }}</span>
-            </div>
-          </div>
+      <div class="table-head">
+        <h2>Charity Registration Requests</h2>
+        <span>{{ requests.length }} rows</span>
+      </div>
 
-          <div class="request-details">
-            <p class="mission-text"><strong>Mission:</strong> {{ item.mission || 'Not provided' }}</p>
-            <p class="date-text">Submitted: {{ item.submittedAt | date:'mediumDate' }} at {{ item.submittedAt | date:'shortTime' }}</p>
-            <p class="date-text" *ngIf="item.reviewedAt">Reviewed: {{ item.reviewedAt | date:'mediumDate' }}</p>
-          </div>
+      <div class="table-wrap" *ngIf="requests.length > 0; else noRequests">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>Charity</th>
+              <th>Cause</th>
+              <th>City</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th class="actions-col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of requests">
+              <tr>
+                <td>
+                  <div class="charity-cell">
+                    <span class="request-icon">{{ getCharityIcon(item.cause) }}</span>
+                    <div>
+                      <p class="charity-name">{{ item.charityName }}</p>
+                      <p class="charity-sub">{{ item.registrationId || 'No registration id' }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ item.cause || 'General Charity' }}</td>
+                <td>{{ item.city || 'Not provided' }}</td>
+                <td>{{ item.submittedAt | date:'mediumDate' }}</td>
+                <td><span class="status-badge" [ngClass]="'status-' + item.status.toLowerCase()">{{ item.status }}</span></td>
+                <td class="actions-col">
+                  <button type="button" class="btn-view-details" (click)="toggleDetails(item.charityRegistrationId)">
+                    {{ isDetailsOpen(item.charityRegistrationId) ? 'Hide' : 'View' }}
+                  </button>
+                </td>
+              </tr>
 
-          <div class="request-actions">
-            <div class="comment-box">
-              <input 
-                type="text"
-                [(ngModel)]="commentDraft[item.charityRegistrationId]" 
-                placeholder="Add admin comment (optional)..."
-                class="comment-input"
-              />
-            </div>
-            <div class="action-buttons">
-              <button 
-                class="btn-approve" 
-                (click)="review(item.charityRegistrationId, 'approve')"
-                [disabled]="item.status === 'Approved'"
-              >
-                ✓ Approve
-              </button>
-              <button 
-                class="btn-reject" 
-                (click)="review(item.charityRegistrationId, 'reject')"
-                [disabled]="item.status === 'Rejected'"
-              >
-                ✕ Reject
-              </button>
-            </div>
-          </div>
+              <tr *ngIf="isDetailsOpen(item.charityRegistrationId)">
+                <td colspan="6" class="details-row">
+                  <div class="details-grid">
+                    <div><label>State</label><p>{{ item.state || 'Not provided' }}</p></div>
+                    <div><label>Pincode</label><p>{{ item.pincode || 'Not provided' }}</p></div>
+                    <div><label>Manager</label><p>{{ item.managerName || item.charityName || 'Not provided' }}</p></div>
+                    <div><label>Manager Phone</label><p>{{ item.managerPhone || item.userPhone || 'Not provided' }}</p></div>
+                    <div class="full"><label>Email</label><p>{{ item.email || 'Not provided' }}</p></div>
+                    <div class="full"><label>Address</label><p>{{ item.addressLine || 'Not provided' }}</p></div>
+                    <div class="full"><label>Mission</label><p>{{ item.mission || 'Not provided' }}</p></div>
+                    <div class="full"><label>About</label><p>{{ item.about || 'Not provided' }}</p></div>
+                    <div class="full"><label>Activities</label><p>{{ item.activities || 'Not provided' }}</p></div>
+                    <div class="full" *ngIf="item.socialMediaLink">
+                      <label>Social Media</label>
+                      <p><a [href]="item.socialMediaLink" target="_blank" rel="noopener noreferrer">{{ item.socialMediaLink }}</a></p>
+                    </div>
+                  </div>
 
-          <div class="request-footer" *ngIf="item.adminComment">
-            <p class="admin-comment"><strong>Admin Comment:</strong> {{ item.adminComment }}</p>
-          </div>
-        </div>
+                  <div class="request-actions">
+                    <input
+                      type="text"
+                      [(ngModel)]="commentDraft[item.charityRegistrationId]"
+                      placeholder="Add admin comment (optional)..."
+                      class="comment-input"
+                    />
+                    <button class="btn-approve" (click)="review(item.charityRegistrationId, 'approve')" [disabled]="item.status === 'Approved'">Approve</button>
+                    <button class="btn-reject" (click)="review(item.charityRegistrationId, 'reject')" [disabled]="item.status === 'Rejected'">Reject</button>
+                  </div>
+
+                  <p class="admin-comment" *ngIf="item.adminComment">Admin comment: {{ item.adminComment }}</p>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
 
       <ng-template #noRequests>
         <div class="empty-state">
-          <p class="empty-icon">📭</p>
           <p class="empty-text">No charity requests found</p>
         </div>
       </ng-template>
     </section>
-
   </section>
 
   <ng-template #loadingView>

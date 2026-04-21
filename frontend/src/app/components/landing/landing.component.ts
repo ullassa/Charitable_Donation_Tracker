@@ -24,27 +24,6 @@ export class LandingComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSize = 6;
 
-  heroMainImageCandidates = [
-    '/images/carefund-hero.jpg',
-    '/images/carefund-hero.png',
-    '/images/hero-main.jpg',
-    '/images/hero-main.png',
-    '/images/hero.jpg',
-    '/images/hero.png'
-  ];
-  heroLogoImageCandidates = [
-    '/images/carefund-logo.png',
-    '/images/carefund-logo.jpg',
-    '/images/hero-logo.png',
-    '/images/hero-logo.jpg',
-    '/images/logo.png',
-    '/images/logo.jpg',
-    '/favicon.ico'
-  ];
-  heroMainImageIndex = 0;
-  heroLogoImageIndex = 0;
-  heroMainImageSrc = this.heroMainImageCandidates[0];
-  heroLogoImageSrc = this.heroLogoImageCandidates[0];
   heroSlides = [
     {
       title: 'CareFund keeps every donation visible',
@@ -217,17 +196,4 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
   }
 
-  onHeroMainImageError(): void {
-    if (this.heroMainImageIndex < this.heroMainImageCandidates.length - 1) {
-      this.heroMainImageIndex++;
-      this.heroMainImageSrc = this.heroMainImageCandidates[this.heroMainImageIndex];
-    }
-  }
-
-  onHeroLogoImageError(): void {
-    if (this.heroLogoImageIndex < this.heroLogoImageCandidates.length - 1) {
-      this.heroLogoImageIndex++;
-      this.heroLogoImageSrc = this.heroLogoImageCandidates[this.heroLogoImageIndex];
-    }
-  }
 }

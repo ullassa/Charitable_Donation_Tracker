@@ -38,19 +38,31 @@ public class AdminController : ControllerBase
             .Include(c => c.User)
             .OrderByDescending(c => c.SubmittedAt)
             .Take(10)
-            .Select(c => new
-            {
-                charityRegistrationId = c.CharityRegistrationId,
-                charityName = c.User != null ? c.User.UserName : string.Empty,
-                registrationId = c.RegistrationId,
-                cause = c.CauseType.ToString(),
-                city = c.City,
-                status = c.Status.ToString(),
-                submittedAt = c.SubmittedAt,
-                reviewedAt = c.ReviewedAt,
-                adminComment = c.AdminComment
-            })
             .ToListAsync();
+
+        var mappedRecentRequests = recentRequests.Select(c => new
+        {
+            charityRegistrationId = c.CharityRegistrationId,
+            charityName = c.User != null ? c.User.UserName : string.Empty,
+            email = c.User != null ? c.User.Email : string.Empty,
+            userPhone = c.User != null ? c.User.PhoneNumber : string.Empty,
+            managerName = c.ManagerName,
+            managerPhone = c.ManagerPhone,
+            registrationId = c.RegistrationId,
+            cause = c.CauseType.ToString(),
+            mission = c.Mission,
+            about = c.About,
+            activities = c.Activities,
+            addressLine = c.AddressLine,
+            city = c.City,
+            state = c.IndianState.ToString(),
+            pincode = c.Pincode,
+            socialMediaLink = c.SocialMediaLink,
+            status = c.Status.ToString(),
+            submittedAt = c.SubmittedAt,
+            reviewedAt = c.ReviewedAt,
+            adminComment = c.AdminComment
+        }).ToList();
 
         return Ok(new
         {
@@ -64,38 +76,50 @@ public class AdminController : ControllerBase
                 totalCharities = charities,
                 totalDonation
             },
-            recentRequests
+            recentRequests = mappedRecentRequests
         });
     }
 
     [HttpGet("charity-requests")]
     public async Task<IActionResult> GetCharityRequests([FromQuery] string? status = null)
     {
-        var query = _context.Charities.AsNoTracking().Include(c => c.User).AsQueryable();
+        var query = _context.Charities
+            .AsNoTracking()
+            .Include(c => c.User)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<CharityStatus>(status, true, out var parsedStatus))
         {
             query = query.Where(c => c.Status == parsedStatus);
         }
 
-        var items = await query
+        var charities = await query
             .OrderByDescending(c => c.SubmittedAt)
-            .Select(c => new
-            {
-                charityRegistrationId = c.CharityRegistrationId,
-                charityName = c.User != null ? c.User.UserName : string.Empty,
-                email = c.User != null ? c.User.Email : string.Empty,
-                managerPhone = c.ManagerPhone,
-                registrationId = c.RegistrationId,
-                cause = c.CauseType.ToString(),
-                mission = c.Mission,
-                city = c.City,
-                status = c.Status.ToString(),
-                submittedAt = c.SubmittedAt,
-                reviewedAt = c.ReviewedAt,
-                adminComment = c.AdminComment
-            })
             .ToListAsync();
+
+        var items = charities.Select(c => new
+        {
+            charityRegistrationId = c.CharityRegistrationId,
+            charityName = c.User != null ? c.User.UserName : string.Empty,
+            email = c.User != null ? c.User.Email : string.Empty,
+            userPhone = c.User != null ? c.User.PhoneNumber : string.Empty,
+            managerName = c.ManagerName,
+            managerPhone = c.ManagerPhone,
+            registrationId = c.RegistrationId,
+            cause = c.CauseType.ToString(),
+            mission = c.Mission,
+            about = c.About,
+            activities = c.Activities,
+            addressLine = c.AddressLine,
+            city = c.City,
+            state = c.IndianState.ToString(),
+            pincode = c.Pincode,
+            socialMediaLink = c.SocialMediaLink,
+            status = c.Status.ToString(),
+            submittedAt = c.SubmittedAt,
+            reviewedAt = c.ReviewedAt,
+            adminComment = c.AdminComment
+        }).ToList();
 
         return Ok(new { success = true, items });
     }

@@ -19,18 +19,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   stats = { totalDonations: 0, donationsCount: 0 };
   trend: Array<{ label: string; amount: number }> = [];
   recent: Array<{ donationId: number; amount: number; donationDate: string; charityName: string }> = [];
-  notifications: Array<{ notificationId: number; message: string; sentAt: string; type: string }> = [];
 
   fromDate = '';
   toDate = '';
   reportFormat: 'csv' | 'pdf' = 'csv';
   trendGroupBy: 'day' | 'week' | 'month' | 'year' = 'month';
-  private notificationsPoller: ReturnType<typeof setInterval> | null = null;
   private fallbackTrend: Array<{ label: string; amount: number }> = [];
 
   private readonly storageListener = (event: StorageEvent): void => {
     if (event.key === 'cf:notify:refresh' || event.key === 'cf:auth:changed' || event.key === 'cf:profile:refresh') {
-      this.loadNotifications();
       this.load();
     }
   };
@@ -39,16 +36,10 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.notificationsPoller = setInterval(() => this.loadNotifications(), 2000);
     window.addEventListener('storage', this.storageListener);
   }
 
   ngOnDestroy(): void {
-    if (this.notificationsPoller) {
-      clearInterval(this.notificationsPoller);
-      this.notificationsPoller = null;
-    }
-
     window.removeEventListener('storage', this.storageListener);
   }
 
@@ -72,8 +63,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
         this.error = err?.error?.message || 'Failed to load customer dashboard.';
       }
     });
-
-    this.loadNotifications();
   }
 
   private loadTrend(fallback: Array<{ label: string; amount: number }> = []): void {
@@ -87,43 +76,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.trend = fallback;
-      }
-    });
-  }
-
-  private loadNotifications(): void {
-    this.api.getNotifications().subscribe({
-      next: (res: any) => {
-        const rawItems = Array.isArray(res?.items) ? res.items : [];
-        const mapped = rawItems
-          .map((item: any) => ({
-            notificationId: Number(item?.notificationId ?? 0),
-            message: String(item?.message ?? ''),
-            sentAt: String(item?.sentAt ?? ''),
-            type: String(item?.type ?? 'General')
-          }))
-          .filter((item: any) => item.message || item.sentAt || item.notificationId > 0);
-
-        const uniqueByKey = new Map<string, { notificationId: number; message: string; sentAt: string; type: string }>();
-        for (const item of mapped) {
-          const normalizedMessage = item.message.trim().toLowerCase().replace(/\s+/g, ' ');
-          const normalizedType = item.type.trim().toLowerCase();
-          const key = normalizedMessage
-            ? `msg:${normalizedMessage}|type:${normalizedType}`
-            : (item.notificationId > 0 ? `id:${item.notificationId}` : `fallback:${item.sentAt}`);
-
-          const existing = uniqueByKey.get(key);
-          if (!existing || new Date(item.sentAt).getTime() > new Date(existing.sentAt).getTime()) {
-            uniqueByKey.set(key, item);
-          }
-        }
-
-        this.notifications = Array.from(uniqueByKey.values())
-          .sort((left, right) => new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime())
-          .slice(0, 20);
-      },
-      error: () => {
-        this.notifications = [];
       }
     });
   }
@@ -142,6 +94,21 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     return `${Math.max(10, height)}%`;
   }
 
+  barColor(index: number): string {
+    const palette = [
+      ['#22c55e', '#16a34a'],
+      ['#3b82f6', '#2563eb'],
+      ['#8b5cf6', '#7c3aed'],
+      ['#ec4899', '#db2777'],
+      ['#f59e0b', '#d97706'],
+      ['#06b6d4', '#0891b2'],
+      ['#ef4444', '#dc2626']
+    ];
+
+    const [start, end] = palette[index % palette.length];
+    return `linear-gradient(180deg, ${start}, ${end})`;
+  }
+
   applyDateFilter(): void {
     this.load();
   }
@@ -152,14 +119,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   itemTrackBy(index: number, item: { label: string; amount: number }): string {
     return `${item.label}-${item.amount}-${index}`;
-  }
-
-  notificationTrackBy(index: number, item: { notificationId: number; sentAt: string; message: string }): string {
-    if (item.notificationId > 0) {
-      return `n-${item.notificationId}`;
-    }
-
-    return `n-${item.sentAt}-${item.message}-${index}`;
   }
 
   downloadReport(): void {

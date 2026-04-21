@@ -10,6 +10,11 @@ public class RegisterCharityDto
     public string? CauseType { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
+    public string? Country { get; set; }
+    public string? AddressLine { get; set; }
+    public string? Pincode { get; set; }
+    public string? ManagerName { get; set; }
+    public string? ManagerPhone { get; set; }
     public string? SocialMediaLink { get; set; }
     public List<string>? WebsiteLinks { get; set; }
     public List<string>? ImageUrls { get; set; }
