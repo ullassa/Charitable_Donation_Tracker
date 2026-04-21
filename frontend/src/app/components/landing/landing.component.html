@@ -25,16 +25,21 @@
         </div>
 
         <div class="hero-highlights">
-          <span>✅ Verified charities</span>
-          <span>⚡ Fast donations</span>
-          <span>📩 Email updates</span>
+          <span>Verified charities</span>
+          <span>Fast donations</span>
+          <span>Email updates</span>
         </div>
       </div>
       <div class="hero-visual">
-        <div class="hero-badge">❤️ Trusted giving. Saving lives.</div>
-        <div class="hero-image-square icon-visual">🤝</div>
+        <div class="hero-badge">Trusted giving. Saving lives.</div>
+        <!-- <div class="hero-image-square icon-visual">CF</div> -->
+         <!-- ...existing code... -->
+<div class="">
+  <img src="/frontend/images/children.jpg" alt="children"/>
+</div>
+<!-- ...existing code... -->
         <div class="hero-illustration">
-          <div class="hero-logo-image icon-visual">❤️</div>
+          <div class="hero-logo-image icon-visual">CareFund</div>
         </div>
       </div>
     </div>
@@ -91,8 +96,8 @@
           </p>
 
           <div class="charity-meta">
-            <span>📍 {{ charity.location || 'Location not set' }}</span>
-            <span>✉️ {{ charity.email || 'Email not set' }}</span>
+            <span>Location: {{ charity.location || 'Location not set' }}</span>
+            <span>Email: {{ charity.email || 'Email not set' }}</span>
           </div>
 
           <div class="charity-actions">

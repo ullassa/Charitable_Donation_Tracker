@@ -23,6 +23,7 @@ namespace CareFund.Controllers
             var charities = await _context.Charities
                 .AsNoTracking()
                 .Include(c => c.User)
+                .Include(c => c.Images)
                 .Where(c => c.Status == CharityStatus.Approved && c.IsActive)
                 .Where(c => c.User != null)
                 .Where(c => string.IsNullOrWhiteSpace(keyword)
@@ -52,7 +53,12 @@ namespace CareFund.Controllers
                     ManagerPhone = c.ManagerPhone,
                     Pincode = c.Pincode,
                     State = c.IndianState.ToString(),
-                    Icon = c.CauseType.ToString()
+                    Icon = c.CauseType.ToString(),
+                    ImageUrls = c.Images
+                        .Where(i => i.ImageUrl != null)
+                        .Select(i => i.ImageUrl!)
+                        .Distinct()
+                        .ToList()
                 })
                 .ToListAsync();
 

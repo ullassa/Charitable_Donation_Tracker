@@ -152,7 +152,7 @@
               (click)="verifyPhoneOtp()"
               [disabled]="!phoneOtpSent || !signupForm.get('phoneOtp')?.value || isLoading"
             >
-              {{ phoneOtpVerified ? '✓ Verified' : 'Verify OTP' }}
+              {{ phoneOtpVerified ? 'Verified' : 'Verify OTP' }}
             </button>
             <div *ngIf="phoneOtpError" class="error-message">
               {{ phoneOtpError }}
@@ -184,7 +184,7 @@
                 class="password-toggle"
                 (click)="togglePasswordVisibility()"
               >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+                {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
             <div *ngIf="submitted && password?.invalid" class="error-message">
@@ -210,7 +210,7 @@
                 class="password-toggle"
                 (click)="toggleConfirmPasswordVisibility()"
               >
-                {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+                {{ showConfirmPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
             <div *ngIf="(submitted && confirmPassword?.invalid) || showPasswordMismatch" class="error-message">

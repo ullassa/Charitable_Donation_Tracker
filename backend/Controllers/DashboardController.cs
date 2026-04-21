@@ -160,6 +160,7 @@ public class DashboardController : ControllerBase
 
         var charity = await _context.Charities
             .AsNoTracking()
+            .Include(c => c.Images)
             .FirstOrDefaultAsync(c => c.UserId == user.UserId && c.IsActive);
 
         if (charity == null)
@@ -204,7 +205,12 @@ public class DashboardController : ControllerBase
                 charity.Activities,
                 charity.SubmittedAt,
                 charity.ReviewedAt,
-                charity.AdminComment
+                charity.AdminComment,
+                imageUrls = charity.Images
+                    .Where(i => i.ImageUrl != null)
+                    .Select(i => i.ImageUrl!)
+                    .Distinct()
+                    .ToList()
             },
             stats = new
             {

@@ -3,7 +3,7 @@
 <div class="login-page">
   <div class="login-container">
     <div class="login-card glass-card">
-      <h1>Login 🔐</h1>
+      <h1>Login</h1>
       <p class="subtitle">Enter your email</p>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
@@ -42,7 +42,7 @@
               (click)="togglePasswordVisibility()"
               title="Password"
             >
-              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              {{ showPassword ? 'Hide' : 'Show' }}
             </button>
           </div>
           <div *ngIf="submitted && password?.invalid" class="alert alert-error">
@@ -72,10 +72,10 @@
         <p>Create Account?</p>
         <div class="signup-buttons">
           <a routerLink="/customer-signup" class="btn btn-secondary btn-block">
-            💳 Create Donor Account
+            Create Donor Account
           </a>
           <a routerLink="/charity-signup" class="btn btn-secondary btn-block">
-            🏢 Create Charity Account
+            Create Charity Account
           </a>
         </div>
       </div>
@@ -83,7 +83,7 @@
 
     <!-- Illustration -->
     <div class="login-illustration">
-      <div class="illustration-icon">🔐</div>
+      <div class="illustration-icon">Secure</div>
     </div>
   </div>
 </div>

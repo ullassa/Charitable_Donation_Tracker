@@ -45,10 +45,10 @@ export class LandingComponent implements OnInit, OnDestroy {
   heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
 
   statistics = [
-    { label: 'Charities', value: '0', icon: '🤝' },
-    { label: 'Approved', value: '0', icon: '✅' },
-    { label: 'Pending', value: '0', icon: '⏳' },
-    { label: 'Active Users', value: '', icon: '👥' }
+    { label: 'Charities', value: '0', icon: 'CF' },
+    { label: 'Approved', value: '0', icon: 'CF' },
+    { label: 'Pending', value: '0', icon: 'CF' },
+    { label: 'Active Users', value: '', icon: 'CF' }
   ];
 
   testimonials = [
@@ -140,10 +140,10 @@ export class LandingComponent implements OnInit, OnDestroy {
     const approved = items.filter(item => item.status === 'Approved').length;
     const pending = items.filter(item => item.status === 'Pending').length;
     this.statistics = [
-      { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: '🤝' },
-      { label: 'Approved', value: String(approved), icon: '✅' },
-      { label: 'Pending', value: String(pending), icon: '⏳' },
-      { label: 'Active Users', value: '10K+', icon: '👥' }
+      { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: 'CF' },
+      { label: 'Approved', value: String(approved), icon: 'CF' },
+      { label: 'Pending', value: String(pending), icon: 'CF' },
+      { label: 'Active Users', value: '10K+', icon: 'CF' }
     ];
   }
 

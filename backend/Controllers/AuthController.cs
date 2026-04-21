@@ -204,7 +204,8 @@ public class AuthController : ControllerBase
                 websiteLinks.Count > 0 ? string.Join(", ", websiteLinks) : null,
                 dto.Mission,
                 dto.About,
-                dto.Activities);
+                dto.Activities,
+                dto.ImageUrls);
 
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
@@ -309,6 +310,7 @@ public class AuthController : ControllerBase
             var charities = await _context.Charities
                 .AsNoTracking()
                 .Include(c => c.User)
+                .Include(c => c.Images)
                 .Where(c => c.IsActive && c.Status == CharityStatus.Approved)
                 .Where(c => c.User != null)
                 .Where(c => string.IsNullOrWhiteSpace(keyword)
@@ -338,7 +340,12 @@ public class AuthController : ControllerBase
                     icon = c.CauseType.ToString(),
                     email = c.User != null ? c.User.Email : string.Empty,
                     status = c.Status.ToString(),
-                    isActive = c.IsActive
+                    isActive = c.IsActive,
+                    imageUrls = c.Images
+                        .Where(i => i.ImageUrl != null)
+                        .Select(i => i.ImageUrl!)
+                        .Distinct()
+                        .ToList()
                 })
                 .ToListAsync();
 

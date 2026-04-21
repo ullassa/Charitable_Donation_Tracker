@@ -33,7 +33,8 @@ namespace CareFund.Services.Auth
             string? socialMediaLink = null,
             string? mission = null,
             string? about = null,
-            string? activities = null);
+            string? activities = null,
+            IEnumerable<string>? imageUrls = null);
 
         /// <summary>
         /// Registers a new customer with verified phone and email

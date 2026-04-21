@@ -91,7 +91,8 @@ namespace CareFund.Services.Auth
             string? socialMediaLink = null,
             string? mission = null,
             string? about = null,
-            string? activities = null)
+            string? activities = null,
+            IEnumerable<string>? imageUrls = null)
         {
             // Validate inputs
             if (string.IsNullOrWhiteSpace(charityName) ||
@@ -176,6 +177,26 @@ namespace CareFund.Services.Auth
 
             _context.Charities.Add(charity);
             _context.SaveChanges();
+
+            var normalizedImages = (imageUrls ?? Array.Empty<string>())
+                .Select(url => (url ?? string.Empty).Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Where(url => url.Length <= 500)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (normalizedImages.Count > 0)
+            {
+                var imageRows = normalizedImages
+                    .Select(url => new CharityImage
+                    {
+                        CharityRegistrationId = charity.CharityRegistrationId,
+                        ImageUrl = url
+                    });
+
+                _context.CharityImage.AddRange(imageRows);
+                _context.SaveChanges();
+            }
 
             _logger.LogInformation($"Charity registration request created: {charityName} by {email}");
 

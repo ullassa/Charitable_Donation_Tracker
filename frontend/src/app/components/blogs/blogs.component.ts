@@ -21,7 +21,7 @@ export class BlogsComponent {
       author: 'Sarah Johnson',
       date: 'April 10, 2026',
       readTime: '5 min read',
-      image: '📊',
+      image: 'DATA',
       featured: true
     },
     {
@@ -32,7 +32,7 @@ export class BlogsComponent {
       author: 'Ahmed Hassan',
       date: 'April 8, 2026',
       readTime: '7 min read',
-      image: '📚',
+      image: 'EDU',
       featured: true
     },
     {
@@ -43,7 +43,7 @@ export class BlogsComponent {
       author: 'Emily Davis',
       date: 'April 5, 2026',
       readTime: '6 min read',
-      image: '🔍',
+      image: 'INSIGHT',
       featured: true
     },
     {
@@ -54,7 +54,7 @@ export class BlogsComponent {
       author: 'Dr. Michael Chen',
       date: 'April 1, 2026',
       readTime: '8 min read',
-      image: '🏥'
+      image: 'MED'
     },
     {
       id: 5,
@@ -64,7 +64,7 @@ export class BlogsComponent {
       author: 'Lisa Green',
       date: 'March 28, 2026',
       readTime: '5 min read',
-      image: '🌍'
+      image: 'GREEN'
     },
     {
       id: 6,
@@ -74,7 +74,7 @@ export class BlogsComponent {
       author: 'John Miller',
       date: 'March 25, 2026',
       readTime: '7 min read',
-      image: '🆘'
+      image: 'RELIEF'
     }
   ];
 

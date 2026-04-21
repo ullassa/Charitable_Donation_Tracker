@@ -27,10 +27,10 @@ export class FooterComponent {
   ];
 
   socialLinks = [
-    { label: 'Facebook', icon: '📘', url: 'https://facebook.com' },
-    { label: 'Twitter', icon: '𝕏', url: 'https://twitter.com' },
-    { label: 'LinkedIn', icon: '💼', url: 'https://linkedin.com' },
-    { label: 'Instagram', icon: '📷', url: 'https://instagram.com' },
+    { label: 'Facebook', icon: 'FB', url: 'https://facebook.com' },
+    { label: 'Twitter', icon: 'X', url: 'https://twitter.com' },
+    { label: 'LinkedIn', icon: 'IN', url: 'https://linkedin.com' },
+    { label: 'Instagram', icon: 'IG', url: 'https://instagram.com' },
   ];
 
   openContact(): void {

@@ -105,15 +105,15 @@
           <strong>{{ selectedCharity.cause || 'General Charity' }}</strong>
         </article>
         <article class="gallery-card glass-panel icon-card">
-          <span class="icon">📍</span>
+          <span class="icon">Location</span>
           <strong>{{ selectedCharity.location || 'Location not set' }}</strong>
         </article>
         <article class="gallery-card glass-panel icon-card">
-          <span class="icon">✉️</span>
+          <span class="icon">Email</span>
           <strong>{{ selectedCharity.email || 'Email not set' }}</strong>
         </article>
         <article class="gallery-card glass-panel icon-card">
-          <span class="icon">📞</span>
+          <span class="icon">Phone</span>
           <strong>{{ selectedCharity.phoneNumber || 'Phone not set' }}</strong>
         </article>
       </div>
@@ -179,7 +179,7 @@
 
     <section class="login-prompt glass-card" *ngIf="selectedCharity && isLoggedIn && !canDonate">
       <div class="prompt-content">
-        <div class="prompt-icon">ℹ️</div>
+        <div class="prompt-icon">Info</div>
         <h2>Donate option unavailable</h2>
         <p>Charity accounts cannot donate. Please login using a donor account to continue.</p>
       </div>
@@ -188,11 +188,11 @@
     <!-- Login Prompt Section (for non-logged users) -->
     <section class="login-prompt glass-card" *ngIf="selectedCharity && !isLoggedIn">
       <div class="prompt-content">
-        <div class="prompt-icon">🔐</div>
+        <div class="prompt-icon">Secure</div>
         <h2>Login Now</h2>
         <p>Please login to complete your donation</p>
         <a routerLink="/login" class="btn btn-secondary">
-          Login Now ➜
+          Login Now
         </a>
       </div>
     </section>

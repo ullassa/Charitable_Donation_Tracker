@@ -240,16 +240,16 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   getCharityIcon(cause: string | undefined | null): string {
     const normalized = (cause || '').toLowerCase();
-    if (normalized.includes('education')) return '📚';
-    if (normalized.includes('health')) return '🩺';
-    if (normalized.includes('child')) return '🧒';
-    if (normalized.includes('women')) return '♀️';
-    if (normalized.includes('animal')) return '🐾';
-    if (normalized.includes('food')) return '🍱';
-    if (normalized.includes('environment')) return '🌱';
-    if (normalized.includes('disaster')) return '🚨';
-    if (normalized.includes('elder')) return '🤝';
-    return '🤝';
+    if (normalized.includes('education')) return 'EDU';
+    if (normalized.includes('health')) return 'HEALTH';
+    if (normalized.includes('child')) return 'CHILD';
+    if (normalized.includes('women')) return 'WOMEN';
+    if (normalized.includes('animal')) return 'ANIMAL';
+    if (normalized.includes('food')) return 'FOOD';
+    if (normalized.includes('environment')) return 'GREEN';
+    if (normalized.includes('disaster')) return 'RELIEF';
+    if (normalized.includes('elder')) return 'ELDER';
+    return 'CAUSE';
   }
 
   openCharityDetails(charity: PublicCharity): void {
