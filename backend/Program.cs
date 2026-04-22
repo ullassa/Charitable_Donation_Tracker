@@ -129,6 +129,22 @@ using (var scope = app.Services.CreateScope())
         app.Logger.LogWarning(ex, "Database migration skipped during startup. Continuing without migration.");
     }
 
+    // Ensure TargetAmount column exists (schema fix for compatibility)
+    try
+    {
+        db.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID('dbo.Charities', 'U') IS NOT NULL
+  AND COL_LENGTH('dbo.Charities', 'TargetAmount') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Charities]
+    ADD [TargetAmount] decimal(18,2) NOT NULL DEFAULT(100000);
+END");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "TargetAmount column fix skipped. It may already exist.");
+    }
+
     if (!schemaReady)
     {
         try
@@ -216,6 +232,8 @@ END");
 // Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseStaticFiles();
 
 // For local dev, avoid forced redirect issues between Angular http and API https
 if (!app.Environment.IsDevelopment())

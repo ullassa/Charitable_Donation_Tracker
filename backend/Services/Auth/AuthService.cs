@@ -92,6 +92,7 @@ namespace CareFund.Services.Auth
             string? mission = null,
             string? about = null,
             string? activities = null,
+            decimal? neededAmount = null,
             IEnumerable<string>? imageUrls = null)
         {
             // Validate inputs
@@ -170,6 +171,7 @@ namespace CareFund.Services.Auth
                 ManagerName = string.IsNullOrWhiteSpace(managerName) ? charityName : managerName.Trim(),
                 ManagerPhone = string.IsNullOrWhiteSpace(managerPhone) ? phoneNumber : managerPhone.Trim(),
                 SocialMediaLink = string.IsNullOrWhiteSpace(socialMediaLink) ? "https://carefund.example/charity" : socialMediaLink,
+                TargetAmount = neededAmount.HasValue && neededAmount.Value > 0 ? neededAmount.Value : 100000,
                 Status = CharityStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 IsActive = true

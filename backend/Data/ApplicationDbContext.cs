@@ -67,6 +67,10 @@ namespace CareFund.Data
             modelBuilder.Entity<Donation>()
                 .Property(d => d.Amount)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<CharityRegistrationRequest>()
+                .Property(c => c.TargetAmount)
+                .HasPrecision(18, 2);
  
             // User - OTP (1:M)
             modelBuilder.Entity<User>()

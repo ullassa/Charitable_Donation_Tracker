@@ -186,6 +186,7 @@
             <div *ngIf="submitted && password?.invalid" class="error-message">
               <span *ngIf="password?.errors?.['required']">Password is required</span>
               <span *ngIf="password?.errors?.['minlength']">Password must be at least 8 characters</span>
+              <span *ngIf="password?.errors?.['pattern']">Password must include uppercase, lowercase, and a number</span>
             </div>
           </div>
 
@@ -317,9 +318,15 @@
               type="tel"
               id="managerPhone"
               formControlName="managerPhone"
-              placeholder="+919876543210"
+              placeholder="9876543210"
               class="form-control"
+              maxlength="10"
+              inputmode="numeric"
+              [class.is-invalid]="submitted && managerPhone?.invalid"
             >
+            <div *ngIf="submitted && managerPhone?.invalid" class="error-message">
+              <span *ngIf="managerPhone?.errors?.['pattern']">Manager phone must be exactly 10 digits</span>
+            </div>
           </div>
         </div>
 
@@ -362,21 +369,53 @@
             <div *ngIf="submitted && charityType?.invalid" class="error-message">
               <span *ngIf="charityType?.errors?.['required']">Please select a charity type</span>
             </div>
-            <small class="help-text">If your type is not listed, select General Charity and mention details in Focus Areas.</small>
+            <small class="help-text">If your type is not listed, select General Charity and mention details in Mission or Goal.</small>
           </div>
 
           <div class="form-group">
-            <label for="focusAreas">Focus Areas</label>
+            <label for="neededAmount">Needed Amount (₹) *</label>
             <input
-              type="text"
-              id="focusAreas"
-              formControlName="focusAreas"
-              placeholder="e.g., Healthcare, Children, Rural Development"
+              type="number"
+              id="neededAmount"
+              formControlName="neededAmount"
+              placeholder="e.g., 100000"
               class="form-control"
-              [class.is-invalid]="submitted && focusAreas?.invalid"
+              min="1"
+              [class.is-invalid]="submitted && neededAmount?.invalid"
             >
-            <div *ngIf="submitted && focusAreas?.invalid" class="error-message">
-              <span *ngIf="focusAreas?.errors?.['required']">Focus areas are required</span>
+            <div *ngIf="submitted && neededAmount?.invalid" class="error-message">
+              <span *ngIf="neededAmount?.errors?.['required']">Needed amount is required</span>
+              <span *ngIf="neededAmount?.errors?.['min']">Needed amount must be greater than 0</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="mission">Mission *</label>
+            <textarea
+              id="mission"
+              formControlName="mission"
+              placeholder="Describe your mission in one or two sentences"
+              class="form-control"
+              rows="3"
+              [class.is-invalid]="submitted && mission?.invalid"
+            ></textarea>
+            <div *ngIf="submitted && mission?.invalid" class="error-message">
+              <span *ngIf="mission?.errors?.['required']">Mission is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="goal">Goal *</label>
+            <textarea
+              id="goal"
+              formControlName="goal"
+              placeholder="Share the primary goal your charity is working toward"
+              class="form-control"
+              rows="3"
+              [class.is-invalid]="submitted && goal?.invalid"
+            ></textarea>
+            <div *ngIf="submitted && goal?.invalid" class="error-message">
+              <span *ngIf="goal?.errors?.['required']">Goal is required</span>
             </div>
           </div>
 
@@ -414,37 +453,20 @@
           </div>
 
           <div class="form-group">
-            <label>Charity Images *</label>
-            <p class="help-text">Add at least 4 image URLs. These images will appear to donors when they open your charity profile.</p>
-            <div class="dynamic-list">
-              <div class="dynamic-row" *ngFor="let image of charityImageLinks; let i = index; trackBy: trackByIndex">
-                <input
-                  type="url"
-                  [(ngModel)]="charityImageLinks[i]"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="/images/your-image.jpg"
-                  class="form-control"
-                >
-                <button type="button" class="btn btn-outline dynamic-btn" (click)="removeCharityImageField(i)" [disabled]="charityImageLinks.length <= 4">Remove</button>
-              </div>
-            </div>
-            <button type="button" class="btn btn-outline add-more-btn" (click)="addCharityImageField()">+ Add New Image</button>
-            <p class="help-text">Filled images: {{ charityImageLinksFilled }} / 4 minimum</p>
-          </div>
-
-          <div class="form-group">
-            <label for="taxExemptCertificate">Tax Exempt Certificate/Document (optional)</label>
+            <label for="charityImages">Charity Images *</label>
+            <p class="help-text">Upload at least 5 images (JPG/PNG, max 5MB each). These appear on your public charity profile.</p>
             <div class="file-input-wrapper">
               <input
                 type="file"
-                id="taxExemptCertificate"
-                (change)="onFileSelected($event)"
+                id="charityImages"
+                (change)="onCharityImagesSelected($event)"
                 class="form-control"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                accept=".jpg,.jpeg,.png"
+                multiple
               >
-              <p class="file-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</p>
-              <p class="file-name" *ngIf="selectedTaxExemptCertificateName">
-                Selected file: {{ selectedTaxExemptCertificateName }}
+              <p class="file-hint">Selected: {{ charityImageCount }} / 5 minimum</p>
+              <p class="file-name" *ngIf="selectedCharityImageNames.length">
+                {{ selectedCharityImageNames.join(', ') }}
               </p>
             </div>
           </div>
@@ -456,7 +478,7 @@
           <div class="form-group terms-group">
             <label class="terms-checkbox">
               <input type="checkbox" formControlName="termsAccepted">
-              I agree to the <a routerLink="/terms">terms and conditions</a> and privacy policy before submitting this charity application.
+              I agree to the <a href="#" (click)="openTermsModal($event)" class="terms-link">terms and conditions</a> and privacy policy before submitting this charity application.
             </label>
             <div *ngIf="submitted && termsAccepted?.invalid" class="error-message">
               <span *ngIf="termsAccepted?.errors?.['required']">You must accept the terms to continue.</span>
@@ -509,6 +531,32 @@
       <div class="login-link">
         Already have an account? <a routerLink="/login">Login here</a>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="terms-modal-overlay" *ngIf="showTermsModal">
+  <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="terms-modal-header">
+      <h3 id="termsTitle">Terms & Conditions and Privacy Policy</h3>
+      <button type="button" class="terms-close-btn" (click)="closeTermsModal()">×</button>
+    </div>
+
+    <div class="terms-modal-body">
+      <h4>Terms and Conditions</h4>
+      <p>By registering your charity on CareFund, you confirm that all details provided are accurate and that you are authorized to represent the organization.</p>
+      <p>You agree that your registration may be reviewed by the CareFund admin team before approval and public visibility.</p>
+      <p>You must only upload content and images that belong to your organization or that you have permission to use.</p>
+
+      <h4>Privacy Policy</h4>
+      <p>CareFund collects registration data such as organization details, contact information, and uploaded media to process your application and display approved charity profiles to donors.</p>
+      <p>Your data is used only for platform operations, verification, and communication related to your account.</p>
+      <p>By clicking Agree, you consent to this data processing for account creation and charity verification workflows.</p>
+    </div>
+
+    <div class="terms-modal-actions">
+      <button type="button" class="btn btn-outline" (click)="closeTermsModal()">Cancel</button>
+      <button type="button" class="btn terms-agree-btn" (click)="agreeToTerms()">Agree</button>
     </div>
   </div>
 </div>

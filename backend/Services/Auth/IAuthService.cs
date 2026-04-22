@@ -34,6 +34,7 @@ namespace CareFund.Services.Auth
             string? mission = null,
             string? about = null,
             string? activities = null,
+            decimal? neededAmount = null,
             IEnumerable<string>? imageUrls = null);
 
         /// <summary>

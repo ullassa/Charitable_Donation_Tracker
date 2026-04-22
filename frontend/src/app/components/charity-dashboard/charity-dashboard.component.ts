@@ -61,9 +61,7 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
         this.stats = res?.stats ?? this.stats;
         this.monthly = res?.monthly ?? [];
         this.recent = res?.recent ?? [];
-        if (this.monthly.length) {
-          this.showTrend = true;
-        }
+        this.showTrend = true;
         this.loading = false;
       },
       error: (err) => {
@@ -76,6 +74,54 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   get latestMonthAmount(): number {
     if (!this.monthly.length) return 0;
     return this.monthly[this.monthly.length - 1].amount;
+  }
+
+  get maxMonthlyAmount(): number {
+    return Math.max(1, ...this.monthly.map(item => item.amount || 0));
+  }
+
+  private getNiceStep(maxValue: number, tickCount: number): number {
+    const safeMax = Math.max(1, maxValue);
+    const rawStep = safeMax / Math.max(1, tickCount);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+
+    let niceNormalized = 1;
+    if (normalized > 1 && normalized <= 2) {
+      niceNormalized = 2;
+    } else if (normalized > 2 && normalized <= 5) {
+      niceNormalized = 5;
+    } else if (normalized > 5) {
+      niceNormalized = 10;
+    }
+
+    return niceNormalized * magnitude;
+  }
+
+  get yAxisStep(): number {
+    return this.getNiceStep(this.maxMonthlyAmount, 5);
+  }
+
+  get yAxisMax(): number {
+    const step = this.yAxisStep;
+    return Math.max(step, Math.ceil(this.maxMonthlyAmount / step) * step);
+  }
+
+  get yAxisTicks(): number[] {
+    const ticks: number[] = [];
+    for (let value = this.yAxisMax; value >= 0; value -= this.yAxisStep) {
+      ticks.push(value);
+    }
+    return ticks;
+  }
+
+  barHeight(amount: number): string {
+    const height = (Math.max(0, amount) / this.yAxisMax) * 100;
+    return `${Math.max(10, height)}%`;
+  }
+
+  itemTrackBy(index: number, item: { label: string; amount: number }): string {
+    return `${item.label}-${item.amount}-${index}`;
   }
 
   applyDateFilter(): void {

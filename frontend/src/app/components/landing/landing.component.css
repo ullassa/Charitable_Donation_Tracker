@@ -349,6 +349,41 @@
   margin-bottom: 1rem;
 }
 
+.fund-progress {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  margin: 0.35rem 0 0.9rem;
+}
+
+.fund-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: #1f2937;
+}
+
+.fund-row.muted {
+  color: #64748b;
+  margin-top: 0.35rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-top: 0.45rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
 .charity-actions {
   display: flex;
   gap: 0.75rem;

@@ -191,6 +191,19 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
   }
 
+  getProgressPercent(charity: any): number {
+    const progress = Number(charity?.progressPercent ?? 0);
+    if (Number.isNaN(progress)) return 0;
+    return Math.max(0, Math.min(100, progress));
+  }
+
+  getRemainingAmount(charity: any): number {
+    const target = Number(charity?.targetAmount ?? 0);
+    const received = Number(charity?.totalReceived ?? 0);
+    if (!target || Number.isNaN(target)) return 0;
+    return Math.max(0, target - (Number.isNaN(received) ? 0 : received));
+  }
+
   getCharityKey(charity: any): string {
     return String(
       charity?.charityId ??

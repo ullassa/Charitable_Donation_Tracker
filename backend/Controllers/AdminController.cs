@@ -31,13 +31,31 @@ public class AdminController : ControllerBase
         var rejected = await _context.Charities.CountAsync(c => c.Status == CharityStatus.Rejected);
         var customers = await _context.Users.CountAsync(u => u.UserRole == UserRole.Customer && u.IsActive);
         var charities = await _context.Users.CountAsync(u => u.UserRole == UserRole.CharityManager && u.IsActive);
+        var totalDonors = await _context.Donations.Select(d => d.CustomerId).Distinct().CountAsync();
         var totalDonation = await _context.Donations.SumAsync(d => (decimal?)d.Amount) ?? 0;
 
         var recentRequests = await _context.Charities
             .AsNoTracking()
             .Include(c => c.User)
+            .Include(c => c.Donations)
             .OrderByDescending(c => c.SubmittedAt)
             .Take(10)
+            .ToListAsync();
+
+        var customersList = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.UserRole == UserRole.Customer && u.IsActive)
+            .Select(u => new
+            {
+                userId = u.UserId,
+                name = u.UserName,
+                email = u.Email,
+                phone = u.PhoneNumber,
+                city = u.Customer != null ? u.Customer.City : string.Empty,
+                donationsCount = u.Customer != null ? u.Customer.Donations.Count : 0,
+                totalDonated = u.Customer != null ? u.Customer.Donations.Sum(d => d.Amount) : 0
+            })
+            .OrderByDescending(c => c.totalDonated)
             .ToListAsync();
 
         var mappedRecentRequests = recentRequests.Select(c => new
@@ -53,6 +71,9 @@ public class AdminController : ControllerBase
             mission = c.Mission,
             about = c.About,
             activities = c.Activities,
+            targetAmount = c.TargetAmount,
+            totalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
+            remainingAmount = Math.Max(0, c.TargetAmount - (c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0)),
             addressLine = c.AddressLine,
             city = c.City,
             state = c.IndianState.ToString(),
@@ -74,10 +95,64 @@ public class AdminController : ControllerBase
                 rejected,
                 totalCustomers = customers,
                 totalCharities = charities,
+                totalDonors,
                 totalDonation
             },
-            recentRequests = mappedRecentRequests
+            recentRequests = mappedRecentRequests,
+            customers = customersList
         });
+    }
+
+    [HttpGet("donors")]
+    public async Task<IActionResult> GetDonors()
+    {
+        var donations = await _context.Donations
+            .AsNoTracking()
+            .Include(d => d.Customer)
+                .ThenInclude(c => c!.User)
+            .Include(d => d.Payment)
+            .Include(d => d.CharityRegistrationRequest)
+                .ThenInclude(c => c!.User)
+            .OrderByDescending(d => d.DonationDate)
+            .ToListAsync();
+
+        var donors = donations
+            .GroupBy(d => d.CustomerId)
+            .Select(g =>
+        {
+            var firstDonation = g.First();
+            var customer = firstDonation.Customer;
+
+            return new
+            {
+                donorId = g.Key,
+                name = customer?.User?.UserName ?? "Anonymous donor",
+                email = customer?.User?.Email ?? string.Empty,
+                phone = customer?.User?.PhoneNumber ?? string.Empty,
+                city = customer?.City ?? string.Empty,
+                createdAt = customer?.CreatedAt,
+                donationsCount = g.Count(),
+                totalDonated = g.Sum(x => x.Amount),
+                lastDonationAt = g.Max(x => x.DonationDate),
+                donations = g.Select(x => new
+                {
+                    donationId = x.DonationId,
+                    amount = x.Amount,
+                    donationDate = x.DonationDate,
+                    paymentMethod = x.Payment != null ? x.Payment.PaymentMethod.ToString() : string.Empty,
+                    transactionReference = x.Payment?.TransactionReference,
+                    charityName = x.CharityRegistrationRequest?.User != null
+                        ? x.CharityRegistrationRequest.User.UserName
+                        : x.CharityRegistrationRequest != null ? x.CharityRegistrationRequest.ManagerName : string.Empty,
+                    charityRegistrationId = x.CharityRegistrationId
+                }).ToList()
+            };
+        })
+        .Where(d => d.donationsCount > 0)
+        .OrderByDescending(d => d.totalDonated)
+        .ToList();
+
+        return Ok(new { success = true, items = donors });
     }
 
     [HttpGet("charity-requests")]
@@ -86,6 +161,7 @@ public class AdminController : ControllerBase
         var query = _context.Charities
             .AsNoTracking()
             .Include(c => c.User)
+            .Include(c => c.Donations)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<CharityStatus>(status, true, out var parsedStatus))
@@ -110,6 +186,9 @@ public class AdminController : ControllerBase
             mission = c.Mission,
             about = c.About,
             activities = c.Activities,
+            targetAmount = c.TargetAmount,
+            totalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
+            remainingAmount = Math.Max(0, c.TargetAmount - (c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0)),
             addressLine = c.AddressLine,
             city = c.City,
             state = c.IndianState.ToString(),

@@ -58,10 +58,10 @@ export class CharitySignupComponent implements OnInit {
   ];
   private emailResendTimer: ReturnType<typeof setInterval> | null = null;
   private phoneResendTimer: ReturnType<typeof setInterval> | null = null;
-  selectedTaxExemptCertificateName = 'No file chosen';
-  selectedTaxExemptCertificateFile: File | null = null;
+  selectedCharityImages: File[] = [];
+  selectedCharityImageNames: string[] = [];
   websiteLinks: string[] = [''];
-  charityImageLinks: string[] = ['', '', '', ''];
+  showTermsModal = false;
 
   constructor(private fb: FormBuilder, private api: ApiService, private router: Router) {}
 
@@ -81,7 +81,11 @@ export class CharitySignupComponent implements OnInit {
       phoneOtp: [''],
       
       // Step 3: Password
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)
+      ]],
       confirmPassword: ['', [Validators.required]],
       
       // Step 4: Registration Details
@@ -94,13 +98,14 @@ export class CharitySignupComponent implements OnInit {
       addressLine: [''],
       pincode: [''],
       managerName: [''],
-      managerPhone: [''],
+      managerPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
       charityRegistrationNumber: ['', [Validators.required]],
       charityType: ['', [Validators.required]],
-      focusAreas: ['', [Validators.required]],
+      neededAmount: [null, [Validators.required, Validators.min(1)]],
+      mission: ['', [Validators.required]],
+      goal: ['', [Validators.required]],
       description: [''],
       website: ['', Validators.pattern(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)],
-      taxExemptCertificate: [''],
       termsAccepted: [false, [Validators.requiredTrue]]
     });
   }
@@ -392,16 +397,26 @@ export class CharitySignupComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files?.[0] ?? null;
-    this.selectedTaxExemptCertificateFile = file;
+  openTermsModal(event?: Event): void {
+    event?.preventDefault();
+    this.showTermsModal = true;
+  }
 
-    if (file) {
-      this.selectedTaxExemptCertificateName = file.name;
-      console.log('File selected:', file.name);
-    } else {
-      this.selectedTaxExemptCertificateName = 'No file chosen';
-    }
+  closeTermsModal(): void {
+    this.showTermsModal = false;
+  }
+
+  agreeToTerms(): void {
+    this.signupForm.get('termsAccepted')?.setValue(true);
+    this.signupForm.get('termsAccepted')?.markAsTouched();
+    this.showTermsModal = false;
+  }
+
+  onCharityImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    this.selectedCharityImages = files;
+    this.selectedCharityImageNames = files.map(file => file.name);
   }
 
   addWebsiteField(): void {
@@ -415,18 +430,6 @@ export class CharitySignupComponent implements OnInit {
     }
 
     this.websiteLinks.splice(index, 1);
-  }
-
-  addCharityImageField(): void {
-    this.charityImageLinks.push('');
-  }
-
-  removeCharityImageField(index: number): void {
-    if (this.charityImageLinks.length <= 4) {
-      return;
-    }
-
-    this.charityImageLinks.splice(index, 1);
   }
 
   private startEmailCooldown(): void {
@@ -465,10 +468,8 @@ export class CharitySignupComponent implements OnInit {
     this.successMessage = '';
 
     if (this.canCreateAccount()) {
-      const imageUrls = this.charityImageLinks.map(link => (link || '').trim()).filter(link => link.length > 0);
-
-      if (imageUrls.length < 4) {
-        this.errorMessage = 'Please add at least 4 charity images.';
+      if (this.selectedCharityImages.length < 5) {
+        this.errorMessage = 'Please upload at least 5 charity images.';
         return;
       }
 
@@ -478,7 +479,9 @@ export class CharitySignupComponent implements OnInit {
         `Phone: ${this.normalizePhone(this.signupForm.get('phone')?.value ?? '')}`,
         `City: ${this.signupForm.get('city')?.value ?? ''}`,
         `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
-        `Focus areas: ${this.signupForm.get('focusAreas')?.value ?? ''}`
+        `Needed amount: ₹${this.signupForm.get('neededAmount')?.value ?? 0}`,
+        `Mission: ${this.signupForm.get('mission')?.value ?? ''}`,
+        `Goal: ${this.signupForm.get('goal')?.value ?? ''}`
       ].join('\n');
 
       const previewConfirmed = window.confirm(`Please review your charity registration details:\n\n${summary}\n\nIf anything is wrong, cancel and edit the form.`);
@@ -497,42 +500,67 @@ export class CharitySignupComponent implements OnInit {
       const phone = this.normalizePhone(this.signupForm.get('phone')?.value ?? '');
       const charityName = (this.signupForm.get('organizationName')?.value ?? '').trim();
 
-      const payload = {
-        name: charityName,
-        charityName: charityName,
-        email: email,
-        password: this.signupForm.get('password')?.value ?? '',
-        phoneNumber: phone,
-        registrationId: this.signupForm.get('charityRegistrationNumber')?.value ?? '',
-        causeType: this.signupForm.get('charityType')?.value ?? '',
-        city: this.signupForm.get('city')?.value ?? '',
-        state: this.signupForm.get('state')?.value ?? '',
-        country: this.signupForm.get('country')?.value ?? '',
-        addressLine: this.signupForm.get('addressLine')?.value ?? '',
-        pincode: this.signupForm.get('pincode')?.value ?? '',
-        managerName: this.signupForm.get('managerName')?.value ?? charityName,
-        managerPhone: this.signupForm.get('managerPhone')?.value ?? phone,
-        socialMediaLink: this.websiteLinks.find(link => !!(link || '').trim()) ?? this.signupForm.get('website')?.value ?? '',
-        websiteLinks: this.websiteLinks.map(link => (link || '').trim()).filter(link => link.length > 0),
-        mission: this.signupForm.get('focusAreas')?.value ?? '',
-        about: this.signupForm.get('description')?.value ?? '',
-        activities: this.signupForm.get('focusAreas')?.value ?? '',
-        imageUrls
-      };
+      this.api.uploadCharityImages(this.selectedCharityImages).subscribe({
+        next: (uploadResponse: any) => {
+          const imageUrls = Array.isArray(uploadResponse?.imageUrls)
+            ? uploadResponse.imageUrls
+            : Array.isArray(uploadResponse)
+              ? uploadResponse
+              : [];
 
-      this.api.registerCharity(payload).subscribe({
-        next: (response: any) => {
-          this.isLoading = false;
-          if (response?.success) {
-            this.successMessage = response?.message || 'Account created successfully.';
-            setTimeout(() => this.router.navigate(['/login']), 1500);
+          if (imageUrls.length < 5) {
+            this.isLoading = false;
+            this.errorMessage = 'Image upload failed. Please upload at least 5 valid images.';
             return;
           }
-          this.errorMessage = response?.message || 'Registration failed. Please try again.';
+
+          const payload = {
+            name: charityName,
+            charityName: charityName,
+            email: email,
+            password: this.signupForm.get('password')?.value ?? '',
+            phoneNumber: phone,
+            registrationId: this.signupForm.get('charityRegistrationNumber')?.value ?? '',
+            causeType: this.signupForm.get('charityType')?.value ?? '',
+            neededAmount: Number(this.signupForm.get('neededAmount')?.value ?? 0),
+            city: this.signupForm.get('city')?.value ?? '',
+            state: this.signupForm.get('state')?.value ?? '',
+            country: this.signupForm.get('country')?.value ?? '',
+            addressLine: this.signupForm.get('addressLine')?.value ?? '',
+            pincode: this.signupForm.get('pincode')?.value ?? '',
+            managerName: this.signupForm.get('managerName')?.value ?? charityName,
+            managerPhone: this.signupForm.get('managerPhone')?.value ?? phone,
+            socialMediaLink: this.websiteLinks.find(link => !!(link || '').trim()) ?? this.signupForm.get('website')?.value ?? '',
+            websiteLinks: this.websiteLinks.map(link => (link || '').trim()).filter(link => link.length > 0),
+            mission: this.signupForm.get('mission')?.value ?? '',
+            about: this.signupForm.get('description')?.value ?? '',
+            activities: this.signupForm.get('goal')?.value ?? '',
+            imageUrls
+          };
+
+          this.api.registerCharity(payload).subscribe({
+            next: (response: any) => {
+              this.isLoading = false;
+              if (response?.success) {
+                this.successMessage = response?.message || 'Account created successfully.';
+                setTimeout(() => this.router.navigate(['/login']), 1500);
+                return;
+              }
+              this.errorMessage = response?.message || 'Registration failed. Please try again.';
+            },
+            error: (error) => {
+              this.isLoading = false;
+              this.errorMessage = this.getApiErrorMessage(error, 'Registration failed. Verify phone and email first.');
+            }
+          });
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = this.getApiErrorMessage(error, 'Registration failed. Verify phone and email first.');
+          if (error?.status === 404) {
+            this.errorMessage = 'Image upload API is not available yet. Please restart backend and try again.';
+            return;
+          }
+          this.errorMessage = this.getApiErrorMessage(error, 'Image upload failed. Please try again.');
         }
       });
       return;
@@ -562,12 +590,13 @@ export class CharitySignupComponent implements OnInit {
   get managerPhone() { return this.signupForm.get('managerPhone'); }
   get charityRegistrationNumber() { return this.signupForm.get('charityRegistrationNumber'); }
   get charityType() { return this.signupForm.get('charityType'); }
-  get focusAreas() { return this.signupForm.get('focusAreas'); }
+  get neededAmount() { return this.signupForm.get('neededAmount'); }
+  get mission() { return this.signupForm.get('mission'); }
+  get goal() { return this.signupForm.get('goal'); }
   get description() { return this.signupForm.get('description'); }
-  get taxExemptCertificate() { return this.signupForm.get('taxExemptCertificate'); }
   get termsAccepted() { return this.signupForm.get('termsAccepted'); }
-  get charityImageLinksFilled(): number {
-    return this.charityImageLinks.map(link => (link || '').trim()).filter(link => link.length > 0).length;
+  get charityImageCount(): number {
+    return this.selectedCharityImages.length;
   }
 
   get previewSummary(): string {
@@ -583,7 +612,9 @@ export class CharitySignupComponent implements OnInit {
       `Manager: ${this.signupForm.get('managerName')?.value ?? this.signupForm.get('organizationName')?.value ?? ''}`,
       `Manager phone: ${this.signupForm.get('managerPhone')?.value ?? this.normalizePhone(this.signupForm.get('phone')?.value ?? '')}`,
       `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
-      `Focus areas: ${this.signupForm.get('focusAreas')?.value ?? ''}`,
+      `Needed amount: ₹${this.signupForm.get('neededAmount')?.value ?? 0}`,
+      `Mission: ${this.signupForm.get('mission')?.value ?? ''}`,
+      `Goal: ${this.signupForm.get('goal')?.value ?? ''}`,
       `Registration number: ${this.signupForm.get('charityRegistrationNumber')?.value ?? ''}`
     ].join(' • ');
   }

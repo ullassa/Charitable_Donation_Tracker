@@ -109,6 +109,20 @@
             <span>Email: {{ charity.email || 'Email not set' }}</span>
           </div>
 
+          <div class="fund-progress" *ngIf="charity.targetAmount > 0">
+            <div class="fund-row">
+              <span>Needed: ₹{{ charity.targetAmount | number:'1.0-0' }}</span>
+              <span>Received: ₹{{ (charity.totalReceived || 0) | number:'1.0-0' }}</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="getProgressPercent(charity)"></div>
+            </div>
+            <div class="fund-row muted">
+              <span>Remaining: ₹{{ getRemainingAmount(charity) | number:'1.0-0' }}</span>
+              <span>{{ getProgressPercent(charity) | number:'1.0-0' }}%</span>
+            </div>
+          </div>
+
           <button
             type="button"
             class="read-more"
@@ -131,6 +145,10 @@
                 mission: charity.mission,
                 about: charity.about,
                 activities: charity.activities,
+                targetAmount: charity.targetAmount,
+                totalReceived: charity.totalReceived,
+                remainingAmount: charity.remainingAmount,
+                progressPercent: charity.progressPercent,
                 addressLine: charity.addressLine,
                 managerName: charity.managerName,
                 managerPhone: charity.managerPhone,

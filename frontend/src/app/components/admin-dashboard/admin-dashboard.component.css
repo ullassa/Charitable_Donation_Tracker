@@ -550,6 +550,105 @@
   font-size: 1.1rem;
 }
 
+.admin-chart-with-axis {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0.8rem;
+}
+
+.admin-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 220px;
+  padding-bottom: 1.45rem;
+  border-right: 1px solid #cbd5e1;
+  padding-right: 0.45rem;
+}
+
+.admin-y-axis span {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1;
+}
+
+.admin-plot-wrapper {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  align-items: end;
+}
+
+.admin-plot-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 1.45rem;
+  background-image: repeating-linear-gradient(
+    to top,
+    transparent,
+    transparent calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) 20%
+  );
+  pointer-events: none;
+}
+
+.admin-bar-columns {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(86px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.admin-bar-col {
+  display: grid;
+  justify-items: center;
+  gap: 0.32rem;
+}
+
+.admin-bar-track {
+  width: 48px;
+  height: 175px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  border: 1px solid #dbeafe;
+  overflow: hidden;
+  display: flex;
+  align-items: end;
+}
+
+.admin-bar-fill {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.admin-bar-value {
+  font-size: 0.8rem;
+  color: #111827;
+  font-weight: 700;
+}
+
+.admin-bar-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.admin-x-axis-title {
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid #cbd5e1;
+  font-size: 0.78rem;
+  color: #475569;
+  text-align: center;
+}
+
 /* ===== Loading State ===== */
 .loading-state {
   display: flex;
@@ -634,6 +733,10 @@
 
   .filter-select {
     min-width: 100%;
+  }
+
+  .admin-chart-with-axis {
+    grid-template-columns: 56px 1fr;
   }
 }
 
@@ -969,4 +1072,45 @@
 
   .details-row .details-grid {
     margin-bottom: 0.8rem;
+  }
+
+  .donor-details-grid {
+    margin-top: 0.25rem;
+  }
+
+  .donation-history {
+    margin-top: 0.5rem;
+    overflow-x: auto;
+  }
+
+  .donation-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+
+  .donation-table thead th {
+    text-align: left;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.65rem 0.7rem;
+  }
+
+  .donation-table tbody td {
+    padding: 0.65rem 0.7rem;
+    border-bottom: 1px solid #eef2f7;
+    color: #111827;
+    font-size: 0.88rem;
+  }
+
+  .empty-inline {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
   }

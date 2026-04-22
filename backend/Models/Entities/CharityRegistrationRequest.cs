@@ -64,6 +64,9 @@ namespace CareFund.Models
 
         public string Activities { get; set; } = string.Empty; 
 
+        [Range(1, 1000000000, ErrorMessage = "Target amount must be greater than zero")]
+        public decimal TargetAmount { get; set; } = 100000;
+
   
 
         [Required] 

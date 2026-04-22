@@ -63,14 +63,23 @@
       <p class="trend-hint" *ngIf="!showTrend">Click Donation Trend to view the chart.</p>
 
       <div class="bar-chart-container" *ngIf="showTrend && monthly.length > 0; else noMonthlyData">
-        <div *ngFor="let item of monthly" class="bar-item">
-          <div class="bar-wrapper">
-            <div class="bar-track">
-              <div class="bar-fill" [style.width.%]="(item.amount / (stats.totalCollected || 1)) * 100"></div>
-            </div>
-            <span class="bar-label">{{ item.label }}</span>
+        <div class="chart-with-axis">
+          <div class="y-axis">
+            <span *ngFor="let tick of yAxisTicks">₹{{ tick | number:'1.0-0' }}</span>
           </div>
-          <span class="bar-amount">₹{{ item.amount | number:'1.0-0' }}</span>
+
+          <div class="plot-wrapper">
+            <div class="bar-columns">
+              <div class="bar-col" *ngFor="let item of monthly; let i = index; trackBy: itemTrackBy">
+                <div class="bar-track">
+                  <div class="bar-fill" [style.height]="barHeight(item.amount)"></div>
+                </div>
+                <span class="bar-amount">₹{{ item.amount | number:'1.0-0' }}</span>
+                <span class="bar-label">{{ item.label }}</span>
+              </div>
+            </div>
+            <p class="x-axis-title">X-axis: Month</p>
+          </div>
         </div>
       </div>
 

@@ -62,13 +62,23 @@
       <p class="trend-note" *ngIf="trend.length">Color bars show {{ trendGroupBy }}-wise donation totals for selected dates.</p>
 
       <div *ngIf="trend.length; else noTrend" class="bar-chart">
-        <div class="bar-columns">
-          <div class="bar-col" *ngFor="let item of trend; let i = index; trackBy: itemTrackBy">
-            <div class="bar-track">
-              <div class="bar-fill" [style.height]="barHeight(item.amount)" [style.background]="barColor(i)"></div>
+        <div class="chart-with-axis">
+          <div class="y-axis">
+            <span *ngFor="let tick of yAxisTicks">₹{{ tick | number:'1.0-0' }}</span>
+          </div>
+
+          <div class="plot-wrapper">
+            <div class="bar-columns">
+              <div class="bar-col" *ngFor="let item of trend; let i = index; trackBy: itemTrackBy">
+                <div class="bar-track">
+                  <div class="bar-fill" [style.height]="barHeight(item.amount)" [style.background]="barColor(i)"></div>
+                </div>
+                <span class="value">₹{{ item.amount | number:'1.0-0' }}</span>
+                <span class="label">{{ item.label }}</span>
+              </div>
             </div>
-            <span class="value">₹{{ item.amount | number:'1.0-0' }}</span>
-            <span class="label">{{ item.label }}</span>
+
+            <p class="x-axis-title">{{ xAxisTitle }}</p>
           </div>
         </div>
       </div>

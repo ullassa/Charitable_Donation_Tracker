@@ -94,7 +94,7 @@
         >
         <div class="hero-thumbs">
           <img
-            *ngFor="let image of charity.imageUrls | slice:0:4; let i = index"
+            *ngFor="let image of charity.imageUrls | slice:0:5; let i = index"
             class="hero-thumb"
             [src]="image"
             [alt]="charity.name + ' image ' + (i + 1)"
@@ -112,7 +112,7 @@
       </div>
 
       <div class="gallery-scroll image-grid">
-        <article class="gallery-card glass-panel image-card" *ngFor="let image of charity.imageUrls.slice(0, 4); let i = index">
+        <article class="gallery-card glass-panel image-card" *ngFor="let image of charity.imageUrls; let i = index">
           <img [src]="image" [alt]="charity.name + ' gallery ' + (i + 1)">
         </article>
       </div>

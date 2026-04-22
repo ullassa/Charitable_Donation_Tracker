@@ -19,6 +19,10 @@ namespace CareFund.DTOs.Charity
         public string? Icon { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
+        public decimal TargetAmount { get; set; }
+        public decimal TotalReceived { get; set; }
+        public decimal RemainingAmount { get; set; }
+        public decimal ProgressPercent { get; set; }
         public List<string> ImageUrls { get; set; } = new();
         public string Status { get; set; } = string.Empty;
         public bool IsActive { get; set; }

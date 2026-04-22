@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -55,6 +55,24 @@ export class ApiService {
 
   registerCharity(data: any) {
     return this.http.post(`${this.baseUrl}/auth/register-charity`, data);
+  }
+
+  uploadCharityImages(files: File[]) {
+    const createPayload = () => {
+      const formData = new FormData();
+      files.forEach(file => formData.append('files', file));
+      return formData;
+    };
+
+    return this.http.post(`${this.baseUrl}/uploads/charity-images`, createPayload()).pipe(
+      catchError((firstError: any) => {
+        if (firstError?.status !== 404) {
+          return throwError(() => firstError);
+        }
+
+        return this.http.post(`${this.baseUrl}/auth/upload-charity-images`, createPayload());
+      })
+    );
   }
 
   registerCustomer(data: any) {
@@ -143,6 +161,10 @@ export class ApiService {
 
   getAdminDashboard() {
     return this.http.get(`${this.baseUrl}/admin/dashboard`);
+  }
+
+  getAdminDonors() {
+    return this.http.get(`${this.baseUrl}/admin/donors`);
   }
 
   getAdminCharityRequests(status?: string) {

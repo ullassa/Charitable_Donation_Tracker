@@ -54,6 +54,8 @@ namespace CareFund.Controllers
                     Pincode = c.Pincode,
                     State = c.IndianState.ToString(),
                     Icon = c.CauseType.ToString(),
+                    TargetAmount = c.TargetAmount,
+                    TotalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
                     ImageUrls = c.Images
                         .Where(i => i.ImageUrl != null)
                         .Select(i => i.ImageUrl!)
@@ -61,6 +63,17 @@ namespace CareFund.Controllers
                         .ToList()
                 })
                 .ToListAsync();
+
+            foreach (var charity in charities)
+            {
+                charity.RemainingAmount = charity.TargetAmount > charity.TotalReceived
+                    ? charity.TargetAmount - charity.TotalReceived
+                    : 0;
+
+                charity.ProgressPercent = charity.TargetAmount > 0
+                    ? (charity.TotalReceived / charity.TargetAmount) * 100
+                    : 0;
+            }
 
             return Ok(new { success = true, items = charities });
         }

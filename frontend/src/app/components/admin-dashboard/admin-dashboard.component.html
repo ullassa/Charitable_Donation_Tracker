@@ -5,7 +5,7 @@
     <header class="dash-header">
       <div>
         <h1>Admin Dashboard</h1>
-        <p class="subtitle">Professional table view for charity approval workflow</p>
+        <p class="subtitle">Manage donors and charities from one view</p>
       </div>
       <div class="filter-section">
         <label for="status-filter">Status</label>
@@ -26,101 +26,224 @@
         <article class="kpi-card approved-card"><p class="kpi-label">Approved</p><h3 class="kpi-value">{{ stats.approved }}</h3></article>
         <article class="kpi-card rejected-card"><p class="kpi-label">Rejected</p><h3 class="kpi-value">{{ stats.rejected }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Users</p><h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3></article>
+        <article class="kpi-card neutral-card"><p class="kpi-label">Donors</p><h3 class="kpi-value">{{ stats.totalDonors || donors.length }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Donations</p><h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Approval %</p><h3 class="kpi-value">{{ approvalPercent }}%</h3></article>
       </div>
     </section>
 
-    <section class="requests-section">
-      <div class="table-head">
-        <h2>Charity Registration Requests</h2>
-        <span>{{ requests.length }} rows</span>
-      </div>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'donors'" (click)="setActivePanel('donors')">Donors</button>
+        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'charities'" (click)="setActivePanel('charities')">Charities</button>
+      </aside>
 
-      <div class="table-wrap" *ngIf="requests.length > 0; else noRequests">
-        <table class="requests-table">
-          <thead>
-            <tr>
-              <th>Charity</th>
-              <th>Cause</th>
-              <th>City</th>
-              <th>Submitted</th>
-              <th>Status</th>
-              <th class="actions-col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngFor="let item of requests">
-              <tr>
-                <td>
-                  <div class="charity-cell">
-                    <span class="request-icon">{{ getCharityIcon(item.cause) }}</span>
-                    <div>
-                      <p class="charity-name">{{ item.charityName }}</p>
-                      <p class="charity-sub">{{ item.registrationId || 'No registration id' }}</p>
+      <div class="admin-main-panels">
+        <section class="requests-section" *ngIf="activePanel === 'charities'">
+          <div class="table-head">
+            <h2>Request Status Graph</h2>
+            <span>X-axis: Status • Y-axis: Count</span>
+          </div>
+
+          <div class="admin-chart-with-axis">
+            <div class="admin-y-axis">
+              <span *ngFor="let tick of adminYAxisTicks">{{ tick }}</span>
+            </div>
+
+            <div class="admin-plot-wrapper">
+              <div class="admin-bar-columns">
+                <div class="admin-bar-col" *ngFor="let item of adminTrend; let i = index">
+                  <div class="admin-bar-track">
+                    <div class="admin-bar-fill" [style.height]="adminBarHeight(item.amount)" [style.background]="adminBarColor(i)"></div>
+                  </div>
+                  <span class="admin-bar-value">{{ item.amount }}</span>
+                  <span class="admin-bar-label">{{ item.label }}</span>
+                </div>
+              </div>
+              <p class="admin-x-axis-title">X-axis: Request Status</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="requests-section" *ngIf="activePanel === 'charities'">
+          <div class="table-head">
+            <h2>Charity Registration Requests</h2>
+            <span>{{ requests.length }} rows</span>
+          </div>
+
+          <div class="table-wrap" *ngIf="requests.length > 0; else noRequests">
+            <table class="requests-table">
+              <thead>
+                <tr>
+                  <th>Charity</th>
+                  <th>Cause</th>
+                  <th>City</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let item of requests">
+                  <tr>
+                    <td>
+                      <div class="charity-cell">
+                        <span class="request-icon">{{ getCharityIcon(item.cause) }}</span>
+                        <div>
+                          <p class="charity-name">{{ item.charityName }}</p>
+                          <p class="charity-sub">{{ item.registrationId || 'No registration id' }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ item.cause || 'General Charity' }}</td>
+                    <td>{{ item.city || 'Not provided' }}</td>
+                    <td>{{ item.submittedAt | date:'mediumDate' }}</td>
+                    <td><span class="status-badge" [ngClass]="'status-' + item.status.toLowerCase()">{{ item.status }}</span></td>
+                    <td class="actions-col">
+                      <button type="button" class="btn-view-details" (click)="toggleDetails(item.charityRegistrationId)">
+                        {{ isDetailsOpen(item.charityRegistrationId) ? 'Hide' : 'View' }}
+                      </button>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="isDetailsOpen(item.charityRegistrationId)">
+                    <td colspan="6" class="details-row">
+                      <div class="details-grid">
+                        <div><label>State</label><p>{{ item.state || 'Not provided' }}</p></div>
+                        <div><label>Pincode</label><p>{{ item.pincode || 'Not provided' }}</p></div>
+                        <div><label>Manager</label><p>{{ item.managerName || item.charityName || 'Not provided' }}</p></div>
+                        <div><label>Manager Phone</label><p>{{ item.managerPhone || item.userPhone || 'Not provided' }}</p></div>
+                        <div><label>Target Amount</label><p>₹{{ (item.targetAmount || 0) | number:'1.0-0' }}</p></div>
+                        <div><label>Total Received</label><p>₹{{ (item.totalReceived || 0) | number:'1.0-0' }}</p></div>
+                        <div><label>Remaining</label><p>₹{{ (item.remainingAmount || 0) | number:'1.0-0' }}</p></div>
+                        <div class="full"><label>Email</label><p>{{ item.email || 'Not provided' }}</p></div>
+                        <div class="full"><label>Address</label><p>{{ item.addressLine || 'Not provided' }}</p></div>
+                        <div class="full"><label>Mission</label><p>{{ item.mission || 'Not provided' }}</p></div>
+                        <div class="full"><label>About</label><p>{{ item.about || 'Not provided' }}</p></div>
+                        <div class="full"><label>Activities</label><p>{{ item.activities || 'Not provided' }}</p></div>
+                        <div class="full" *ngIf="item.socialMediaLink">
+                          <label>Social Media</label>
+                          <p><a [href]="item.socialMediaLink" target="_blank" rel="noopener noreferrer">{{ item.socialMediaLink }}</a></p>
+                        </div>
+                      </div>
+
+                      <div class="request-actions">
+                        <input
+                          type="text"
+                          [(ngModel)]="commentDraft[item.charityRegistrationId]"
+                          placeholder="Add admin comment (optional)..."
+                          class="comment-input"
+                        />
+                        <button class="btn-approve" (click)="review(item.charityRegistrationId, 'approve')" [disabled]="item.status === 'Approved'">Approve</button>
+                        <button class="btn-reject" (click)="review(item.charityRegistrationId, 'reject')" [disabled]="item.status === 'Rejected'">Reject</button>
+                      </div>
+
+                      <p class="admin-comment" *ngIf="item.adminComment">Admin comment: {{ item.adminComment }}</p>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noRequests>
+            <div class="empty-state">
+              <p class="empty-text">No charity requests found</p>
+            </div>
+          </ng-template>
+        </section>
+
+        <section class="requests-section" *ngIf="activePanel === 'donors'">
+          <div class="table-head">
+            <h2>All Donors</h2>
+            <span>{{ stats.totalDonors || donors.length }} donors</span>
+          </div>
+
+          <div class="table-wrap" *ngIf="donors.length > 0; else noCustomers">
+            <table class="requests-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th>Donations</th>
+                  <th>Total Donated</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let donor of donors">
+                <tr>
+                  <td>{{ donor.name || 'Not provided' }}</td>
+                  <td>{{ donor.email || 'Not provided' }}</td>
+                  <td>{{ donor.phone || 'Not provided' }}</td>
+                  <td>{{ donor.city || 'Not provided' }}</td>
+                  <td>{{ donor.donationsCount || 0 }}</td>
+                  <td>₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</td>
+                  <td class="actions-col">
+                    <button type="button" class="btn-view-details" (click)="toggleDonorDetails(donor.donorId)">
+                      {{ isDonorDetailsOpen(donor.donorId) ? 'Hide details' : 'View details' }}
+                    </button>
+                  </td>
+                </tr>
+
+                <tr *ngIf="isDonorDetailsOpen(donor.donorId)">
+                  <td colspan="7" class="details-row">
+                    <div class="details-grid donor-details-grid">
+                      <div><label>Donor ID</label><p>{{ donor.donorId }}</p></div>
+                      <div><label>Created At</label><p>{{ donor.createdAt | date:'mediumDate' }}</p></div>
+                      <div><label>Last Donation</label><p>{{ donor.lastDonationAt | date:'medium' }}</p></div>
+                      <div><label>Total Donated</label><p>₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</p></div>
+                      <div class="full"><label>Donation History</label>
+                        <div class="donation-history" *ngIf="donor.donations?.length > 0; else noDonorPayments">
+                          <table class="donation-table">
+                            <thead>
+                              <tr>
+                                <th>Charity</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Payment Method</th>
+                                <th>Transaction Ref</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let payment of donor.donations">
+                                <td>{{ payment.charityName || 'Not provided' }}</td>
+                                <td>₹{{ (payment.amount || 0) | number:'1.0-0' }}</td>
+                                <td>{{ payment.donationDate | date:'mediumDate' }}</td>
+                                <td>{{ payment.paymentMethod || 'Unknown' }}</td>
+                                <td>{{ payment.transactionReference || 'N/A' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <ng-template #noDonorPayments>
+                          <p class="empty-inline">No payment records found</p>
+                        </ng-template>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>{{ item.cause || 'General Charity' }}</td>
-                <td>{{ item.city || 'Not provided' }}</td>
-                <td>{{ item.submittedAt | date:'mediumDate' }}</td>
-                <td><span class="status-badge" [ngClass]="'status-' + item.status.toLowerCase()">{{ item.status }}</span></td>
-                <td class="actions-col">
-                  <button type="button" class="btn-view-details" (click)="toggleDetails(item.charityRegistrationId)">
-                    {{ isDetailsOpen(item.charityRegistrationId) ? 'Hide' : 'View' }}
-                  </button>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
 
-              <tr *ngIf="isDetailsOpen(item.charityRegistrationId)">
-                <td colspan="6" class="details-row">
-                  <div class="details-grid">
-                    <div><label>State</label><p>{{ item.state || 'Not provided' }}</p></div>
-                    <div><label>Pincode</label><p>{{ item.pincode || 'Not provided' }}</p></div>
-                    <div><label>Manager</label><p>{{ item.managerName || item.charityName || 'Not provided' }}</p></div>
-                    <div><label>Manager Phone</label><p>{{ item.managerPhone || item.userPhone || 'Not provided' }}</p></div>
-                    <div class="full"><label>Email</label><p>{{ item.email || 'Not provided' }}</p></div>
-                    <div class="full"><label>Address</label><p>{{ item.addressLine || 'Not provided' }}</p></div>
-                    <div class="full"><label>Mission</label><p>{{ item.mission || 'Not provided' }}</p></div>
-                    <div class="full"><label>About</label><p>{{ item.about || 'Not provided' }}</p></div>
-                    <div class="full"><label>Activities</label><p>{{ item.activities || 'Not provided' }}</p></div>
-                    <div class="full" *ngIf="item.socialMediaLink">
-                      <label>Social Media</label>
-                      <p><a [href]="item.socialMediaLink" target="_blank" rel="noopener noreferrer">{{ item.socialMediaLink }}</a></p>
-                    </div>
-                  </div>
-
-                  <div class="request-actions">
-                    <input
-                      type="text"
-                      [(ngModel)]="commentDraft[item.charityRegistrationId]"
-                      placeholder="Add admin comment (optional)..."
-                      class="comment-input"
-                    />
-                    <button class="btn-approve" (click)="review(item.charityRegistrationId, 'approve')" [disabled]="item.status === 'Approved'">Approve</button>
-                    <button class="btn-reject" (click)="review(item.charityRegistrationId, 'reject')" [disabled]="item.status === 'Rejected'">Reject</button>
-                  </div>
-
-                  <p class="admin-comment" *ngIf="item.adminComment">Admin comment: {{ item.adminComment }}</p>
-                </td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
+          <ng-template #noCustomers>
+            <div class="empty-state">
+              <p class="empty-text">No donors found</p>
+            </div>
+          </ng-template>
+        </section>
       </div>
-
-      <ng-template #noRequests>
-        <div class="empty-state">
-          <p class="empty-text">No charity requests found</p>
-        </div>
-      </ng-template>
-    </section>
+    </div>
   </section>
 
   <ng-template #loadingView>
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Loading dashboard...</p>
+      <p>Loading dashboard.🔃🔃🔃..</p>
     </div>
   </ng-template>
 </main>

@@ -19,14 +19,16 @@ public class AuthController : ControllerBase
     private readonly IOtpService _otpService;
     private readonly INotificationEmailService _notifications;
     private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _environment;
 
-    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, INotificationEmailService notifications, ApplicationDbContext context)
+    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, INotificationEmailService notifications, ApplicationDbContext context, IWebHostEnvironment environment)
     {
         _authService = authService;
         _jwtService = jwtService;
         _otpService = otpService;
         _notifications = notifications;
         _context = context;
+        _environment = environment;
     }
 
     // LOGIN
@@ -63,6 +65,69 @@ public class AuthController : ControllerBase
         {
             return StatusCode(503, new { success = false, message = "Database connection failed. Check SQL Server and connection string.", details = ex.Message });
         }
+    }
+
+    [HttpPost("upload-charity-images")]
+    [RequestSizeLimit(30_000_000)]
+    public async Task<IActionResult> UploadCharityImages([FromForm] List<IFormFile> files)
+    {
+        if (files == null || files.Count == 0)
+        {
+            return BadRequest(new { success = false, message = "At least one image file is required." });
+        }
+
+        if (files.Count < 5)
+        {
+            return BadRequest(new { success = false, message = "Please upload at least 5 charity images." });
+        }
+
+        var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg",
+            ".jpeg",
+            ".png"
+        };
+
+        const long maxFileSize = 5 * 1024 * 1024;
+        var webRoot = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var uploadRoot = Path.Combine(webRoot, "uploads", "charities");
+        Directory.CreateDirectory(uploadRoot);
+
+        var imageUrls = new List<string>();
+
+        foreach (var file in files)
+        {
+            if (file == null || file.Length == 0)
+            {
+                continue;
+            }
+
+            if (file.Length > maxFileSize)
+            {
+                return BadRequest(new { success = false, message = "Each image must be 5MB or smaller." });
+            }
+
+            var extension = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(extension) || !allowedExtensions.Contains(extension))
+            {
+                return BadRequest(new { success = false, message = "Only JPG and PNG images are allowed." });
+            }
+
+            var fileName = $"{Guid.NewGuid()}{extension.ToLowerInvariant()}";
+            var filePath = Path.Combine(uploadRoot, fileName);
+
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            imageUrls.Add($"/uploads/charities/{fileName}");
+        }
+
+        if (imageUrls.Count < 5)
+        {
+            return BadRequest(new { success = false, message = "Please upload at least 5 valid images." });
+        }
+
+        return Ok(new { success = true, imageUrls });
     }
 
     // -----------------------
@@ -196,9 +261,9 @@ public class AuthController : ControllerBase
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            if (normalizedImages.Count < 4)
+            if (normalizedImages.Count < 5)
             {
-                return BadRequest(new { success = false, message = "Please provide at least 4 charity images." });
+                return BadRequest(new { success = false, message = "Please provide at least 5 charity images." });
             }
 
             var user = _authService.RegisterCharity(charityName, email, dto.Password,
@@ -216,6 +281,7 @@ public class AuthController : ControllerBase
                 dto.Mission,
                 dto.About,
                 dto.Activities,
+                dto.NeededAmount,
                 normalizedImages);
 
             if (user == null)
@@ -349,6 +415,14 @@ public class AuthController : ControllerBase
                     pincode = c.Pincode,
                     state = c.IndianState.ToString(),
                     icon = c.CauseType.ToString(),
+                    targetAmount = c.TargetAmount,
+                    totalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
+                    remainingAmount = c.TargetAmount > (c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0)
+                        ? c.TargetAmount - (c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0)
+                        : 0,
+                    progressPercent = c.TargetAmount > 0
+                        ? ((c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0) / c.TargetAmount) * 100
+                        : 0,
                     email = c.User != null ? c.User.Email : string.Empty,
                     status = c.Status.ToString(),
                     isActive = c.IsActive,

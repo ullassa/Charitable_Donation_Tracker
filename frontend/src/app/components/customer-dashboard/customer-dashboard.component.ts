@@ -91,13 +91,62 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     return Math.max(1, ...this.trend.map(item => item.amount || 0));
   }
 
+  private getNiceStep(maxValue: number, tickCount: number): number {
+    const safeMax = Math.max(1, maxValue);
+    const rawStep = safeMax / Math.max(1, tickCount);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+
+    let niceNormalized = 1;
+    if (normalized > 1 && normalized <= 2) {
+      niceNormalized = 2;
+    } else if (normalized > 2 && normalized <= 5) {
+      niceNormalized = 5;
+    } else if (normalized > 5) {
+      niceNormalized = 10;
+    }
+
+    return niceNormalized * magnitude;
+  }
+
+  get yAxisStep(): number {
+    return this.getNiceStep(this.maxTrendAmount, 5);
+  }
+
+  get yAxisMax(): number {
+    const step = this.yAxisStep;
+    return Math.max(step, Math.ceil(this.maxTrendAmount / step) * step);
+  }
+
+  get yAxisTicks(): number[] {
+    const ticks: number[] = [];
+    for (let value = this.yAxisMax; value >= 0; value -= this.yAxisStep) {
+      ticks.push(value);
+    }
+    return ticks;
+  }
+
+  get xAxisTitle(): string {
+    switch (this.trendGroupBy) {
+      case 'day':
+        return 'X-axis: Day';
+      case 'week':
+        return 'X-axis: Week';
+      case 'year':
+        return 'X-axis: Year';
+      case 'month':
+      default:
+        return 'X-axis: Month';
+    }
+  }
+
   barWidth(amount: number): string {
     const width = (Math.max(0, amount) / this.maxTrendAmount) * 100;
     return `${Math.max(12, width)}%`;
   }
 
   barHeight(amount: number): string {
-    const height = (Math.max(0, amount) / this.maxTrendAmount) * 100;
+    const height = (Math.max(0, amount) / this.yAxisMax) * 100;
     return `${Math.max(10, height)}%`;
   }
 

@@ -38,51 +38,51 @@ public class DashboardController : ControllerBase
         var normalizedGroupBy = (groupBy ?? "month").Trim().ToLowerInvariant();
         var start = from ?? DateTime.UtcNow.AddMonths(-6);
         var end = to ?? DateTime.UtcNow;
-            var pdfLines = new List<string>
-            {
-                "Thank you for donating",
+        var donations = await _context.Donations
+            .AsNoTracking()
+            .Where(d => d.CustomerId == user.Customer.CustomerId && d.DonationDate >= start && d.DonationDate <= end)
+            .OrderBy(d => d.DonationDate)
+            .ToListAsync();
 
-            var donations = await _context.Donations
-                .AsNoTracking()
-                .Where(d => d.CustomerId == user.Customer.CustomerId && d.DonationDate >= start && d.DonationDate <= end)
-                .OrderBy(d => d.DonationDate)
-                .ToListAsync();
+        var grouped = normalizedGroupBy switch
+        {
+            "day" => donations
+                .GroupBy(d => d.DonationDate.Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = g.Key.ToString("yyyy-MM-dd"),
+                    amount = g.Sum(x => x.Amount)
+                }),
+            "week" => donations
+                .GroupBy(d => StartOfWeek(d.DonationDate))
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = $"{g.Key:yyyy-MM-dd}",
+                    amount = g.Sum(x => x.Amount)
+                }),
+            "year" => donations
+                .GroupBy(d => d.DonationDate.Year)
+                .OrderBy(g => g.Key)
+                .Select(g => new
+                {
+                    label = g.Key.ToString(),
+                    amount = g.Sum(x => x.Amount)
+                }),
+            _ => donations
+                .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new
+                {
+                    label = $"{g.Key.Year}-{g.Key.Month:00}",
+                    amount = g.Sum(x => x.Amount)
+                })
+        };
 
-            var grouped = normalizedGroupBy switch
-            {
-                "day" => donations
-                    .GroupBy(d => d.DonationDate.Date)
-                    .OrderBy(g => g.Key)
-                    .Select(g => new
-                    {
-                        label = g.Key.ToString("yyyy-MM-dd"),
-                        amount = g.Sum(x => x.Amount)
-                    }),
-                "week" => donations
-                    .GroupBy(d => StartOfWeek(d.DonationDate))
-                    .OrderBy(g => g.Key)
-                    .Select(g => new
-                    {
-                        label = $"{g.Key:yyyy-MM-dd}",
-                        amount = g.Sum(x => x.Amount)
-                    }),
-                "year" => donations
-                    .GroupBy(d => d.DonationDate.Year)
-                    .OrderBy(g => g.Key)
-                    .Select(g => new
-                    {
-                        label = g.Key.ToString(),
-                        amount = g.Sum(x => x.Amount)
-                    }),
-                _ => donations
-                    .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
-                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                    .Select(g => new
-                    {
-                        label = $"{g.Key.Year}-{g.Key.Month:00}",
-                        amount = g.Sum(x => x.Amount)
-                    })
-            };
+        return Ok(new
+        {
+            success = true,
             groupBy = normalizedGroupBy,
             period = new { from = start, to = end },
             items = grouped
@@ -183,6 +183,13 @@ public class DashboardController : ControllerBase
                 amount = g.Sum(x => x.Amount)
             });
 
+        var totalCollected = donations.Sum(x => x.Amount);
+        var targetAmount = charity.TargetAmount > 0 ? charity.TargetAmount : 100000;
+        var remainingAmount = Math.Max(0, targetAmount - totalCollected);
+        var progressPercent = targetAmount > 0
+            ? Math.Min(100, Math.Round((totalCollected / targetAmount) * 100, 2))
+            : 0;
+
         return Ok(new
         {
             success = true,
@@ -202,6 +209,7 @@ public class DashboardController : ControllerBase
                 charity.Mission,
                 charity.About,
                 charity.Activities,
+                charity.TargetAmount,
                 charity.SubmittedAt,
                 charity.ReviewedAt,
                 charity.AdminComment,
@@ -213,8 +221,11 @@ public class DashboardController : ControllerBase
             },
             stats = new
             {
-                totalCollected = donations.Sum(x => x.Amount),
-                donationsCount = donations.Count
+                totalCollected,
+                donationsCount = donations.Count,
+                targetAmount,
+                remainingAmount,
+                progressPercent
             },
             monthly,
             period = new { from = start, to = end },

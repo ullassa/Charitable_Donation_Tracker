@@ -21,4 +21,5 @@ public class RegisterCharityDto
     public string? Mission { get; set; }
     public string? About { get; set; }
     public string? Activities { get; set; }
+    public decimal? NeededAmount { get; set; }
 }

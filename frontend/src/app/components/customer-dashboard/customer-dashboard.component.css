@@ -129,10 +129,64 @@
   align-items: end;
 }
 
+.chart-with-axis {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 0.8rem;
+  align-items: stretch;
+}
+
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  justify-items: end;
+  height: 210px;
+  padding-bottom: 1.45rem;
+  border-right: 1px solid #cbd5e1;
+  padding-right: 0.45rem;
+}
+
+.y-axis span {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1;
+}
+
+.plot-wrapper {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  align-items: end;
+}
+
+.plot-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 1.45rem;
+  background-image: repeating-linear-gradient(
+    to top,
+    transparent,
+    transparent calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) 20%
+  );
+  pointer-events: none;
+}
+
 .bar-col {
   display: grid;
   justify-items: center;
   gap: 0.32rem;
+}
+
+.bar-columns {
+  position: relative;
+  z-index: 1;
 }
 
 .bar-track {
@@ -160,6 +214,15 @@
 .label {
   font-size: 0.76rem;
   color: #6b7280;
+  text-align: center;
+}
+
+.x-axis-title {
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid #cbd5e1;
+  font-size: 0.78rem;
+  color: #475569;
   text-align: center;
 }
 
@@ -211,5 +274,9 @@
 
   .quick-stats {
     grid-template-columns: 1fr;
+  }
+
+  .chart-with-axis {
+    grid-template-columns: 56px 1fr;
   }
 }

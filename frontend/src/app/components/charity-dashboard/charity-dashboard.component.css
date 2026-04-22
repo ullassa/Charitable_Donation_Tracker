@@ -180,43 +180,109 @@
   gap: 0.75rem;
 }
 
-.bar-item {
-  display: flex;
-  align-items: center;
+.chart-with-axis {
+  display: grid;
+  grid-template-columns: 72px 1fr;
   gap: 0.8rem;
 }
 
-.bar-wrapper {
-  flex: 1;
+.y-axis {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 210px;
+  padding-bottom: 1.45rem;
+  border-right: 1px solid #cbd5e1;
+  padding-right: 0.45rem;
+}
+
+.y-axis span {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1;
+}
+
+.plot-wrapper {
+  position: relative;
+  display: grid;
+  gap: 0.4rem;
+  align-items: end;
+}
+
+.plot-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 1.45rem;
+  background-image: repeating-linear-gradient(
+    to top,
+    transparent,
+    transparent calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) calc(20% - 1px),
+    rgba(148, 163, 184, 0.35) 20%
+  );
+  pointer-events: none;
+}
+
+.bar-columns {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.bar-col {
+  display: grid;
+  justify-items: center;
+  gap: 0.32rem;
 }
 
 .bar-track {
-  height: 20px;
-  border-radius: 10px;
+  width: 48px;
+  height: 170px;
+  border-radius: 12px;
   background: #eff6ff;
+  border: 1px solid #dbeafe;
   overflow: hidden;
+  display: flex;
+  align-items: end;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #1d4ed8, #0ea5e9);
+  width: 100%;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #1d4ed8, #0ea5e9);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25);
+}
+
+.bar-amount {
+  font-size: 0.8rem;
+  color: #111827;
+  font-weight: 600;
 }
 
 .bar-label,
 .empty-state p,
 .donation-date {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #6b7280;
   margin: 0;
+  text-align: center;
 }
 
-.bar-amount {
-  font-weight: 700;
-  min-width: 92px;
-  text-align: right;
+.x-axis-title {
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid #cbd5e1;
+  font-size: 0.78rem;
+  color: #475569;
+  text-align: center;
 }
 
 .ops-grid.single {
@@ -288,5 +354,9 @@
 
   .kpi-strip {
     grid-template-columns: 1fr;
+  }
+
+  .chart-with-axis {
+    grid-template-columns: 56px 1fr;
   }
 }
