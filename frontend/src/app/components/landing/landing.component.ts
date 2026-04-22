@@ -27,19 +27,30 @@ export class LandingComponent implements OnInit, OnDestroy {
   heroSlides = [
     {
       title: 'CareFund keeps every donation visible',
-      subtitle: 'See real charities, live updates, and meaningful impact in one place.'
+      subtitle: 'See real charities, live updates, and meaningful impact in one place.',
+      imageFile: 'children.jpg'
     },
     {
       title: 'Donate with confidence',
-      subtitle: 'Every contribution is tracked, notified by email, and synced across dashboards.'
+      subtitle: 'Every contribution is tracked, notified by email, and synced dashboards.',
+      imageFile: 'oldage.jpg'
     },
     {
       title: 'Support causes that matter',
-      subtitle: 'Medical, education, food, disaster relief, and more. Pick your cause and give.'
+      subtitle: 'Medical, education, food, disaster relief, and more. Pick your cause and give.',
+      imageFile: 'Animal.jpg'
     }
   ];
   currentHeroSlide = 0;
   private heroRotationTimer: ReturnType<typeof setInterval> | null = null;
+  private heroImageFallbacks: string[] = [];
+  heroImageSrc = '';
+  private readonly heroLogoFallbacks = [
+    '/images/charityLogo.jpg',
+    'images/charityLogo.jpg',
+    '/frontend/images/charityLogo.jpg'
+  ];
+  heroLogoSrc = this.heroLogoFallbacks[0];
 
   heroTitle = 'Make a Difference Today';
   heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
@@ -94,6 +105,7 @@ export class LandingComponent implements OnInit, OnDestroy {
       this.heroTitle = 'Welcome back to CareFund';
       this.heroSubtitle = 'Browse live charities and donate with confidence.';
     }
+    this.selectHeroSlide(0);
     this.loadCharities();
     this.startHeroRotation();
   }
@@ -107,10 +119,8 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   private startHeroRotation(): void {
     this.heroRotationTimer = setInterval(() => {
-      this.currentHeroSlide = (this.currentHeroSlide + 1) % this.heroSlides.length;
-      const slide = this.heroSlides[this.currentHeroSlide];
-      this.heroTitle = slide.title;
-      this.heroSubtitle = slide.subtitle;
+      const nextIndex = (this.currentHeroSlide + 1) % this.heroSlides.length;
+      this.selectHeroSlide(nextIndex);
     }, 5000);
   }
 
@@ -194,6 +204,41 @@ export class LandingComponent implements OnInit, OnDestroy {
   updateVisibleCharities(): void {
     const start = (this.currentPage - 1) * this.pageSize;
     this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
+  }
+
+  selectHeroSlide(index: number): void {
+    this.currentHeroSlide = index;
+    const slide = this.heroSlides[index];
+    this.heroTitle = slide.title;
+    this.heroSubtitle = slide.subtitle;
+    this.heroImageFallbacks = this.buildImageFallbacks(slide.imageFile);
+    this.heroImageSrc = this.heroImageFallbacks[0];
+  }
+
+  private buildImageFallbacks(fileName: string): string[] {
+    return [
+      `/images/${fileName}`,
+      `images/${fileName}`,
+      `/frontend/images/${fileName}`
+    ];
+  }
+
+  onHeroImageError(): void {
+    const currentIndex = this.heroImageFallbacks.indexOf(this.heroImageSrc);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < this.heroImageFallbacks.length) {
+      this.heroImageSrc = this.heroImageFallbacks[nextIndex];
+    }
+  }
+
+  onHeroLogoError(): void {
+    const currentIndex = this.heroLogoFallbacks.indexOf(this.heroLogoSrc);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < this.heroLogoFallbacks.length) {
+      this.heroLogoSrc = this.heroLogoFallbacks[nextIndex];
+    }
   }
 
 }

@@ -190,6 +190,17 @@ public class AuthController : ControllerBase
                 ? dto.AddressLine.Trim()
                 : string.Join(", ", new[] { dto.City, dto.State, dto.Country }.Where(part => !string.IsNullOrWhiteSpace(part)));
 
+            var normalizedImages = (dto.ImageUrls ?? new List<string>())
+                .Select(url => (url ?? string.Empty).Trim())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (normalizedImages.Count < 4)
+            {
+                return BadRequest(new { success = false, message = "Please provide at least 4 charity images." });
+            }
+
             var user = _authService.RegisterCharity(charityName, email, dto.Password,
                 phone, _otpService,
                 dto.RegistrationId,
@@ -205,7 +216,7 @@ public class AuthController : ControllerBase
                 dto.Mission,
                 dto.About,
                 dto.Activities,
-                dto.ImageUrls);
+                normalizedImages);
 
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });

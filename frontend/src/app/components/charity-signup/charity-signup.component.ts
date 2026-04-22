@@ -61,6 +61,7 @@ export class CharitySignupComponent implements OnInit {
   selectedTaxExemptCertificateName = 'No file chosen';
   selectedTaxExemptCertificateFile: File | null = null;
   websiteLinks: string[] = [''];
+  charityImageLinks: string[] = ['', '', '', ''];
 
   constructor(private fb: FormBuilder, private api: ApiService, private router: Router) {}
 
@@ -416,6 +417,18 @@ export class CharitySignupComponent implements OnInit {
     this.websiteLinks.splice(index, 1);
   }
 
+  addCharityImageField(): void {
+    this.charityImageLinks.push('');
+  }
+
+  removeCharityImageField(index: number): void {
+    if (this.charityImageLinks.length <= 4) {
+      return;
+    }
+
+    this.charityImageLinks.splice(index, 1);
+  }
+
   private startEmailCooldown(): void {
     this.emailResendCooldown = 30;
     if (this.emailResendTimer) {
@@ -452,6 +465,13 @@ export class CharitySignupComponent implements OnInit {
     this.successMessage = '';
 
     if (this.canCreateAccount()) {
+      const imageUrls = this.charityImageLinks.map(link => (link || '').trim()).filter(link => link.length > 0);
+
+      if (imageUrls.length < 4) {
+        this.errorMessage = 'Please add at least 4 charity images.';
+        return;
+      }
+
       const summary = [
         `Organization: ${this.signupForm.get('organizationName')?.value ?? ''}`,
         `Email: ${this.normalizeEmail(this.signupForm.get('email')?.value ?? '')}`,
@@ -496,7 +516,8 @@ export class CharitySignupComponent implements OnInit {
         websiteLinks: this.websiteLinks.map(link => (link || '').trim()).filter(link => link.length > 0),
         mission: this.signupForm.get('focusAreas')?.value ?? '',
         about: this.signupForm.get('description')?.value ?? '',
-        activities: this.signupForm.get('focusAreas')?.value ?? ''
+        activities: this.signupForm.get('focusAreas')?.value ?? '',
+        imageUrls
       };
 
       this.api.registerCharity(payload).subscribe({
@@ -545,6 +566,9 @@ export class CharitySignupComponent implements OnInit {
   get description() { return this.signupForm.get('description'); }
   get taxExemptCertificate() { return this.signupForm.get('taxExemptCertificate'); }
   get termsAccepted() { return this.signupForm.get('termsAccepted'); }
+  get charityImageLinksFilled(): number {
+    return this.charityImageLinks.map(link => (link || '').trim()).filter(link => link.length > 0).length;
+  }
 
   get previewSummary(): string {
     return [

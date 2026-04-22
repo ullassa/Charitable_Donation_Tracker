@@ -414,6 +414,25 @@
           </div>
 
           <div class="form-group">
+            <label>Charity Images *</label>
+            <p class="help-text">Add at least 4 image URLs. These images will appear to donors when they open your charity profile.</p>
+            <div class="dynamic-list">
+              <div class="dynamic-row" *ngFor="let image of charityImageLinks; let i = index; trackBy: trackByIndex">
+                <input
+                  type="url"
+                  [(ngModel)]="charityImageLinks[i]"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="/images/your-image.jpg"
+                  class="form-control"
+                >
+                <button type="button" class="btn btn-outline dynamic-btn" (click)="removeCharityImageField(i)" [disabled]="charityImageLinks.length <= 4">Remove</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline add-more-btn" (click)="addCharityImageField()">+ Add New Image</button>
+            <p class="help-text">Filled images: {{ charityImageLinksFilled }} / 4 minimum</p>
+          </div>
+
+          <div class="form-group">
             <label for="taxExemptCertificate">Tax Exempt Certificate/Document (optional)</label>
             <div class="file-input-wrapper">
               <input

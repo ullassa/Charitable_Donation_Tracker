@@ -25,6 +25,7 @@ interface PublicCharity {
   state: string;
   email: string;
   phoneNumber: string;
+  imageUrls: string[];
   isActive: boolean;
   status: string;
 }
@@ -104,6 +105,9 @@ export class DonateComponent implements OnInit, OnDestroy {
           state: params['state'] || '',
           email: params['email'] || '',
           phoneNumber: params['phone'] || '',
+          imageUrls: typeof params['imageUrls'] === 'string'
+            ? params['imageUrls'].split(',').map((item: string) => item.trim()).filter(Boolean)
+            : [],
           isActive: true,
           status: 'Approved'
         };
@@ -218,6 +222,7 @@ export class DonateComponent implements OnInit, OnDestroy {
       state: item.state ?? '',
       email: item.email ?? '',
       phoneNumber: item.phoneNumber ?? item.phone ?? '',
+      imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls.filter((url: any) => !!url) : [],
       isActive: item.isActive ?? true,
       status: item.status ?? ''
     }));

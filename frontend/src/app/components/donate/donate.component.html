@@ -43,80 +43,80 @@
     </section>
 
     <section class="charity-hero glass-card" *ngIf="selectedCharity">
+      <ng-container *ngIf="selectedCharity as charity">
       <div class="hero-copy">
         <span class="eyebrow">Charity details</span>
-        <div class="hero-icon">{{ getCharityIcon(selectedCharity.cause) }}</div>
-        <h2>{{ selectedCharity.name }}</h2>
-        <p>{{ selectedCharity.description || 'This charity is ready to receive your support.' }}</p>
+        <div class="hero-icon">{{ getCharityIcon(charity.cause) }}</div>
+        <h2>{{ charity.name }}</h2>
+        <p>{{ charity.description || 'This charity is ready to receive your support.' }}</p>
 
         <div class="meta-grid">
           <div>
             <span class="meta-label">Cause</span>
-            <strong>{{ selectedCharity.cause || 'Community support' }}</strong>
+            <strong>{{ charity.cause || 'Community support' }}</strong>
           </div>
           <div>
             <span class="meta-label">Location</span>
-            <strong>{{ selectedCharity.location || 'Not set' }}</strong>
+            <strong>{{ charity.location || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">Email</span>
-            <strong>{{ selectedCharity.email || 'Not set' }}</strong>
+            <strong>{{ charity.email || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">Phone</span>
-            <strong>{{ selectedCharity.phoneNumber || 'Not set' }}</strong>
+            <strong>{{ charity.phoneNumber || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">Registration ID</span>
-            <strong>{{ selectedCharity.registrationId || 'Not set' }}</strong>
+            <strong>{{ charity.registrationId || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">Manager</span>
-            <strong>{{ selectedCharity.managerName || selectedCharity.name || 'Not set' }}</strong>
+            <strong>{{ charity.managerName || charity.name || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">Address</span>
-            <strong>{{ selectedCharity.addressLine || 'Not set' }}</strong>
+            <strong>{{ charity.addressLine || 'Not set' }}</strong>
           </div>
           <div>
             <span class="meta-label">State / Pincode</span>
-            <strong>{{ (selectedCharity.state || 'NA') + ' / ' + (selectedCharity.pincode || 'NA') }}</strong>
+            <strong>{{ (charity.state || 'NA') + ' / ' + (charity.pincode || 'NA') }}</strong>
           </div>
         </div>
       </div>
 
-      <div class="hero-badge glass-panel">
-        <div class="hero-badge-inner">
-          <span>Safe giving</span>
-          <strong>Secure and simple checkout</strong>
+      <div class="hero-image-panel" *ngIf="charity.imageUrls.length">
+        <img
+          class="hero-main-photo"
+          [src]="charity.imageUrls[0]"
+          [alt]="charity.name + ' image'"
+        >
+        <div class="hero-thumbs">
+          <img
+            *ngFor="let image of charity.imageUrls | slice:0:4; let i = index"
+            class="hero-thumb"
+            [src]="image"
+            [alt]="charity.name + ' image ' + (i + 1)"
+          >
         </div>
       </div>
+      </ng-container>
     </section>
 
-    <section class="gallery-section glass-card" *ngIf="selectedCharity">
+    <section class="gallery-section glass-card" *ngIf="selectedCharity as charity">
+      <ng-container *ngIf="charity.imageUrls.length">
       <div class="section-head">
-        <h2>Charity highlights</h2>
-        <p>Icon-based summary instead of image previews.</p>
+        <h2>Charity images</h2>
+        <p>These charity photos appear when a donor views the charity.</p>
       </div>
 
-      <div class="gallery-scroll icon-grid">
-        <article class="gallery-card glass-panel icon-card">
-          <span class="icon">{{ getCharityIcon(selectedCharity.cause) }}</span>
-          <strong>{{ selectedCharity.cause || 'General Charity' }}</strong>
-        </article>
-        <article class="gallery-card glass-panel icon-card">
-          <span class="icon">Location</span>
-          <strong>{{ selectedCharity.location || 'Location not set' }}</strong>
-        </article>
-        <article class="gallery-card glass-panel icon-card">
-          <span class="icon">Email</span>
-          <strong>{{ selectedCharity.email || 'Email not set' }}</strong>
-        </article>
-        <article class="gallery-card glass-panel icon-card">
-          <span class="icon">Phone</span>
-          <strong>{{ selectedCharity.phoneNumber || 'Phone not set' }}</strong>
+      <div class="gallery-scroll image-grid">
+        <article class="gallery-card glass-panel image-card" *ngFor="let image of charity.imageUrls.slice(0, 4); let i = index">
+          <img [src]="image" [alt]="charity.name + ' gallery ' + (i + 1)">
         </article>
       </div>
+      </ng-container>
     </section>
 
     <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate">

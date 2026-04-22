@@ -14,7 +14,7 @@
             class="dot"
             *ngFor="let slide of heroSlides; let i = index"
             [class.active]="currentHeroSlide === i"
-            (click)="currentHeroSlide = i; heroTitle = slide.title; heroSubtitle = slide.subtitle"
+            (click)="selectHeroSlide(i)"
             [attr.aria-label]="slide.title"
           ></button>
         </div>
@@ -31,15 +31,22 @@
         </div>
       </div>
       <div class="hero-visual">
-        <div class="hero-badge">Trusted giving. Saving lives.</div>
-        <!-- <div class="hero-image-square icon-visual">CF</div> -->
-         <!-- ...existing code... -->
-<div class="">
-  <img src="/frontend/images/children.jpg" alt="children"/>
-</div>
-<!-- ...existing code... -->
+        <div class="hero-badge"></div>
+        <div class="hero-image-square">
+          <img
+            class="hero-main-image"
+            [src]="heroImageSrc"
+            (error)="onHeroImageError()"
+            alt="Children receiving support"
+          />
+        </div>
         <div class="hero-illustration">
-          <div class="hero-logo-image icon-visual">CareFund</div>
+          <img
+            class="hero-logo-image"
+            [src]="heroLogoSrc"
+            (error)="onHeroLogoError()"
+            alt="Charity logo"
+          />
         </div>
       </div>
     </div>
