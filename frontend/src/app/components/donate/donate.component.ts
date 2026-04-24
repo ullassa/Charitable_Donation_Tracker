@@ -49,16 +49,22 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   showPaymentSection = false;
   selectedAmount = 0;
-  generatedAmount = 0;
-  generatorMinLimit = 100;
-  generatorMaxLimit = 2000;
-  generatedAmountMode = false;
   readonly averageDonationByUsers = 500;
 
   paymentMethod: 'upi' | 'card' | 'netbanking' | 'wallet' = 'upi';
   paymentProcessing = false;
   paymentMessage = '';
   donateAnonymously = false;
+  showFakeGateway = false;
+  mockGatewayReference = '';
+  gatewayProvider: 'razorpay' = 'razorpay';
+  gatewayEmail = '';
+  gatewayName = '';
+  gatewayCardNumber = '4242 4242 4242 4242';
+  gatewayCardExpiry = '12/34';
+  gatewayCardCvc = '123';
+  gatewayContact = '';
+  gatewayUpi = '';
 
   upiId = '';
   cardHolderName = '';
@@ -222,10 +228,29 @@ export class DonateComponent implements OnInit, OnDestroy {
       state: item.state ?? '',
       email: item.email ?? '',
       phoneNumber: item.phoneNumber ?? item.phone ?? '',
-      imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls.filter((url: any) => !!url) : [],
+      imageUrls: Array.isArray(item.imageUrls)
+        ? item.imageUrls
+            .map((url: any) => this.normalizeImageUrl(typeof url === 'string' ? url : ''))
+            .filter((url: string) => !!url)
+        : [],
       isActive: item.isActive ?? true,
       status: item.status ?? ''
     }));
+  }
+
+  private normalizeImageUrl(url?: string | null): string {
+    const raw = (url || '').trim();
+    if (!raw) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(raw)) {
+      return raw;
+    }
+
+    const path = raw.startsWith('/') ? raw : `/${raw}`;
+    const apiBase = this.apiService.baseUrl.replace(/\/api\/?$/i, '');
+    return `${apiBase}${path}`;
   }
 
   private applyInitialSelection(): void {
@@ -265,24 +290,6 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   selectAmount(amount: number): void {
     this.selectedAmount = amount;
-    this.generatedAmountMode = false;
-    this.generatedAmount = 0;
-  }
-
-  generateDonationAmount(): void {
-    const min = Math.max(1, Number(this.generatorMinLimit) || 0);
-    const max = Math.max(1, Number(this.generatorMaxLimit) || 0);
-
-    if (min > max) {
-      this.paymentMessage = 'Minimum limit cannot be greater than maximum limit.';
-      return;
-    }
-
-    const generated = Math.floor(Math.random() * (max - min + 1)) + min;
-    this.generatedAmount = generated;
-    this.selectedAmount = generated;
-    this.generatedAmountMode = true;
-    this.paymentMessage = '';
   }
 
   startDonation(): void {
@@ -312,6 +319,11 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.paymentMethod === 'card' || this.paymentMethod === 'netbanking') {
+      this.proceedToDonate(true);
+      return;
+    }
+
     this.showPaymentSection = true;
     this.paymentMessage = '';
   }
@@ -329,6 +341,53 @@ export class DonateComponent implements OnInit, OnDestroy {
       case 'wallet': return 'Wallet';
       default: return 'Payment';
     }
+  }
+
+  get payableTotal(): number {
+    return Number(((this.selectedAmount || 0) * 1.02).toFixed(2));
+  }
+
+  get platformFee(): number {
+    return Number(((this.selectedAmount || 0) * 0.02).toFixed(2));
+  }
+
+  get gatewayDisplayName(): string {
+    return 'Razorpay';
+  }
+
+  get requiresGatewayContact(): boolean {
+    return this.paymentMethod === 'wallet';
+  }
+
+  get requiresGatewayUpi(): boolean {
+    return this.paymentMethod === 'upi';
+  }
+
+  shareSelectedCharity(): void {
+    if (!this.selectedCharity) {
+      return;
+    }
+
+    const title = this.selectedCharity.name || 'CareFund Charity';
+    const text = `Support ${title} on CareFund.`;
+    const url = `${window.location.origin}/donate?charityId=${this.selectedCharity.id}`;
+
+    if (navigator.share) {
+      navigator.share({ title, text, url }).catch(() => {});
+      return;
+    }
+
+    const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+    window.open(whatsapp, '_blank', 'noopener,noreferrer');
+  }
+
+  copyCharityLink(): void {
+    if (!this.selectedCharity) {
+      return;
+    }
+
+    const url = `${window.location.origin}/donate?charityId=${this.selectedCharity.id}`;
+    navigator.clipboard?.writeText(url).catch(() => {});
   }
 
   proceedToDonate(skipPaymentDetailValidation = false): void {
@@ -376,6 +435,65 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.openFakeGateway();
+  }
+
+  private openFakeGateway(): void {
+    this.gatewayProvider = 'razorpay';
+    this.mockGatewayReference = `RZP-MOCK-${Date.now()}`;
+    this.gatewayEmail = this.gatewayEmail || '';
+    this.gatewayName = this.gatewayName || this.cardHolderName || '';
+    this.gatewayContact = this.gatewayContact || this.walletNumber || '';
+    this.gatewayUpi = this.gatewayUpi || this.upiId || '';
+    this.showFakeGateway = true;
+  }
+
+  cancelFakeGateway(): void {
+    if (this.paymentProcessing) {
+      return;
+    }
+
+    this.showFakeGateway = false;
+    this.paymentMessage = 'Payment cancelled. You can review details and try again.';
+  }
+
+  completeFakeGatewayPayment(success: boolean): void {
+    if (!success) {
+      this.showFakeGateway = false;
+      this.paymentMessage = 'Payment failed in gateway simulation. Please try again.';
+      return;
+    }
+
+    const validationMessage = this.validateGatewayDetails();
+    if (validationMessage) {
+      this.paymentMessage = validationMessage;
+      return;
+    }
+
+    this.showFakeGateway = false;
+    this.paymentMessage = '';
+    this.finalizeDonation();
+  }
+
+  private validateGatewayDetails(): string {
+    if (this.requiresGatewayContact && !this.gatewayContact.trim()) {
+      return 'Enter contact number in Razorpay checkout.';
+    }
+
+    if (this.requiresGatewayUpi && !this.gatewayUpi.trim()) {
+      return 'Enter UPI ID in Razorpay checkout.';
+    }
+
+    return '';
+  }
+
+  private finalizeDonation(): void {
+    const charity = this.selectedCharity;
+    if (!charity) {
+      this.paymentMessage = 'Please choose a charity first.';
+      return;
+    }
+
     this.paymentProcessing = true;
 
     const paymentMethodMap: Record<string, number> = {
@@ -386,11 +504,11 @@ export class DonateComponent implements OnInit, OnDestroy {
     };
 
     const payload = {
-      charityRegistrationId: this.selectedCharity.id,
+      charityRegistrationId: charity.id,
       amount: this.selectedAmount,
       isAnonymous: this.donateAnonymously,
-      paymentMethod: skipPaymentDetailValidation ? 1 : (paymentMethodMap[this.paymentMethod] ?? 1),
-      transactionReference: `CF-${Date.now()}`
+      paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
+      transactionReference: this.mockGatewayReference || `CF-${Date.now()}`
     };
 
     this.apiService.createDonation(payload).subscribe({
@@ -402,7 +520,8 @@ export class DonateComponent implements OnInit, OnDestroy {
             charityName: this.selectedCharity?.name,
             amount: this.selectedAmount,
             paymentMethod: this.selectedPaymentLabel,
-            reference: response?.paymentReference || payload.transactionReference
+            reference: response?.paymentReference || payload.transactionReference,
+            gateway: `${this.gatewayDisplayName} (Mock)`
           }
         });
       },

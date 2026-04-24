@@ -3,6 +3,58 @@
   gap: 1rem;
 }
 
+.status-gate {
+  display: grid;
+  place-items: center;
+  min-height: 58vh;
+}
+
+.status-card {
+  width: min(760px, 100%);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.status-card h1 {
+  margin: 0 0 0.65rem;
+  color: #0f172a;
+}
+
+.status-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.status-card.rejected {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.status-card.rejected h1 {
+  color: #991b1b;
+}
+
+.status-card.hold {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+
+.status-card.hold h1 {
+  color: #3730a3;
+}
+
+.admin-comment {
+  margin-bottom: 0.75rem !important;
+  padding: 0.7rem 0.8rem;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #7f1d1d !important;
+}
+
 .hero-board {
   border-radius: 16px;
   background: linear-gradient(135deg, #4fc2c2 0%, #52c783 46%, #d176da 100%);
@@ -118,6 +170,41 @@
 .fund-progress-board {
   display: grid;
   gap: 0.55rem;
+}
+
+.pie-progress-wrap {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pie-progress {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.pie-center {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.pie-center strong {
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.pie-center span {
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .fund-row {
@@ -319,6 +406,31 @@
 .ops-grid.single {
   display: grid;
   grid-template-columns: 1fr;
+}
+
+.table-wrap {
+  overflow: auto;
+  margin-top: 0.75rem;
+}
+
+.recent-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+.recent-table th,
+.recent-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.65rem 0.7rem;
+  text-align: left;
+  font-size: 0.88rem;
+}
+
+.recent-table th {
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 700;
 }
 
 .donations-container {

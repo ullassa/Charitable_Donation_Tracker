@@ -112,6 +112,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/auth/public-charities`);
   }
 
+  getPublicCharityById(charityId: number) {
+    return this.http.get(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/charity/${charityId}`);
+  }
+
   forgotPassword(email: string) {
     return this.http.post(`${this.baseUrl}/auth/forgot-password`, { email });
   }
@@ -175,6 +179,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/dashboard`);
   }
 
+  getAdminAnalytics(months = 6) {
+    return this.http.get(`${this.baseUrl}/admin/analytics?months=${months}`);
+  }
+
   getAdminDonors() {
     return this.http.get(`${this.baseUrl}/admin/donors`);
   }
@@ -183,12 +191,30 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/feedbacks`);
   }
 
+  getFavoriteCharities() {
+    return this.http.get(`${this.baseUrl}/favorites/mine`);
+  }
+
+  addFavoriteCharity(charityId: number) {
+    return this.http.post(`${this.baseUrl}/favorites/${charityId}`, {});
+  }
+
+  removeFavoriteCharity(charityId: number) {
+    return this.http.delete(`${this.baseUrl}/favorites/${charityId}`);
+  }
+
+  downloadDonationReceipt(donationId: number) {
+    return this.http.get(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/donation/receipt/${donationId}`, { responseType: 'blob' }).pipe(
+      catchError(() => this.http.get(`${this.baseUrl}/donations/${donationId}/receipt`, { responseType: 'blob' }))
+    );
+  }
+
   getAdminCharityRequests(status?: string) {
     const suffix = status ? `?status=${encodeURIComponent(status)}` : '';
     return this.http.get(`${this.baseUrl}/admin/charity-requests${suffix}`);
   }
 
-  reviewCharityRequest(id: number, action: 'approve' | 'reject', adminComment?: string) {
+  reviewCharityRequest(id: number, action: 'approve' | 'reject' | 'hold', adminComment?: string) {
     return this.http.put(`${this.baseUrl}/admin/charity-requests/${id}/review`, {
       action,
       adminComment: adminComment ?? ''

@@ -23,6 +23,7 @@ namespace CareFund.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<FavoriteCharity> FavoriteCharities { get; set; }
  
         // Relationships 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -94,6 +95,20 @@ namespace CareFund.Data
                 .HasMany(d => d.Notifications)
                 .WithOne(n => n.Donation)
                 .HasForeignKey(n => n.DonationId);
+
+            modelBuilder.Entity<FavoriteCharity>()
+                .HasIndex(f => new { f.CustomerId, f.CharityRegistrationId })
+                .IsUnique();
+
+            modelBuilder.Entity<FavoriteCharity>()
+                .HasOne(f => f.Customer)
+                .WithMany()
+                .HasForeignKey(f => f.CustomerId);
+
+            modelBuilder.Entity<FavoriteCharity>()
+                .HasOne(f => f.Charity)
+                .WithMany()
+                .HasForeignKey(f => f.CharityRegistrationId);
         }
     
     }

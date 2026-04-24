@@ -178,6 +178,16 @@ select.form-control {
   margin-top: 0.25rem;
 }
 
+.warning-message {
+  margin-top: 0.3rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  font-size: 0.84rem;
+}
+
 .help-text {
   margin-top: 0.3rem;
   color: #64748b;

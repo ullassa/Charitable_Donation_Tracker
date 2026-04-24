@@ -12,7 +12,9 @@ namespace CareFund.Enums
 
         Rejected=3, 
 
-        Removed=4 
+        Removed=4,
+
+        Hold=5 
 
     } 
 

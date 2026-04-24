@@ -12,7 +12,7 @@
 
     <!-- Navigation Menu -->
     <nav class="nav-menu">
-      <a *ngIf="role !== 'charitymanager'" routerLink="/donate" class="nav-link">Donate</a>
+      <a *ngIf="(auth.state$ | async)?.role?.trim()?.toLowerCase() !== 'charitymanager'" routerLink="/" class="nav-link">Donate</a>
 
       <a routerLink="/impact" class="nav-link">Our Impact</a>
       <a routerLink="/blogs" class="nav-link">Blogs</a>
@@ -21,13 +21,13 @@
 
     <!-- Auth Buttons -->
     <div class="auth-buttons">
-      <a *ngIf="!isLoggedIn" routerLink="/login" class="btn btn-secondary">Login</a>
-      <a *ngIf="isLoggedIn" routerLink="/profile" class="btn btn-secondary profile-btn">
+      <button *ngIf="!(auth.isLoggedIn$ | async)" type="button" class="btn btn-secondary" (click)="openLogin()">Login</button>
+      <button *ngIf="auth.isLoggedIn$ | async" type="button" class="btn btn-secondary profile-btn" (click)="openProfile()">
         <span class="profile-icon" aria-hidden="true"></span>
         Profile
-      </a>
-      <a *ngIf="isLoggedIn && dashboardLink" [routerLink]="dashboardLink" class="btn btn-secondary">Dashboard</a>
-      <button *ngIf="isLoggedIn" type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
+      </button>
+      <button *ngIf="(auth.isLoggedIn$ | async) && dashboardLink" type="button" class="btn btn-secondary" (click)="openDashboard()">Dashboard</button>
+      <button *ngIf="auth.isLoggedIn$ | async" type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
     </div>
   </div>
 </header>

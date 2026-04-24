@@ -84,6 +84,11 @@
             <strong>{{ (charity.state || 'NA') + ' / ' + (charity.pincode || 'NA') }}</strong>
           </div>
         </div>
+
+        <div class="buttons">
+          <button type="button" class="btn btn-secondary" (click)="shareSelectedCharity()">Share Charity</button>
+          <button type="button" class="btn btn-secondary" (click)="copyCharityLink()">Copy Link</button>
+        </div>
       </div>
 
       <div class="hero-image-panel" *ngIf="charity.imageUrls.length">
@@ -119,7 +124,7 @@
       </ng-container>
     </section>
 
-    <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate">
+    <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate && !showPaymentSection">
       <h2>Choose donation amount</h2>
       <p class="section-subtitle">Select a preset amount or type your own.</p>
       <p class="average-amount-note">Average amount paid by users: <strong>₹{{ averageDonationByUsers }}</strong></p>
@@ -151,22 +156,36 @@
         </div>
       </div>
 
-      <section class="amount-generator" aria-label="Donation amount generator">
-        <h3>Confused about amount? Use Donation Amount Generator</h3>
-        <p>Add min and max limits, generate a random amount, then pay that generated amount.</p>
-        <div class="generator-grid">
-          <label>
-            Min limit
-            <input type="number" [(ngModel)]="generatorMinLimit" min="1" />
-          </label>
-          <label>
-            Max limit
-            <input type="number" [(ngModel)]="generatorMaxLimit" min="1" />
-          </label>
-          <button type="button" class="btn btn-secondary" (click)="generateDonationAmount()">Generate Amount</button>
+      <div class="payment-methods">
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">Card</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'netbanking'" (click)="selectPaymentMethod('netbanking')">Net Banking</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'wallet'" (click)="selectPaymentMethod('wallet')">Wallet</button>
+      </div>
+
+      <div class="summary-card amount-summary">
+        <div class="summary-row">
+          <span class="label">Charity</span>
+          <span class="value">{{ selectedCharity.name }}</span>
         </div>
-        <p class="generated-note" *ngIf="generatedAmountMode">Generated amount: <strong>₹{{ generatedAmount }}</strong>. This amount is set in your payment.</p>
-      </section>
+        <div class="summary-row">
+          <span class="label">Donation</span>
+          <span class="value">₹{{ selectedAmount || 0 }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Platform fee</span>
+          <span class="value">₹{{ platformFee.toFixed(2) }}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="summary-row total">
+          <span class="label">Total</span>
+          <span class="value">₹{{ payableTotal.toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <p class="generated-note" *ngIf="paymentMethod === 'card' || paymentMethod === 'netbanking'">
+        {{ selectedPaymentLabel }} will open secure Razorpay checkout directly when you click Pay Now.
+      </p>
 
       <div class="buttons">
         <button class="btn" (click)="startDonation()">Pay Now</button>
@@ -200,8 +219,6 @@
           <p>Choose a payment option and complete your donation.</p>
         </div>
       </div>
-
-      <p class="generated-note" *ngIf="generatedAmountMode">Please pay the generated amount: <strong>₹{{ selectedAmount }}</strong></p>
 
       <div class="payment-methods">
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
@@ -261,12 +278,12 @@
         </div>
         <div class="summary-row">
           <span class="label">Platform fee</span>
-          <span class="value">₹{{ ((selectedAmount || 0) * 0.02).toFixed(2) }}</span>
+          <span class="value">₹{{ platformFee.toFixed(2) }}</span>
         </div>
         <div class="divider"></div>
         <div class="summary-row total">
           <span class="label">Total</span>
-          <span class="value">₹{{ ((selectedAmount || 0) * 1.02).toFixed(2) }}</span>
+          <span class="value">₹{{ payableTotal.toFixed(2) }}</span>
         </div>
       </div>
 
@@ -285,6 +302,58 @@
         </button>
         <button class="btn btn-secondary" routerLink="/">Cancel</button>
       </div>
+    </section>
+
+    <section class="gateway-overlay" *ngIf="showFakeGateway">
+      <article class="gateway-modal" role="dialog" aria-modal="true" aria-label="Mock payment checkout">
+        <header class="gateway-topbar razorpay-theme">
+          <div class="brand-mark">razorpay</div>
+          <button type="button" class="close-gateway" (click)="cancelFakeGateway()" [disabled]="paymentProcessing">×</button>
+        </header>
+
+        <div class="gateway-headline">
+          <h3>Complete Payment</h3>
+          <p>CareFund Foundation • Demo Checkout</p>
+        </div>
+
+        <div class="gateway-summary">
+          <div><span>Merchant</span><strong>CareFund Foundation</strong></div>
+          <div><span>Charity</span><strong>{{ selectedCharity?.name }}</strong></div>
+          <div><span>Order ID</span><strong>{{ mockGatewayReference }}</strong></div>
+          <div class="total-row"><span>Amount to Pay</span><strong>₹{{ payableTotal }}</strong></div>
+        </div>
+
+        <div class="gateway-form">
+          <label>Payment mode selected</label>
+          <input type="text" [value]="selectedPaymentLabel" readonly>
+
+          <ng-container *ngIf="requiresGatewayContact">
+          <label>Mobile number</label>
+          <input type="text" [(ngModel)]="gatewayContact" placeholder="Enter mobile number">
+          </ng-container>
+
+          <ng-container *ngIf="requiresGatewayUpi">
+          <label>UPI ID</label>
+          <input type="text" [(ngModel)]="gatewayUpi" placeholder="name@upi">
+          </ng-container>
+
+          <p class="gateway-reuse-note" *ngIf="!requiresGatewayContact && !requiresGatewayUpi">
+            Using details already entered in the previous step.
+          </p>
+
+          <label>Purpose</label>
+          <input type="text" [value]="'Donation to ' + (selectedCharity?.name || 'CareFund')" readonly>
+        </div>
+
+        <p class="gateway-note">Secured by {{ gatewayDisplayName }} • Demo mode (no real charge)</p>
+
+        <div class="gateway-actions">
+          <button type="button" class="btn btn-primary" (click)="completeFakeGatewayPayment(true)" [disabled]="paymentProcessing">
+            {{ paymentProcessing ? 'Finalizing...' : ('Pay ₹' + payableTotal + ' Securely') }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="completeFakeGatewayPayment(false)" [disabled]="paymentProcessing">Simulate Failure</button>
+        </div>
+      </article>
     </section>
   </div>
 </main>

@@ -2,12 +2,32 @@
 
 <main class="dashboard-page">
   <section class="dashboard-shell charity-v2 ds-theme-charity" *ngIf="!loading; else loadingView">
+    <section class="status-gate" *ngIf="!isApproved">
+      <div class="status-card" *ngIf="normalizedStatus === 'pending'">
+        <h1>Registration Pending</h1>
+        <p>Your registration is under review. Admin will verify your charity within 3–5 business days.</p>
+      </div>
+
+      <div class="status-card rejected" *ngIf="normalizedStatus === 'rejected'">
+        <h1>Registration Rejected</h1>
+        <p class="admin-comment" *ngIf="charity?.adminComment"><strong>Admin Comment:</strong> {{ charity?.adminComment }}</p>
+        <p>Your charity registration was not approved. Please contact us at carefund03&#64;gmail.com for further information.</p>
+      </div>
+
+      <div class="status-card hold" *ngIf="normalizedStatus === 'hold'">
+        <h1>Account On Hold</h1>
+        <p class="admin-comment" *ngIf="charity?.adminComment"><strong>Admin Comment:</strong> {{ charity?.adminComment }}</p>
+        <p>Your account is currently on hold. Please contact carefund03&#64;gmail.com for further information.</p>
+      </div>
+    </section>
+
+    <ng-container *ngIf="isApproved">
     <header class="hero-board">
       <div>
         <h1>Fundraising Dashboard</h1>
         <p>Executive view for fundraising operations and impact tracking.</p>
         <div class="status-info" *ngIf="charity">
-          <span class="status-badge" [ngClass]="'status-' + (charity.status || 'pending').toLowerCase()">
+          <span class="status-badge" [ngClass]="'status-' + normalizedStatus">
             {{ charity.status || 'Pending' }}
           </span>
         </div>
@@ -64,6 +84,15 @@
         <span>Remaining: ₹{{ (stats.remainingAmount || 0) | number:'1.0-0' }}</span>
         <span>{{ charityProgressPercent | number:'1.0-0' }}%</span>
       </div>
+
+      <div class="pie-progress-wrap">
+        <div class="pie-progress" [style.background]="progressPieStyle">
+          <div class="pie-center">
+            <strong>{{ charityProgressPercent | number:'1.0-0' }}%</strong>
+            <span>Funded</span>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="chart-board">
@@ -114,26 +143,30 @@
     <section class="ops-grid single">
       <section class="ops-card">
         <h2>Recent Donations</h2>
-        <div class="donations-container" *ngIf="recent.length > 0; else noDonations">
-          <div *ngFor="let item of recent" class="donation-card">
-            <div class="donation-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 12v8H4v-8" />
-                <path d="M2 7h20v5H2z" />
-                <path d="M12 7v13" />
-                <path d="M12 7H8.5a2.5 2.5 0 1 1 0-5c2.2 0 3.5 2.5 3.5 5Z" />
-                <path d="M12 7h3.5a2.5 2.5 0 1 0 0-5c-2.2 0-3.5 2.5-3.5 5Z" />
-              </svg>
-            </div>
-            <div class="donation-content">
-              <div class="donation-amount">₹{{ item.amount | number:'1.0-0' }}</div>
-              <div class="donation-date">{{ item.donationDate | date:'mediumDate' }}</div>
-            </div>
-          </div>
+        <div class="table-wrap" *ngIf="recent.length > 0; else noDonations">
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>Donor</th>
+                <th>Amount</th>
+                <th>Payment Mode</th>
+                <th>Date & Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of recent">
+                <td>{{ item.donorName || 'Unknown' }}</td>
+                <td>₹{{ item.amount | number:'1.0-0' }}</td>
+                <td>{{ item.paymentMethod || 'Unknown' }}</td>
+                <td>{{ item.donationDate | date:'medium' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <ng-template #noDonations><div class="empty-state"><p>No donations yet.</p></div></ng-template>
       </section>
     </section>
+    </ng-container>
   </section>
 
   <ng-template #loadingView>

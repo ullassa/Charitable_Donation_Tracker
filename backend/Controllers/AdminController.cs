@@ -29,6 +29,7 @@ public class AdminController : ControllerBase
         var pending = await _context.Charities.CountAsync(c => c.Status == CharityStatus.Pending);
         var approved = await _context.Charities.CountAsync(c => c.Status == CharityStatus.Approved);
         var rejected = await _context.Charities.CountAsync(c => c.Status == CharityStatus.Rejected);
+        var hold = await _context.Charities.CountAsync(c => c.Status == CharityStatus.Hold);
         var customers = await _context.Users.CountAsync(u => u.UserRole == UserRole.Customer && u.IsActive);
         var charities = await _context.Users.CountAsync(u => u.UserRole == UserRole.CharityManager && u.IsActive);
         var totalDonors = await _context.Donations.Select(d => d.CustomerId).Distinct().CountAsync();
@@ -93,6 +94,7 @@ public class AdminController : ControllerBase
                 pending,
                 approved,
                 rejected,
+                hold,
                 totalCustomers = customers,
                 totalCharities = charities,
                 totalDonors,
@@ -100,6 +102,74 @@ public class AdminController : ControllerBase
             },
             recentRequests = mappedRecentRequests,
             customers = customersList
+        });
+    }
+
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetAnalytics([FromQuery] int months = 6)
+    {
+        var safeMonths = Math.Clamp(months, 3, 24);
+        var start = DateTime.UtcNow.Date.AddMonths(-(safeMonths - 1));
+
+        var monthlyRaw = await _context.Donations
+            .AsNoTracking()
+            .Where(d => d.DonationDate >= start)
+            .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
+            .Select(g => new
+            {
+                g.Key.Year,
+                g.Key.Month,
+                amount = g.Sum(x => x.Amount),
+                count = g.Count()
+            })
+            .ToListAsync();
+
+        var monthlyMap = monthlyRaw.ToDictionary(x => (x.Year, x.Month), x => x);
+        var monthly = Enumerable.Range(0, safeMonths)
+            .Select(i => start.AddMonths(i))
+            .Select(dt =>
+            {
+                var key = (dt.Year, dt.Month);
+                if (monthlyMap.TryGetValue(key, out var found))
+                {
+                    return new
+                    {
+                        label = dt.ToString("yyyy-MM"),
+                        amount = found.amount,
+                        count = found.count
+                    };
+                }
+
+                return new
+                {
+                    label = dt.ToString("yyyy-MM"),
+                    amount = 0m,
+                    count = 0
+                };
+            })
+            .ToList();
+
+        var causeBreakdown = await _context.Donations
+            .AsNoTracking()
+            .Include(d => d.CharityRegistrationRequest)
+            .Where(d => d.DonationDate >= start)
+            .GroupBy(d => d.CharityRegistrationRequest != null ? d.CharityRegistrationRequest.CauseType.ToString() : "Unknown")
+            .Select(g => new
+            {
+                cause = g.Key,
+                amount = g.Sum(x => x.Amount),
+                count = g.Count()
+            })
+            .OrderByDescending(x => x.amount)
+            .Take(8)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            success = true,
+            period = new { from = start, to = DateTime.UtcNow },
+            monthly,
+            causes = causeBreakdown
         });
     }
 
@@ -250,19 +320,31 @@ public class AdminController : ControllerBase
             return NotFound(new { success = false, message = "Charity request not found." });
 
         var action = dto.Action.Trim().ToLowerInvariant();
-        if (action != "approve" && action != "reject")
-            return BadRequest(new { success = false, message = "Action must be approve or reject." });
+        if (action != "approve" && action != "reject" && action != "hold")
+            return BadRequest(new { success = false, message = "Action must be approve, reject or hold." });
 
-        entity.Status = action == "approve" ? CharityStatus.Approved : CharityStatus.Rejected;
+        entity.Status = action switch
+        {
+            "approve" => CharityStatus.Approved,
+            "reject" => CharityStatus.Rejected,
+            "hold" => CharityStatus.Hold,
+            _ => entity.Status
+        };
         entity.AdminComment = dto.AdminComment;
         entity.ReviewedAt = DateTime.UtcNow;
 
         await _notifications.NotifyUserAsync(
             entity.User!,
-            action == "approve" ? "Charity application approved" : "Charity application rejected",
+            action == "approve"
+                ? "Charity application approved"
+                : action == "hold"
+                    ? "Charity application put on hold"
+                    : "Charity application rejected",
             action == "approve"
                 ? $"Your charity registration for {entity.User?.UserName ?? "CareFund"} has been approved by admin. You can now continue using the platform as an approved charity."
-                : $"Your charity registration for {entity.User?.UserName ?? "CareFund"} has been rejected by admin. Comment: {dto.AdminComment ?? "No comment provided."}"
+                : action == "hold"
+                    ? $"Your charity account is on hold. Please contact carefund03@gmail.com for further clarification. Comment: {dto.AdminComment ?? "No comment provided."}"
+                    : $"Your charity registration for {entity.User?.UserName ?? "CareFund"} has been rejected by admin. Comment: {dto.AdminComment ?? "No comment provided."}"
         );
 
         return Ok(new { success = true, message = $"Charity request {action}d successfully." });

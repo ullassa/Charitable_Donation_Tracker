@@ -1,0 +1,22 @@
+Route guards means: before opening a page, app checks who is logged in.
+
+Example:
+
+Customer can open customer pages.
+Charity can open charity pages.
+Admin can open admin pages.
+If wrong role, page does not open and user is redirected (like to login or home).
+Centralized token-expiry/error flow means:
+
+Instead of handling API errors in every component separately, one common place handles them.
+If token is expired (401/403):
+auto logout
+show message like “Session expired, please login again”
+redirect to login
+For other errors:
+show clean toast popup (success/error/warning) consistently everywhere.
+So Step 1 gives you:
+
+better security (no unauthorized page access)
+cleaner code (less repeated error code)
+better UX (clear messages for users)

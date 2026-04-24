@@ -12,6 +12,11 @@ namespace CareFund.Services.Auth
     /// </summary>
     public class AuthService : IAuthService
     {
+        private const string UnknownCity = "Unknown";
+        private const string OtherGender = "Other";
+        private const decimal DefaultTargetAmount = 100000m;
+        private const string DefaultPincode = "600001";
+
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthService> _logger;
 
@@ -29,29 +34,17 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(passwordHash))
                 return null;
 
-            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedEmail = NormalizeEmail(email);
             var user = _context.Users.Include(u => u.Customer).FirstOrDefault(u => u.Email == normalizedEmail);
 
             if (user == null)
             {
-                _logger.LogWarning($"Authentication failed for: {email}");
+                _logger.LogWarning("Authentication failed for: {Email}", email);
                 return null;
             }
 
             var storedHash = user.PasswordHash ?? string.Empty;
-            var isValid = false;
-
-            try
-            {
-                isValid = storedHash.StartsWith("$2")
-                    ? BCrypt.Net.BCrypt.Verify(passwordHash, storedHash)
-                    : string.Equals(passwordHash, storedHash, StringComparison.Ordinal);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, $"Password verification failed for: {email}");
-                isValid = false;
-            }
+            var isValid = VerifyPassword(passwordHash, storedHash, email);
 
             if (isValid && !storedHash.StartsWith("$2"))
             {
@@ -62,11 +55,11 @@ namespace CareFund.Services.Auth
             if (isValid)
             {
                 EnsureCustomerProfileForCustomerRole(user);
-                _logger.LogInformation($"User authenticated: {email}");
+                _logger.LogInformation("User authenticated: {Email}", email);
             }
             else
             {
-                _logger.LogWarning($"Authentication failed for: {email}");
+                _logger.LogWarning("Authentication failed for: {Email}", email);
                 return null;
             }
 
@@ -96,32 +89,32 @@ namespace CareFund.Services.Auth
             IEnumerable<string>? imageUrls = null)
         {
             // Validate inputs
-            if (string.IsNullOrWhiteSpace(charityName) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password) ||
-                string.IsNullOrWhiteSpace(phoneNumber))
+            if (HasMissingRequiredFields(charityName, email, password, phoneNumber))
             {
                 _logger.LogWarning("Registration attempt with missing fields");
                 return null;
             }
 
+            var normalizedEmail = NormalizeEmail(email);
+            var normalizedPhone = NormalizePhone(phoneNumber);
+
             // Check if phone and email are verified
-            if (!otpService.IsPhoneVerified(phoneNumber))
+            if (!otpService.IsPhoneVerified(normalizedPhone))
             {
-                _logger.LogWarning($"Registration failed: Phone not verified - {phoneNumber}");
+                _logger.LogWarning("Registration failed: Phone not verified - {Phone}", normalizedPhone);
                 return null;
             }
 
-            if (!otpService.IsEmailVerified(email))
+            if (!otpService.IsEmailVerified(normalizedEmail))
             {
-                _logger.LogWarning($"Registration failed: Email not verified - {email}");
+                _logger.LogWarning("Registration failed: Email not verified - {Email}", normalizedEmail);
                 return null;
             }
 
             // Check if email already exists
-            if (EmailExists(email))
+            if (EmailExists(normalizedEmail))
             {
-                _logger.LogWarning($"Registration failed: Email already exists - {email}");
+                _logger.LogWarning("Registration failed: Email already exists - {Email}", normalizedEmail);
                 return null;
             }
 
@@ -139,9 +132,9 @@ namespace CareFund.Services.Auth
             var user = new User
             {
                 UserName = charityName,
-                Email = email.Trim().ToLowerInvariant(),
+                Email = normalizedEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                PhoneNumber = phoneNumber,
+                PhoneNumber = normalizedPhone,
                 UserRole = UserRole.CharityManager,
                 IsEmailVerified = true,
                 IsPhoneVerified = true,
@@ -151,7 +144,7 @@ namespace CareFund.Services.Auth
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            _logger.LogInformation($"User created: {email}");
+            _logger.LogInformation("User created: {Email}", normalizedEmail);
 
             // Create charity registration request (pending admin approval)
             var charity = new CharityRegistrationRequest
@@ -165,13 +158,13 @@ namespace CareFund.Services.Auth
                 Activities = string.IsNullOrWhiteSpace(activities) ? "Activity information will be updated by the organization after onboarding." : activities,
                 CauseType = causeType,
                 AddressLine = string.IsNullOrWhiteSpace(resolvedAddress) ? "Address details pending" : resolvedAddress,
-                City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
+                City = string.IsNullOrWhiteSpace(city) ? UnknownCity : city,
                 IndianState = parsedState,
-                Pincode = string.IsNullOrWhiteSpace(pincode) ? "600001" : pincode.Trim(),
+                Pincode = string.IsNullOrWhiteSpace(pincode) ? DefaultPincode : pincode.Trim(),
                 ManagerName = string.IsNullOrWhiteSpace(managerName) ? charityName : managerName.Trim(),
-                ManagerPhone = string.IsNullOrWhiteSpace(managerPhone) ? phoneNumber : managerPhone.Trim(),
+                ManagerPhone = string.IsNullOrWhiteSpace(managerPhone) ? normalizedPhone : managerPhone.Trim(),
                 SocialMediaLink = string.IsNullOrWhiteSpace(socialMediaLink) ? "https://carefund.example/charity" : socialMediaLink,
-                TargetAmount = neededAmount.HasValue && neededAmount.Value > 0 ? neededAmount.Value : 100000,
+                TargetAmount = neededAmount.HasValue && neededAmount.Value > 0 ? neededAmount.Value : DefaultTargetAmount,
                 Status = CharityStatus.Pending,
                 SubmittedAt = DateTime.UtcNow,
                 IsActive = true
@@ -200,11 +193,11 @@ namespace CareFund.Services.Auth
                 _context.SaveChanges();
             }
 
-            _logger.LogInformation($"Charity registration request created: {charityName} by {email}");
+            _logger.LogInformation("Charity registration request created: {CharityName} by {Email}", charityName, normalizedEmail);
 
             // Clear verification flags
-            otpService.ClearPhoneVerification(phoneNumber);
-            otpService.ClearEmailVerification(email);
+            otpService.ClearPhoneVerification(normalizedPhone);
+            otpService.ClearEmailVerification(normalizedEmail);
 
             return user;
         }
@@ -216,30 +209,30 @@ namespace CareFund.Services.Auth
         public User? RegisterCustomer(string name, string email, string password,
             string phoneNumber, DateTime? dob, string city, string gender, IOtpService otpService)
         {
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password) ||
-                string.IsNullOrWhiteSpace(phoneNumber))
+            if (HasMissingRequiredFields(name, email, password, phoneNumber))
             {
                 _logger.LogWarning("Customer registration attempt with missing fields");
                 return null;
             }
 
-            if (!otpService.IsPhoneVerified(phoneNumber))
+            var normalizedEmail = NormalizeEmail(email);
+            var normalizedPhone = NormalizePhone(phoneNumber);
+
+            if (!otpService.IsPhoneVerified(normalizedPhone))
             {
-                _logger.LogWarning($"Customer registration failed: Phone not verified - {phoneNumber}");
+                _logger.LogWarning("Customer registration failed: Phone not verified - {Phone}", normalizedPhone);
                 return null;
             }
 
-            if (!otpService.IsEmailVerified(email))
+            if (!otpService.IsEmailVerified(normalizedEmail))
             {
-                _logger.LogWarning($"Customer registration failed: Email not verified - {email}");
+                _logger.LogWarning("Customer registration failed: Email not verified - {Email}", normalizedEmail);
                 return null;
             }
 
-            if (EmailExists(email))
+            if (EmailExists(normalizedEmail))
             {
-                _logger.LogWarning($"Customer registration failed: Email already exists - {email}");
+                _logger.LogWarning("Customer registration failed: Email already exists - {Email}", normalizedEmail);
                 return null;
             }
 
@@ -250,9 +243,9 @@ namespace CareFund.Services.Auth
             var user = new User
             {
                 UserName = name,
-                Email = email.Trim().ToLowerInvariant(),
+                Email = normalizedEmail,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-                PhoneNumber = phoneNumber,
+                PhoneNumber = normalizedPhone,
                 UserRole = UserRole.Customer,
                 IsEmailVerified = true,
                 IsPhoneVerified = true,
@@ -266,7 +259,7 @@ namespace CareFund.Services.Auth
             {
                 UserId = user.UserId,
                 DateOfBirth = dob ?? DateTime.UtcNow,
-                City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
+                City = string.IsNullOrWhiteSpace(city) ? UnknownCity : city,
                 Gender = normalizedGender,
                 CreatedAt = DateTime.UtcNow,
                 IsAnonymousDefault = false
@@ -276,10 +269,10 @@ namespace CareFund.Services.Auth
             _context.SaveChanges();
             transaction.Commit();
 
-            otpService.ClearPhoneVerification(phoneNumber);
-            otpService.ClearEmailVerification(email);
+            otpService.ClearPhoneVerification(normalizedPhone);
+            otpService.ClearEmailVerification(normalizedEmail);
 
-            _logger.LogInformation($"Customer created: {email}");
+            _logger.LogInformation("Customer created: {Email}", normalizedEmail);
             return user;
         }
 
@@ -289,9 +282,9 @@ namespace CareFund.Services.Auth
             {
                 "male" => "Male",
                 "female" => "Female",
-                "prefer not to say" => "Other",
-                "other" => "Other",
-                _ => "Other"
+                "prefer not to say" => OtherGender,
+                "other" => OtherGender,
+                _ => OtherGender
             };
         }
 
@@ -306,8 +299,8 @@ namespace CareFund.Services.Auth
             {
                 UserId = user.UserId,
                 DateOfBirth = DateTime.UtcNow,
-                City = "Unknown",
-                Gender = "Other",
+                City = UnknownCity,
+                Gender = OtherGender,
                 CreatedAt = DateTime.UtcNow,
                 IsAnonymousDefault = false
             };
@@ -325,7 +318,7 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email))
                 return null;
 
-            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedEmail = NormalizeEmail(email);
             return _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
         }
 
@@ -337,7 +330,7 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email))
                 return false;
 
-            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedEmail = NormalizeEmail(email);
             return _context.Users.Any(u => u.Email == normalizedEmail);
         }
 
@@ -349,7 +342,7 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return false;
 
-            var normalizedPhone = phoneNumber.Trim();
+            var normalizedPhone = NormalizePhone(phoneNumber);
             return _context.Users.Any(u => u.PhoneNumber == normalizedPhone);
         }
 
@@ -358,7 +351,7 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(newPasswordHash))
                 return false;
 
-            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedEmail = NormalizeEmail(email);
             var user = _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
             if (user == null)
                 return false;
@@ -366,6 +359,36 @@ namespace CareFund.Services.Auth
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPasswordHash);
             _context.SaveChanges();
             return true;
+        }
+
+        private static bool HasMissingRequiredFields(params string[] values)
+        {
+            return values.Any(string.IsNullOrWhiteSpace);
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            return email.Trim().ToLowerInvariant();
+        }
+
+        private static string NormalizePhone(string phoneNumber)
+        {
+            return phoneNumber.Trim();
+        }
+
+        private bool VerifyPassword(string providedPassword, string storedHash, string email)
+        {
+            try
+            {
+                return storedHash.StartsWith("$2")
+                    ? BCrypt.Net.BCrypt.Verify(providedPassword, storedHash)
+                    : string.Equals(providedPassword, storedHash, StringComparison.Ordinal);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Password verification failed for: {Email}", email);
+                return false;
+            }
         }
     }
 }

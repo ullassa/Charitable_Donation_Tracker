@@ -20,13 +20,13 @@
         </div>
 
         <div class="hero-actions">
-          <button class="btn btn-primary" routerLink="/donate">Donate now</button>
+          <button class="btn btn-primary" (click)="goToFeaturedCharity()">Donate now</button>
           <button class="btn btn-secondary" routerLink="/charity-signup" *ngIf="!isLoggedIn">Start a charity</button>
         </div>
 
         <div class="hero-highlights" *ngIf="heroSlides.length > 0">
           <!-- <span>Image {{ currentHeroSlide + 1 }} of {{ heroSlides.length }}</span> -->
-          <span>{{ heroSlides[currentHeroSlide]?.tag || 'CareFund hero' }}</span>
+          <span>{{ heroSlides[currentHeroSlide].tag || 'CareFund hero' }}</span>
           <span>Donate Now Save lives</span>
         </div>
       </div>
@@ -102,6 +102,26 @@
               <option *ngFor="let type of charityTypes" [value]="type">{{ type }}</option>
             </select>
           </div>
+          <div class="type-filter">
+            <label for="charityState">State</label>
+            <select
+              id="charityState"
+              [ngModel]="selectedCharityState"
+              (ngModelChange)="onStateChange($event)"
+            >
+              <option *ngFor="let state of charityStates" [value]="state">{{ state }}</option>
+            </select>
+          </div>
+          <div class="type-filter">
+            <label for="charityUrgency">Urgency</label>
+            <select
+              id="charityUrgency"
+              [ngModel]="selectedUrgency"
+              (ngModelChange)="onUrgencyChange($event)"
+            >
+              <option *ngFor="let urgency of urgencyLevels" [value]="urgency">{{ urgency }}</option>
+            </select>
+          </div>
           <div class="search-box">
             <input
               type="text"
@@ -158,6 +178,11 @@
               <span>Remaining: ₹{{ getRemainingAmount(charity) | number:'1.0-0' }}</span>
               <span>{{ getProgressPercent(charity) | number:'1.0-0' }}%</span>
             </div>
+            <div class="urgency-row">
+              <span class="urgency-badge" [class.high]="getUrgencyLevel(charity) === 'High'" [class.medium]="getUrgencyLevel(charity) === 'Medium'" [class.low]="getUrgencyLevel(charity) === 'Low'">
+                Urgency: {{ getUrgencyLevel(charity) }}
+              </span>
+            </div>
           </div>
 
           <button
@@ -171,33 +196,20 @@
           <div class="charity-actions">
             <button
               class="btn btn-outline"
-              routerLink="/donate"
-              [queryParams]="{
-                charityId: charity.charityId,
-                charityName: charity.charityName,
-                description: charity.description,
-                cause: charity.cause,
-                location: charity.location,
-                registrationId: charity.registrationId,
-                mission: charity.mission,
-                about: charity.about,
-                activities: charity.activities,
-                targetAmount: charity.targetAmount,
-                totalReceived: charity.totalReceived,
-                remainingAmount: charity.remainingAmount,
-                progressPercent: charity.progressPercent,
-                addressLine: charity.addressLine,
-                managerName: charity.managerName,
-                managerPhone: charity.managerPhone,
-                pincode: charity.pincode,
-                state: charity.state,
-                email: charity.email,
-                phone: charity.phoneNumber
-              }"
+              [routerLink]="['/charity', charity.charityId]"
             >
               Donate now
             </button>
-            <button class="btn btn-secondary" routerLink="/login" *ngIf="!isLoggedIn">View charity</button>
+            <button type="button" class="btn btn-secondary" (click)="shareCharity(charity)">Share</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              *ngIf="isCustomer"
+              (click)="toggleFavorite(charity)"
+            >
+              {{ isFavorite(charity) ? 'Remove Favorite' : 'Add Favorite' }}
+            </button>
+            <button class="btn btn-secondary" [routerLink]="['/charity', charity.charityId]" *ngIf="!isLoggedIn">View charity</button>
           </div>
         </article>
       </div>

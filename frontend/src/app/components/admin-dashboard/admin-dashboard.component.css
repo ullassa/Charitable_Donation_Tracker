@@ -218,6 +218,67 @@
   gap: 1.5rem;
 }
 
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.analytics-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.analytics-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.admin-bar-columns.compact {
+  align-items: flex-end;
+  min-height: 190px;
+}
+
+.cause-rows {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.cause-row {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.cause-name {
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.cause-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.cause-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.cause-amount {
+  font-size: 0.82rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
 .request-card {
   border: 2px solid #f0f0f0;
   border-radius: 12px;
@@ -1114,3 +1175,29 @@
     color: #64748b;
     font-size: 0.9rem;
   }
+
+.status-hold {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #a5b4fc;
+}
+
+.btn-hold {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-hold:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+.btn-hold:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

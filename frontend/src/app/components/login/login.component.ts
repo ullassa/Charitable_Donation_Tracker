@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
+import { AuthStateService } from '../../auth-state.service';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,12 @@ import { ApiService } from '../../services/api.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthStateService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
   loginForm!: FormGroup;
   showPassword = false;
   isLoading = false;
@@ -21,12 +28,29 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   returnUrl = '/';
 
-  constructor(
-    private fb: FormBuilder,
-    private api: ApiService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  private isValidReturnUrlForRole(returnUrl: string): boolean {
+    if (!returnUrl || returnUrl === '/login') {
+      return false;
+    }
+
+    if (!returnUrl.startsWith('/dashboard')) {
+      return true;
+    }
+
+    if (returnUrl.startsWith('/dashboard/customer')) {
+      return this.auth.isRoleAllowed(['Customer']);
+    }
+
+    if (returnUrl.startsWith('/dashboard/charity')) {
+      return this.auth.isRoleAllowed(['CharityManager']);
+    }
+
+    if (returnUrl.startsWith('/dashboard/admin')) {
+      return this.auth.isRoleAllowed(['Admin']);
+    }
+
+    return false;
+  }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -58,32 +82,23 @@ export class LoginComponent implements OnInit {
         next: (response: any) => {
           this.isLoading = false;
           if (response?.success && response?.token) {
-            sessionStorage.setItem('token', response.token);
-            sessionStorage.setItem('role', response?.role || 'Customer');
-            sessionStorage.setItem('userId', response?.userId || '');
-            sessionStorage.setItem('userName', response?.userName || '');
-            localStorage.removeItem('token');
-            localStorage.setItem('cf:auth:changed', Date.now().toString());
-            
-            const role = (response?.role || '').toString().trim().toLowerCase();
+            this.auth.setSession(
+              response.token,
+              response?.role || 'Customer',
+              response?.userId || '',
+              response?.userName || ''
+            );
 
-            if (this.returnUrl && this.returnUrl !== '/' && this.returnUrl !== '/login') {
+            const role = this.auth.normalizeRole(response?.role);
+
+            if (this.isValidReturnUrlForRole(this.returnUrl)) {
               this.router.navigateByUrl(this.returnUrl);
               return;
             }
 
-            if (role === 'customer') {
-              this.router.navigate(['/dashboard/customer']);
-              return;
-            }
-
-            if (role === 'charitymanager') {
-              this.router.navigate(['/dashboard/charity']);
-              return;
-            }
-
-            if (role === 'admin') {
-              this.router.navigate(['/dashboard/admin']);
+            const dashboardRoute = this.auth.dashboardRoute;
+            if (dashboardRoute) {
+              this.router.navigate([dashboardRoute]);
               return;
             }
 

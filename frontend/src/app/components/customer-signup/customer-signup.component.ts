@@ -107,7 +107,11 @@ export class CustomerSignupComponent implements OnInit {
       phoneOtp: [''],
       
       // Step 3: Password
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
+      ]],
       confirmPassword: ['', [Validators.required]],
       
       // Step 4: Personal Details
@@ -339,6 +343,12 @@ export class CustomerSignupComponent implements OnInit {
   get showPasswordMismatch(): boolean {
     const confirmValue = this.signupForm.get('confirmPassword')?.value;
     return !!confirmValue && !this.passwordsMatch();
+  }
+
+  get showWeakPasswordWarning(): boolean {
+    const passwordControl = this.signupForm.get('password');
+    const value = (passwordControl?.value ?? '').toString();
+    return this.currentStep === 3 && value.length > 0 && !!passwordControl?.invalid;
   }
 
   togglePasswordVisibility(): void {

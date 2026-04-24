@@ -45,7 +45,7 @@ export class ImpactComponent implements OnInit {
           raised: Number(item.totalReceived || 0),
           target: Number(item.targetAmount || 0),
           progress: Number(item.progressPercent || 0),
-          imageUrl: Array.isArray(item.imageUrls) && item.imageUrls.length > 0 ? item.imageUrls[0] : ''
+          imageUrl: this.normalizeImageUrl(Array.isArray(item.imageUrls) && item.imageUrls.length > 0 ? item.imageUrls[0] : '')
         }));
       },
       error: () => {
@@ -59,6 +59,7 @@ export class ImpactComponent implements OnInit {
     if (!url) return '';
     if (url.startsWith('/images/')) return url;
     if (url.startsWith('http')) return url;
-    return `http://localhost:5294${url.startsWith('/') ? url : '/' + url}`;
+    const apiBase = this.api.baseUrl.replace(/\/api\/?$/i, '');
+    return `${apiBase}${url.startsWith('/') ? url : '/' + url}`;
   }
 }

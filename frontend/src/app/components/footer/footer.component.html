@@ -22,6 +22,9 @@
             <a [routerLink]="link.path">{{ link.label }}</a>
           </li>
           <li>
+            <button type="button" class="footer-link-button" (click)="openFaq()">FAQ</button>
+          </li>
+          <li>
             <button type="button" class="footer-link-button" (click)="openContact()">Contact Us</button>
           </li>
         </ul>
@@ -97,5 +100,57 @@
     </label>
 
     <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</section>
+
+<div class="contact-overlay" *ngIf="faqOpen" (click)="closeFaq()"></div>
+<section class="contact-modal" *ngIf="faqOpen" aria-modal="true" role="dialog">
+  <header class="contact-modal-head">
+    <h3>Frequently Asked Questions</h3>
+    <button type="button" class="icon-button" (click)="closeFaq()" aria-label="Close FAQ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="faq-list">
+    <details *ngFor="let item of faqs">
+      <summary>{{ item.question }}</summary>
+      <p>{{ item.answer }}</p>
+    </details>
+  </div>
+</section>
+
+<button type="button" class="help-chat-toggle" (click)="toggleHelpChat()">
+  {{ helpChatOpen ? 'Close Help' : 'Help Chat' }}
+</button>
+
+<section class="help-chat-panel" *ngIf="helpChatOpen">
+  <header class="help-chat-head">
+    <h4>CareFund Help</h4>
+  </header>
+
+  <div class="help-chat-body">
+    <div class="help-msg" *ngFor="let msg of helpMessages" [class.user]="msg.role === 'user'" [class.bot]="msg.role === 'bot'">
+      {{ msg.text }}
+    </div>
+  </div>
+
+  <div class="help-quick-row">
+    <button
+      type="button"
+      class="help-quick-chip"
+      *ngFor="let suggestion of quickHelpSuggestions"
+      (click)="sendQuickHelpMessage(suggestion)"
+    >
+      {{ suggestion }}
+    </button>
+  </div>
+
+  <form class="help-chat-form" (ngSubmit)="sendHelpMessage()">
+    <input type="text" [(ngModel)]="helpInput" name="helpInput" placeholder="Ask your question..." />
+    <button type="submit" class="btn btn-primary">Send</button>
   </form>
 </section>

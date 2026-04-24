@@ -170,8 +170,21 @@ public class DashboardController : ControllerBase
 
         var donations = await _context.Donations
             .AsNoTracking()
+            .Include(d => d.Customer)
+                .ThenInclude(c => c!.User)
+            .Include(d => d.Payment)
             .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId && d.DonationDate >= start && d.DonationDate <= end)
             .OrderByDescending(d => d.DonationDate)
+            .ToListAsync();
+
+        var recentDonations = await _context.Donations
+            .AsNoTracking()
+            .Include(d => d.Customer)
+                .ThenInclude(c => c!.User)
+            .Include(d => d.Payment)
+            .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId)
+            .OrderByDescending(d => d.DonationDate)
+            .Take(10)
             .ToListAsync();
 
         var monthly = donations
@@ -197,7 +210,7 @@ public class DashboardController : ControllerBase
             {
                 charity.CharityRegistrationId,
                 name = user.UserName,
-                charity.Status,
+                status = charity.Status.ToString(),
                 charity.CauseType,
                 charity.City,
                 charity.AddressLine,
@@ -229,10 +242,14 @@ public class DashboardController : ControllerBase
             },
             monthly,
             period = new { from = start, to = end },
-            recent = donations.Take(10).Select(d => new
+            recent = recentDonations.Select(d => new
             {
                 donationId = d.DonationId,
+                donorName = d.IsAnonymous
+                    ? "Anonymous"
+                    : (d.Customer?.User?.UserName ?? "Unknown"),
                 amount = d.Amount,
+                paymentMethod = d.Payment != null ? d.Payment.PaymentMethod.ToString() : "Unknown",
                 donationDate = d.DonationDate,
                 customerId = d.CustomerId
             })
@@ -298,7 +315,7 @@ public class DashboardController : ControllerBase
                 ));
             }
 
-            var pdf = BuildSimplePdf("CareFund Donation Acknowledgement", pdfLines);
+            var pdf = BuildSimplePdf("CareFund", "Customer Donation Report", pdfLines);
             return File(pdf, "application/pdf", $"customer-report-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf");
         }
 
@@ -387,7 +404,7 @@ public class DashboardController : ControllerBase
                 ));
             }
 
-            var pdf = BuildSimplePdf("CareFund Charity Acknowledgement", pdfLines);
+            var pdf = BuildSimplePdf("CareFund", "Charity Donation Report", pdfLines);
             return File(pdf, "application/pdf", $"charity-report-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf");
         }
 
@@ -407,33 +424,40 @@ public class DashboardController : ControllerBase
         return File(bytes, "text/csv", $"charity-report-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
     }
 
-    private static byte[] BuildSimplePdf(string title, IEnumerable<string> lines)
+    private static byte[] BuildSimplePdf(string title, string subtitle, IEnumerable<string> lines)
     {
         var safeTitle = PdfEscape(title);
+        var safeSubtitle = PdfEscape(subtitle);
         var y = 760;
         var content = new StringBuilder();
         content.AppendLine("q");
-        content.AppendLine("0.10 0.45 0.85 rg");
-        content.AppendLine("0 742 612 50 re f");
+        content.AppendLine("0.16 0.39 0.74 rg");
+        content.AppendLine("0 732 612 60 re f");
         content.AppendLine("Q");
         content.AppendLine("q");
-        content.AppendLine("0.90 0.96 1.00 rg");
-        content.AppendLine("20 730 572 6 re f");
+        content.AppendLine("0.96 0.98 1.00 rg");
+        content.AppendLine("20 84 572 630 re f");
         content.AppendLine("Q");
         content.AppendLine("BT");
-        content.AppendLine("/F1 18 Tf");
+        content.AppendLine("/F1 20 Tf");
         content.AppendLine("1 1 1 rg");
-        content.AppendLine($"40 {y + 20} Td");
+        content.AppendLine($"40 {y + 12} Td");
         content.AppendLine($"({safeTitle}) Tj");
+        content.AppendLine("/F1 12 Tf");
+        content.AppendLine($"0 -18 Td ({safeSubtitle}) Tj");
         content.AppendLine("0 0 0 rg");
         content.AppendLine("/F2 9 Tf");
-        content.AppendLine("1 0 0 1 40 690 Tm");
+        content.AppendLine("1 0 0 1 40 680 Tm");
 
         foreach (var line in lines.Take(45))
         {
             y -= 14;
             content.AppendLine($"0 -14 Td ({PdfEscape(line)}) Tj");
         }
+
+        content.AppendLine("/F2 8 Tf");
+        content.AppendLine("1 0 0 1 40 50 Tm");
+        content.AppendLine($"(Generated on {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC by CareFund) Tj");
 
         content.AppendLine("ET");
         var contentBytes = Encoding.ASCII.GetBytes(content.ToString());

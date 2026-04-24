@@ -93,6 +93,38 @@
 
 .dot.active {
   background: #ffd1b8;
+
+.urgency-row {
+  margin-top: 0.55rem;
+}
+
+.urgency-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.urgency-badge.high {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.urgency-badge.medium {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.urgency-badge.low {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
   transform: none;
 }
 

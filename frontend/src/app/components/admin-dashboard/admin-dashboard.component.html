@@ -14,6 +14,7 @@
           <option value="Pending">Pending</option>
           <option value="Approved">Approved</option>
           <option value="Rejected">Rejected</option>
+          <option value="Hold">Hold</option>
         </select>
       </div>
     </header>
@@ -25,10 +26,46 @@
         <article class="kpi-card pending-card"><p class="kpi-label">Pending</p><h3 class="kpi-value">{{ stats.pending }}</h3></article>
         <article class="kpi-card approved-card"><p class="kpi-label">Approved</p><h3 class="kpi-value">{{ stats.approved }}</h3></article>
         <article class="kpi-card rejected-card"><p class="kpi-label">Rejected</p><h3 class="kpi-value">{{ stats.rejected }}</h3></article>
+        <article class="kpi-card neutral-card"><p class="kpi-label">Hold</p><h3 class="kpi-value">{{ stats.hold || 0 }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Users</p><h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Donors</p><h3 class="kpi-value">{{ stats.totalDonors || donors.length }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Donations</p><h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3></article>
         <article class="kpi-card neutral-card"><p class="kpi-label">Approval %</p><h3 class="kpi-value">{{ approvalPercent }}%</h3></article>
+      </div>
+    </section>
+
+    <section class="requests-section" *ngIf="donationMonthlyTrend.length > 0 || causeTrend.length > 0">
+      <div class="table-head">
+        <h2>Analytics Overview</h2>
+        <span>Monthly donations and top causes</span>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-card" *ngIf="donationMonthlyTrend.length > 0">
+          <h3>Monthly Donations (6 months)</h3>
+          <div class="admin-bar-columns compact">
+            <div class="admin-bar-col" *ngFor="let item of donationMonthlyTrend; let i = index">
+              <div class="admin-bar-track">
+                <div class="admin-bar-fill" [style.height]="donationTrendHeight(item.amount)" [style.background]="adminBarColor(i)"></div>
+              </div>
+              <span class="admin-bar-value">₹{{ item.amount | number:'1.0-0' }}</span>
+              <span class="admin-bar-label">{{ item.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card" *ngIf="causeTrend.length > 0">
+          <h3>Top Causes by Amount</h3>
+          <div class="cause-rows">
+            <div class="cause-row" *ngFor="let item of causeTrend">
+              <span class="cause-name">{{ item.cause }}</span>
+              <div class="cause-track">
+                <div class="cause-fill" [style.width]="causeBarWidth(item.amount)"></div>
+              </div>
+              <span class="cause-amount">₹{{ item.amount | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -136,6 +173,7 @@
                           class="comment-input"
                         />
                         <button class="btn-approve" (click)="review(item.charityRegistrationId, 'approve')" [disabled]="item.status === 'Approved'">Approve</button>
+                        <button class="btn-hold" (click)="review(item.charityRegistrationId, 'hold')" [disabled]="item.status === 'Hold'">Hold</button>
                         <button class="btn-reject" (click)="review(item.charityRegistrationId, 'reject')" [disabled]="item.status === 'Rejected'">Reject</button>
                       </div>
 

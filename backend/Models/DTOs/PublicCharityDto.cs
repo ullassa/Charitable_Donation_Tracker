@@ -16,6 +16,7 @@ namespace CareFund.DTOs.Charity
         public string? ManagerPhone { get; set; }
         public string? Pincode { get; set; }
         public string? State { get; set; }
+        public string? SocialMediaLink { get; set; }
         public string? Icon { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }

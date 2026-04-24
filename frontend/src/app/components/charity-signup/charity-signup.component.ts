@@ -84,7 +84,7 @@ export class CharitySignupComponent implements OnInit {
       password: ['', [
         Validators.required,
         Validators.minLength(8),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/)
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
       ]],
       confirmPassword: ['', [Validators.required]],
       
@@ -98,7 +98,7 @@ export class CharitySignupComponent implements OnInit {
       addressLine: [''],
       pincode: [''],
       managerName: [''],
-      managerPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
+      managerPhone: ['', [Validators.required, Validators.pattern(/^(\+91)?[6-9]\d{9}$/)]],
       charityRegistrationNumber: ['', [Validators.required]],
       charityType: ['', [Validators.required]],
       neededAmount: [null, [Validators.required, Validators.min(1)]],
@@ -196,7 +196,7 @@ export class CharitySignupComponent implements OnInit {
                this.signupForm.get('confirmPassword')?.valid &&
                this.passwordsMatch());
       case 4:
-        return true;
+        return !!this.signupForm.get('managerPhone')?.valid;
       case 5:
         return true;
       default:
@@ -214,6 +214,12 @@ export class CharitySignupComponent implements OnInit {
       this.passwordsMatch() &&
       this.emailOtpVerified &&
       this.phoneOtpVerified &&
+      this.signupForm.get('managerPhone')?.valid &&
+      this.signupForm.get('charityRegistrationNumber')?.valid &&
+      this.signupForm.get('charityType')?.valid &&
+      this.signupForm.get('neededAmount')?.valid &&
+      this.signupForm.get('mission')?.valid &&
+      this.signupForm.get('goal')?.valid &&
       this.signupForm.get('termsAccepted')?.value === true
     );
   }
@@ -387,6 +393,12 @@ export class CharitySignupComponent implements OnInit {
   get showPasswordMismatch(): boolean {
     const confirmValue = this.signupForm.get('confirmPassword')?.value;
     return !!confirmValue && !this.passwordsMatch();
+  }
+
+  get showWeakPasswordWarning(): boolean {
+    const passwordControl = this.signupForm.get('password');
+    const value = (passwordControl?.value ?? '').toString();
+    return this.currentStep === 3 && value.length > 0 && !!passwordControl?.invalid;
   }
 
   togglePasswordVisibility(): void {

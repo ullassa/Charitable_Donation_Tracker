@@ -253,6 +253,30 @@
   gap: 0.7rem;
 }
 
+.recent-donation-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.receipt-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.receipt-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .title {
   margin: 0;
   font-weight: 600;

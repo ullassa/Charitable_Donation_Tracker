@@ -69,7 +69,30 @@ public class NotificationEmailService : INotificationEmailService
         }
     }
 
-    private async Task SendEmailAsync(string toEmail, string recipientName, string subject, string message)
+    public async Task NotifyUserWithAttachmentAsync(User user, string subject, string message, byte[] attachmentBytes, string attachmentFileName, int? donationId = null)
+    {
+        if (user == null || string.IsNullOrWhiteSpace(user.Email))
+            return;
+
+        _context.Notifications.Add(new Notification
+        {
+            UserId = user.UserId,
+            DonationId = donationId,
+            NotificationType = NotificationType.Email,
+            Message = message,
+            SentAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        var attachment = attachmentBytes != null && attachmentBytes.Length > 0 && !string.IsNullOrWhiteSpace(attachmentFileName)
+            ? new EmailAttachment(attachmentFileName, Convert.ToBase64String(attachmentBytes))
+            : null;
+
+        await SendEmailAsync(user.Email, user.UserName, subject, message, attachment);
+    }
+
+    private async Task SendEmailAsync(string toEmail, string recipientName, string subject, string message, EmailAttachment? attachment = null)
     {
         try
         {
@@ -93,7 +116,17 @@ public class NotificationEmailService : INotificationEmailService
                 sender = new { name = fromName, email = fromEmail },
                 to = new[] { new { email = toEmail, name = recipientName } },
                 subject,
-                htmlContent = htmlBody
+                htmlContent = htmlBody,
+                attachment = attachment == null
+                    ? null
+                    : new[]
+                    {
+                        new
+                        {
+                            name = attachment.FileName,
+                            content = attachment.Base64Content
+                        }
+                    }
             };
 
             request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
@@ -134,4 +167,6 @@ public class NotificationEmailService : INotificationEmailService
 </body>
 </html>";
     }
+
+    private sealed record EmailAttachment(string FileName, string Base64Content);
 }

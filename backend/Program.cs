@@ -171,6 +171,28 @@ END");
         app.Logger.LogWarning(ex, "Feedbacks table fix skipped. It may already exist.");
     }
 
+    // Ensure FavoriteCharities table exists (compatibility when migrations are skipped)
+    try
+    {
+        db.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID('dbo.FavoriteCharities', 'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[FavoriteCharities] (
+        [FavoriteCharityId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [CustomerId] INT NOT NULL,
+        [CharityRegistrationId] INT NOT NULL,
+        [CreatedAt] DATETIME2 NOT NULL DEFAULT(SYSUTCDATETIME())
+    );
+
+    CREATE UNIQUE INDEX [IX_FavoriteCharities_CustomerId_CharityRegistrationId]
+        ON [dbo].[FavoriteCharities]([CustomerId], [CharityRegistrationId]);
+END");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "FavoriteCharities table fix skipped. It may already exist.");
+    }
+
     if (!schemaReady)
     {
         try

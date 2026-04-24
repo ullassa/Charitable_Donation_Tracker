@@ -21,21 +21,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   activePanel: 'donors' | 'charities' | 'feedback' = 'donors';
 
   statusFilter = '';
-  stats: any = { pending: 0, approved: 0, rejected: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
+  stats: any = { pending: 0, approved: 0, rejected: 0, hold: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
   requests: any[] = [];
   donors: any[] = [];
   feedbacks: any[] = [];
-
-  private readonly backListener = (): void => {
-    window.history.pushState(null, '', window.location.href);
-  };
+  donationMonthlyTrend: Array<{ label: string; amount: number }> = [];
+  causeTrend: Array<{ cause: string; amount: number }> = [];
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
-    window.history.pushState(null, '', window.location.href);
-    window.addEventListener('popstate', this.backListener);
   }
 
   setActivePanel(panel: 'donors' | 'charities' | 'feedback'): void {
@@ -52,7 +48,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {
@@ -62,6 +57,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.api.getAdminDashboard().subscribe({
       next: (res: any) => {
         this.stats = res?.stats ?? this.stats;
+        this.fetchAnalytics();
         this.loading = false;
         this.fetchPanelData();
       },
@@ -109,6 +105,26 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  fetchAnalytics(): void {
+    this.api.getAdminAnalytics(6).subscribe({
+      next: (res: any) => {
+        this.donationMonthlyTrend = (res?.monthly ?? []).map((item: any) => ({
+          label: String(item?.label ?? ''),
+          amount: Number(item?.amount ?? 0)
+        }));
+
+        this.causeTrend = (res?.causes ?? []).map((item: any) => ({
+          cause: String(item?.cause ?? 'Unknown'),
+          amount: Number(item?.amount ?? 0)
+        }));
+      },
+      error: () => {
+        this.donationMonthlyTrend = [];
+        this.causeTrend = [];
+      }
+    });
+  }
+
   fetchRequests(): void {
     this.api.getAdminCharityRequests(this.statusFilter || undefined).subscribe({
       next: (res: any) => {
@@ -139,8 +155,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return this.expandedDonorId === id;
   }
 
-  review(id: number, action: 'approve' | 'reject'): void {
-    const label = action === 'approve' ? 'approve' : 'reject';
+  review(id: number, action: 'approve' | 'reject' | 'hold'): void {
+    const label = action;
     const confirmed = window.confirm(`Are you sure you want to ${label} this charity request?`);
     if (!confirmed) {
       return;
@@ -190,7 +206,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return [
       { label: 'Pending', amount: Number(this.stats.pending || 0) },
       { label: 'Approved', amount: Number(this.stats.approved || 0) },
-      { label: 'Rejected', amount: Number(this.stats.rejected || 0) }
+      { label: 'Rejected', amount: Number(this.stats.rejected || 0) },
+      { label: 'Hold', amount: Number(this.stats.hold || 0) }
     ];
   }
 
@@ -242,7 +259,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     const palette = [
       ['#f59e0b', '#d97706'],
       ['#22c55e', '#16a34a'],
-      ['#ef4444', '#dc2626']
+      ['#ef4444', '#dc2626'],
+      ['#6366f1', '#4f46e5']
     ];
 
     const [start, end] = palette[index % palette.length];
@@ -255,7 +273,26 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       { label: 'Total donors', value: String(this.stats.totalDonors || 0) },
       { label: 'Approved', value: String(this.stats.approved || 0) },
       { label: 'Pending', value: String(this.stats.pending || 0) },
-      { label: 'Rejected', value: String(this.stats.rejected || 0) }
+      { label: 'Rejected', value: String(this.stats.rejected || 0) },
+      { label: 'Hold', value: String(this.stats.hold || 0) }
     ];
+  }
+
+  get maxDonationTrendAmount(): number {
+    return Math.max(1, ...this.donationMonthlyTrend.map(item => item.amount || 0));
+  }
+
+  donationTrendHeight(amount: number): string {
+    const height = (Math.max(0, amount) / this.maxDonationTrendAmount) * 100;
+    return `${Math.max(10, height)}%`;
+  }
+
+  get maxCauseAmount(): number {
+    return Math.max(1, ...this.causeTrend.map(item => item.amount || 0));
+  }
+
+  causeBarWidth(amount: number): string {
+    const width = (Math.max(0, amount) / this.maxCauseAmount) * 100;
+    return `${Math.max(8, width)}%`;
   }
 }

@@ -19,7 +19,7 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   charity: any = null;
   stats = { totalCollected: 0, donationsCount: 0, targetAmount: 0, remainingAmount: 0, progressPercent: 0 };
   monthly: Array<{ label: string; amount: number }> = [];
-  recent: Array<{ donationId: number; amount: number; donationDate: string }> = [];
+  recent: Array<{ donationId: number; donorName: string; amount: number; paymentMethod: string; donationDate: string }> = [];
 
   showTrend = false;
 
@@ -33,22 +33,31 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
     }
   };
 
-  private readonly backListener = (): void => {
-    window.history.pushState(null, '', window.location.href);
-  };
-
   constructor(private api: ApiService) {}
+
+  get normalizedStatus(): string {
+    const raw = (this.charity?.status ?? '').toString().trim().toLowerCase();
+    if (!raw) return 'pending';
+
+    if (raw === 'approved' || raw === '2') return 'approved';
+    if (raw === 'rejected' || raw === '3') return 'rejected';
+    if (raw === 'hold' || raw === '5') return 'hold';
+    if (raw === 'removed' || raw === '4') return 'hold';
+
+    return 'pending';
+  }
+
+  get isApproved(): boolean {
+    return this.normalizedStatus === 'approved';
+  }
 
   ngOnInit(): void {
     this.load();
     window.addEventListener('storage', this.storageListener);
-    window.history.pushState(null, '', window.location.href);
-    window.addEventListener('popstate', this.backListener);
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
-    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {
@@ -61,7 +70,7 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
         this.stats = res?.stats ?? this.stats;
         this.monthly = res?.monthly ?? [];
         this.recent = res?.recent ?? [];
-        this.showTrend = true;
+        this.showTrend = this.isApproved;
         this.loading = false;
       },
       error: (err) => {
@@ -80,6 +89,11 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
     const progress = Number(this.stats?.progressPercent ?? 0);
     if (Number.isNaN(progress)) return 0;
     return Math.max(0, Math.min(100, progress));
+  }
+
+  get progressPieStyle(): string {
+    const percent = this.charityProgressPercent;
+    return `conic-gradient(#22c55e 0 ${percent}%, #e2e8f0 ${percent}% 100%)`;
   }
 
   get maxMonthlyAmount(): number {

@@ -1,0 +1,15 @@
+<app-header></app-header>
+
+<main class="status-page">
+  <section class="status-card">
+    <p class="status-code">500</p>
+    <h1>Something went wrong</h1>
+    <p>We could not process your request right now. Please return home and try again.</p>
+    <div class="status-actions">
+      <a routerLink="/" class="btn btn-primary">Back to Home</a>
+      <button type="button" class="btn btn-secondary" (click)="goBack()">Go Back</button>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

@@ -186,7 +186,10 @@
             <div *ngIf="submitted && password?.invalid" class="error-message">
               <span *ngIf="password?.errors?.['required']">Password is required</span>
               <span *ngIf="password?.errors?.['minlength']">Password must be at least 8 characters</span>
-              <span *ngIf="password?.errors?.['pattern']">Password must include uppercase, lowercase, and a number</span>
+              <span *ngIf="password?.errors?.['pattern']">Password must include uppercase, lowercase, number, and special character</span>
+            </div>
+            <div *ngIf="showWeakPasswordWarning" class="warning-message">
+              Password is not strong enough. Use 8+ chars with uppercase, lowercase, number, and special character.
             </div>
           </div>
 
@@ -325,7 +328,11 @@
               [class.is-invalid]="submitted && managerPhone?.invalid"
             >
             <div *ngIf="submitted && managerPhone?.invalid" class="error-message">
-              <span *ngIf="managerPhone?.errors?.['pattern']">Manager phone must be exactly 10 digits</span>
+              <span *ngIf="managerPhone?.errors?.['required']">Manager phone is required</span>
+              <span *ngIf="managerPhone?.errors?.['pattern']">Enter valid manager phone (10 digits starting 6-9, optionally +91)</span>
+            </div>
+            <div *ngIf="managerPhone?.touched && managerPhone?.invalid" class="warning-message">
+              Enter a valid manager phone number before submitting charity details.
             </div>
           </div>
         </div>

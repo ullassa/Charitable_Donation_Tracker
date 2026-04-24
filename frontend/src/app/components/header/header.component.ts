@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthStateService } from '../../auth-state.service';
 
 @Component({
   selector: 'app-header',
@@ -10,40 +11,37 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent {
-  get isLoggedIn(): boolean {
-    return !!sessionStorage.getItem('token');
-  }
-
-  get role(): string {
-    return (sessionStorage.getItem('role') || '').trim().toLowerCase();
-  }
+  public readonly auth = inject(AuthStateService);
+  private readonly router = inject(Router);
 
   get dashboardLink(): string | null {
-    if (this.role === 'customer') {
-      return '/dashboard/customer';
-    }
-
-    if (this.role === 'charitymanager') {
-      return '/dashboard/charity';
-    }
-
-    if (this.role === 'admin') {
-      return '/dashboard/admin';
-    }
-
-    return null;
+    return this.auth.dashboardRoute;
   }
 
   logout(): void {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('role');
-    sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('userName');
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.setItem('cf:auth:changed', Date.now().toString());
-    window.location.href = '/';
+    this.auth.clearSession();
+    this.router.navigate(['/login'], { replaceUrl: true }).then(navigated => {
+      if (!navigated) {
+        window.location.href = '/login';
+      }
+    });
+  }
+
+  openLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  openProfile(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  openDashboard(): void {
+    const route = this.dashboardLink;
+    if (!route) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    this.router.navigate([route]);
   }
 }

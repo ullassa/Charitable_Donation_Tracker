@@ -32,22 +32,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     }
   };
 
-  private readonly backListener = (): void => {
-    window.history.pushState(null, '', window.location.href);
-  };
-
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
     window.addEventListener('storage', this.storageListener);
-    window.history.pushState(null, '', window.location.href);
-    window.addEventListener('popstate', this.backListener);
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
-    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {
@@ -181,6 +174,13 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.api.downloadCustomerReport(this.fromDate || undefined, this.toDate || undefined, this.reportFormat).subscribe({
       next: (blob) => this.saveBlob(blob, `customer-report.${this.reportFormat}`),
       error: () => (this.error = 'Unable to download report right now.')
+    });
+  }
+
+  downloadReceipt(donationId: number): void {
+    this.api.downloadDonationReceipt(donationId).subscribe({
+      next: (blob) => this.saveBlob(blob, `Donation_Receipt_${donationId}.pdf`),
+      error: () => (this.error = 'Unable to download receipt right now.')
     });
   }
 

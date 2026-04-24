@@ -20,9 +20,16 @@ export class LandingComponent implements OnInit, OnDestroy {
   visibleCharities: any[] = [];
   charityTypes: string[] = ['All'];
   selectedCharityType = 'All';
+  charityStates: string[] = ['All'];
+  selectedCharityState = 'All';
+  urgencyLevels: string[] = ['All', 'High', 'Medium', 'Low'];
+  selectedUrgency = 'All';
   isLoading = false;
   searchTerm = '';
   isLoggedIn = false;
+  currentRole = '';
+  favoriteCharityIds = new Set<number>();
+  favoriteLoadingIds = new Set<number>();
   currentPage = 1;
   pageSize = 6;
   expandedCharities = new Set<string>();
@@ -88,6 +95,7 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = !!sessionStorage.getItem('token');
+    this.currentRole = (sessionStorage.getItem('role') || '').trim().toLowerCase();
 
     if (this.isLoggedIn) {
       this.heroTitle = 'Welcome back to CareFund';
@@ -95,7 +103,12 @@ export class LandingComponent implements OnInit, OnDestroy {
     }
     this.selectHeroSlide(0);
     this.loadCharities();
+    this.loadFavorites();
     this.startHeroRotation();
+  }
+
+  get isCustomer(): boolean {
+    return this.isLoggedIn && this.currentRole === 'customer';
   }
 
   ngOnDestroy(): void {
@@ -137,6 +150,14 @@ export class LandingComponent implements OnInit, OnDestroy {
           )
         ).sort((a: string, b: string) => a.localeCompare(b));
         this.charityTypes = ['All', ...uniqueTypes];
+        const uniqueStates = Array.from<string>(
+          new Set(
+            approvedItems
+              .map((item: any) => String(item?.state || '').trim())
+              .filter((state: string) => !!state)
+          )
+        ).sort((a: string, b: string) => a.localeCompare(b));
+        this.charityStates = ['All', ...uniqueStates];
         this.applyFilters();
         this.buildLiveSpotlights(approvedItems);
         this.updateStatistics(items);
@@ -146,8 +167,28 @@ export class LandingComponent implements OnInit, OnDestroy {
         this.charities = [];
         this.charityTypes = ['All'];
         this.selectedCharityType = 'All';
+        this.charityStates = ['All'];
+        this.selectedCharityState = 'All';
+        this.selectedUrgency = 'All';
         this.filteredCharities = [];
         this.visibleCharities = [];
+      }
+    });
+  }
+
+  loadFavorites(): void {
+    if (!this.isCustomer) {
+      this.favoriteCharityIds.clear();
+      return;
+    }
+
+    this.api.getFavoriteCharities().subscribe({
+      next: (res: any) => {
+        const items: number[] = Array.isArray(res?.items) ? res.items : [];
+        this.favoriteCharityIds = new Set(items.filter(id => Number.isFinite(Number(id))).map(id => Number(id)));
+      },
+      error: () => {
+        this.favoriteCharityIds.clear();
       }
     });
   }
@@ -173,20 +214,36 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  onStateChange(state: string): void {
+    this.selectedCharityState = state;
+    this.applyFilters();
+  }
+
+  onUrgencyChange(urgency: string): void {
+    this.selectedUrgency = urgency;
+    this.applyFilters();
+  }
+
   private applyFilters(): void {
     const term = this.searchTerm.trim().toLowerCase();
     const selectedType = this.selectedCharityType.trim().toLowerCase();
+    const selectedState = this.selectedCharityState.trim().toLowerCase();
+    const selectedUrgency = this.selectedUrgency.trim().toLowerCase();
 
     this.filteredCharities = this.charities.filter(charity => {
       const charityCause = String(charity?.cause || '').trim().toLowerCase();
       const matchesType = selectedType === 'all' || charityCause === selectedType;
+      const charityState = String(charity?.state || '').trim().toLowerCase();
+      const matchesState = selectedState === 'all' || charityState === selectedState;
+      const urgency = this.getUrgencyLevel(charity).toLowerCase();
+      const matchesUrgency = selectedUrgency === 'all' || urgency === selectedUrgency;
 
       const matchesSearch = !term ||
-        [charity.charityName, charity.cause, charity.location, charity.description]
+        [charity.charityName, charity.cause, charity.location, charity.description, charity.state]
           .filter(Boolean)
           .some((value: string) => String(value).toLowerCase().includes(term));
 
-      return matchesType && matchesSearch;
+      return matchesType && matchesState && matchesUrgency && matchesSearch;
     });
 
     this.currentPage = 1;
@@ -228,6 +285,74 @@ export class LandingComponent implements OnInit, OnDestroy {
     const progress = Number(charity?.progressPercent ?? 0);
     if (Number.isNaN(progress)) return 0;
     return Math.max(0, Math.min(100, progress));
+  }
+
+  getUrgencyLevel(charity: any): 'High' | 'Medium' | 'Low' {
+    const progress = this.getProgressPercent(charity);
+    if (progress < 35) return 'High';
+    if (progress < 70) return 'Medium';
+    return 'Low';
+  }
+
+  isFavorite(charity: any): boolean {
+    const charityId = Number(charity?.charityId ?? 0);
+    return charityId > 0 && this.favoriteCharityIds.has(charityId);
+  }
+
+  toggleFavorite(charity: any): void {
+    if (!this.isCustomer) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const charityId = Number(charity?.charityId ?? 0);
+    if (charityId <= 0 || this.favoriteLoadingIds.has(charityId)) {
+      return;
+    }
+
+    this.favoriteLoadingIds.add(charityId);
+    const request$ = this.isFavorite(charity)
+      ? this.api.removeFavoriteCharity(charityId)
+      : this.api.addFavoriteCharity(charityId);
+
+    request$.subscribe({
+      next: () => {
+        if (this.favoriteCharityIds.has(charityId)) {
+          this.favoriteCharityIds.delete(charityId);
+        } else {
+          this.favoriteCharityIds.add(charityId);
+        }
+        this.favoriteLoadingIds.delete(charityId);
+      },
+      error: () => {
+        this.favoriteLoadingIds.delete(charityId);
+      }
+    });
+  }
+
+  shareCharity(charity: any): void {
+    const title = charity?.charityName || 'CareFund Charity';
+    const text = `Support ${title} on CareFund.`;
+    const url = `${window.location.origin}/charity/${charity?.charityId}`;
+
+    if (navigator.share) {
+      navigator.share({ title, text, url }).catch(() => {});
+      return;
+    }
+
+    const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+    window.open(whatsapp, '_blank', 'noopener,noreferrer');
+  }
+
+  goToFeaturedCharity(): void {
+    const featured = this.visibleCharities[0] ?? this.filteredCharities[0] ?? this.charities[0];
+    const charityId = Number(featured?.charityId ?? 0);
+    if (charityId > 0) {
+      this.router.navigate(['/charity', charityId]);
+      return;
+    }
+
+    this.router.navigate(['/']);
   }
 
   getRemainingAmount(charity: any): number {
