@@ -18,6 +18,10 @@ export class HeaderComponent {
     return this.auth.dashboardRoute;
   }
 
+  get showStartCharity(): boolean {
+    return !this.auth.snapshot.isLoggedIn;
+  }
+
   logout(): void {
     this.auth.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true }).then(navigated => {
@@ -33,6 +37,10 @@ export class HeaderComponent {
 
   openProfile(): void {
     this.router.navigate(['/profile']);
+  }
+
+  startCharity(): void {
+    this.router.navigate(['/charity-signup']);
   }
 
   openDashboard(): void {

@@ -19,7 +19,10 @@ export class FooterComponent {
   helpChatOpen = false;
   helpInput = '';
   helpMessages: Array<{ role: 'bot' | 'user'; text: string }> = [
-    { role: 'bot', text: 'Hi, I am CareFund help assistant. Ask me about donation, receipt, login, or charity approval.' }
+    {
+      role: 'bot',
+      text: 'Hi, I am CareFund help assistant.\nTry asking about donation steps, receipt PDF, login reset, charity approval, dashboard reports, or profile rules.'
+    }
   ];
   quickHelpSuggestions: string[] = [
     'How do I donate?',
@@ -37,43 +40,43 @@ export class FooterComponent {
     },
     {
       keywords: ['donate', 'donation', 'how to donate', 'pay', 'payment'],
-      reply: 'To donate: open Donate page, choose a charity, select amount, pick payment method, and complete payment. After success, you can submit feedback and share.'
+      reply: 'To donate: open the Donate page, choose a charity, select the amount, and complete payment.\nAfter success, the receipt is available in Donor Dashboard and is also emailed to you.'
     },
     {
       keywords: ['anonymous', 'hide my identity', 'hide identity'],
-      reply: 'Yes, you can donate anonymously from the payment options. Your identity will be hidden in charity-facing donation views.'
+      reply: 'Yes. Enable anonymous donation in the payment section.\nYour name will be hidden from charity-facing donation views while still keeping your receipt for your own records.'
     },
     {
       keywords: ['receipt', 'pdf', 'download receipt', 'invoice'],
-      reply: 'Go to Donor Dashboard → Recent Donations → click Receipt PDF. For date-range exports, use Download CSV/PDF in dashboard.'
+      reply: 'Go to Donor Dashboard → Recent Donations → click the receipt icon.\nIf the PDF looks blank, refresh and download again; if it still fails, share the donation ID so it can be checked.'
     },
     {
       keywords: ['login', 'sign in', 'cannot login', 'forgot password', 'reset password', 'password reset'],
-      reply: 'Use Login page to sign in. If you forgot password, open Forgot Password and complete OTP verification to reset securely.'
+      reply: 'Use the Login page to sign in.\nIf you forgot your password, open Forgot Password and complete OTP verification to reset securely.'
     },
     {
       keywords: ['register', 'signup', 'sign up', 'create account', 'donor account', 'customer account'],
-      reply: 'Use Customer Signup to create donor account. Complete email/phone OTP and strong password rules to proceed.'
+      reply: 'Use Customer Signup to create a donor account.\nComplete email and phone OTP verification, then set a strong password to proceed.'
     },
     {
       keywords: ['charity signup', 'charity registration', 'register charity', 'charity apply'],
-      reply: 'Use Charity Signup, fill organization and manager details, upload images, and submit. Status appears as Pending/Approved/Rejected/Hold after admin review.'
+      reply: 'Use Charity Signup, fill in organization and manager details, upload images, and submit.\nStatus appears as Pending, Approved, Rejected, or Hold after admin review.'
     },
     {
       keywords: ['pending', 'approved', 'rejected', 'hold', 'under review', 'status'],
-      reply: 'Charity status flow: Pending = under review, Approved = dashboard enabled, Rejected/Hold = dashboard access blocked with admin comment and support contact.'
+      reply: 'Charity status flow: Pending means under review, Approved enables the dashboard, and Rejected or Hold blocks access with an admin comment.'
     },
     {
       keywords: ['dashboard', 'chart', 'analytics', 'recent donation', 'trend'],
-      reply: 'Dashboards show donation trends, totals, and recent records. Charity dashboard also shows target progress and donor/payment details for recent donations.'
+      reply: 'Dashboards show donation trends, totals, and recent records.\nThe charity dashboard also shows target progress and donor/payment details.'
     },
     {
       keywords: ['profile', 'edit profile', 'update profile', 'name', 'address'],
-      reply: 'Profile permissions: donor can edit name and address/city only; charity profile is read-only on profile page per current rules.'
+      reply: 'Profile permissions: donors can edit name and address or city only.\nCharity profile is read-only on the profile page under the current rules.'
     },
     {
       keywords: ['faq', 'help', 'support', 'contact', 'email', 'phone'],
-      reply: 'Open FAQ from footer for quick answers, or Contact Us to submit your issue. For registration status support, email carefund03@gmail.com.'
+      reply: 'Open FAQ from the footer for quick answers, or use Contact Us to submit your issue.\nFor registration support, email carefund03@gmail.com.'
     },
     {
       keywords: ['thanks', 'thank you', 'ok', 'great'],
@@ -184,10 +187,10 @@ export class FooterComponent {
     });
 
     if (faqMatch) {
-      return faqMatch.answer;
+      return `${faqMatch.answer}\n\nIf you want, I can also explain the exact steps one by one.`;
     }
 
-    return 'I could not fully map that yet. You can ask about: donation steps, anonymous donation, receipt PDF, login/reset password, charity registration status, dashboard data, or profile update rules.';
+    return 'I could not fully map that yet.\nTry one of these: donation steps, anonymous donation, receipt PDF, login or password reset, charity registration status, dashboard data, or profile update rules.';
   }
 
   private normalizeText(value: string): string {

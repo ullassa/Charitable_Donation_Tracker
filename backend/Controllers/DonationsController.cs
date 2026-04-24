@@ -87,26 +87,8 @@ public class DonationsController : ControllerBase
         _context.Donations.Add(donation);
         await _context.SaveChangesAsync();
 
-        var receiptFileName = $"Donation_Receipt_{donation.DonationId}.pdf";
-        var receiptPdf = BuildDonationReceiptPdf(
-            user.UserName,
-            user.Email,
-            charity.User?.UserName ?? "CareFund Charity",
-            donation.DonationId,
-            donation.DonationDate,
-            donation.Amount,
-            payment.PaymentMethod.ToString(),
-            payment.TransactionReference,
-            donation.IsAnonymous);
-
         var donorMessage = $"You donated ₹{request.Amount:n2} to {charity.User?.UserName ?? "a charity"} on CareFund. Transaction reference: {payment.TransactionReference}.";
-        await _notifications.NotifyUserWithAttachmentAsync(
-            user,
-            "Donation received",
-            donorMessage,
-            receiptPdf,
-            receiptFileName,
-            donation.DonationId);
+        await _notifications.NotifyUserAsync(user, "Donation received", donorMessage, donation.DonationId);
 
         var totalCollected = await _context.Donations
             .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId)
@@ -194,98 +176,96 @@ public class DonationsController : ControllerBase
     {
         var lines = new List<string>
         {
-            "",
+            "Receipt Summary",
+            $"Donation ID: {donationId}",
             $"Receipt Date: {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
             $"Donation Date: {donationDate:yyyy-MM-dd HH:mm}",
-            $"Donation ID: {donationId}",
-            $"Transaction Ref: {transactionReference ?? "N/A"}",
-            "",
-            "Donor Details",
-            $"Name: {donorName}",
-            $"Email: {donorEmail}",
-            "",
-            "Charity Details",
-            $"Charity: {charityName}",
-            "",
-            "Payment Summary",
+            $"Customer Name: {donorName}",
+            $"Customer Email: {donorEmail}",
+            $"Charity Name: {charityName}",
             $"Amount: INR {amount:n2}",
             $"Payment Method: {paymentMethod}",
+            $"Transaction Ref: {transactionReference ?? "N/A"}",
             $"Anonymous Donation: {(isAnonymous ? "Yes" : "No")}",
-            "",
+            string.Empty,
             "This receipt confirms your donation on CareFund.",
-            "Thank you for your generosity and support."
+            "Thank you for your generosity and support.",
+            "Giving is not just about making a donation, it is about making a difference.",
+            string.Empty,
+            "Authorized by CareFund"
         };
 
-        return BuildSimplePdf("CareFund Donation Receipt", lines);
+        return BuildSimplePdf("CareFund Donation Receipt", "Donation Receipt", lines);
     }
 
-    private static byte[] BuildSimplePdf(string title, IEnumerable<string> lines)
+    private static byte[] BuildSimplePdf(string title, string subtitle, IEnumerable<string> lines)
     {
         var safeTitle = PdfEscape(title);
-        var y = 760;
+        var safeSubtitle = PdfEscape(subtitle);
         var content = new StringBuilder();
-        content.AppendLine("q");
-        content.AppendLine("0.10 0.45 0.85 rg");
-        content.AppendLine("0 742 612 50 re f");
-        content.AppendLine("Q");
-        content.AppendLine("q");
-        content.AppendLine("0.90 0.96 1.00 rg");
-        content.AppendLine("36 708 540 28 re f");
-        content.AppendLine("Q");
-        content.AppendLine("BT");
-        content.AppendLine("/F1 20 Tf");
-        content.AppendLine("1 1 1 rg");
-        content.AppendLine($"50 760 Td ({safeTitle}) Tj");
-        content.AppendLine("ET");
-        content.AppendLine("BT");
-        content.AppendLine("/F1 11 Tf");
-        content.AppendLine("0.11 0.17 0.30 rg");
 
-        foreach (var line in lines.Take(43))
+        content.AppendLine("BT");
+        content.AppendLine("/F1 18 Tf");
+        content.AppendLine("0.10 0.20 0.45 rg");
+        content.AppendLine("1 0 0 1 40 770 Tm");
+        content.AppendLine($"({safeTitle}) Tj");
+        content.AppendLine("/F1 12 Tf");
+        content.AppendLine("0.20 0.30 0.50 rg");
+        content.AppendLine("1 0 0 1 40 748 Tm");
+        content.AppendLine($"({safeSubtitle}) Tj");
+        content.AppendLine("/F1 10 Tf");
+        content.AppendLine("0 0 0 rg");
+
+        var y = 720;
+        foreach (var line in lines.Take(45))
         {
-            var safeLine = PdfEscape(line);
-            content.AppendLine($"50 {y} Td ({safeLine}) Tj");
-            y -= 16;
+            content.AppendLine($"1 0 0 1 40 {y} Tm");
+            content.AppendLine($"({PdfEscape(line)}) Tj");
+            y -= 14;
         }
 
+        content.AppendLine("/F1 8 Tf");
+        content.AppendLine("0.35 0.35 0.35 rg");
+        content.AppendLine("1 0 0 1 40 42 Tm");
+        content.AppendLine($"(Generated on {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC by CareFund) Tj");
         content.AppendLine("ET");
 
         var contentBytes = Encoding.ASCII.GetBytes(content.ToString());
         var objects = new List<string>
         {
-            "1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj",
-            "2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj",
-            $"3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>endobj",
-            "4 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj",
-            $"5 0 obj<< /Length {contentBytes.Length} >>stream\n{content}\nendstream\nendobj"
+            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
+            "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
+            "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+            "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
+            $"5 0 obj\n<< /Length {contentBytes.Length} >>\nstream\n{content}endstream\nendobj\n"
         };
 
-        var output = new StringBuilder();
-        output.AppendLine("%PDF-1.4");
+        var pdf = new StringBuilder();
+        pdf.Append("%PDF-1.4\n");
 
-        var xref = new List<int> { 0 };
+        var offsets = new List<int> { 0 };
         foreach (var obj in objects)
         {
-            xref.Add(Encoding.ASCII.GetByteCount(output.ToString()));
-            output.AppendLine(obj);
+            offsets.Add(Encoding.ASCII.GetByteCount(pdf.ToString()));
+            pdf.Append(obj);
         }
 
-        var xrefOffset = Encoding.ASCII.GetByteCount(output.ToString());
-        output.AppendLine("xref");
-        output.AppendLine($"0 {objects.Count + 1}");
-        output.AppendLine("0000000000 65535 f ");
-        foreach (var offset in xref.Skip(1))
+        var xrefStart = Encoding.ASCII.GetByteCount(pdf.ToString());
+        pdf.Append($"xref\n0 {objects.Count + 1}\n");
+        pdf.Append("0000000000 65535 f \n");
+
+        for (var i = 1; i <= objects.Count; i++)
         {
-            output.AppendLine($"{offset:D10} 00000 n ");
+            pdf.Append($"{offsets[i]:D10} 00000 n \n");
         }
 
-        output.AppendLine("trailer");
-        output.AppendLine($"<< /Size {objects.Count + 1} /Root 1 0 R >>");
-        output.AppendLine("startxref");
-        output.AppendLine(xrefOffset.ToString());
-        output.AppendLine("%%EOF");
+        pdf.Append("trailer\n");
+        pdf.Append($"<< /Size {objects.Count + 1} /Root 1 0 R >>\n");
+        pdf.Append("startxref\n");
+        pdf.Append($"{xrefStart}\n");
+        pdf.Append("%%EOF");
 
-        return Encoding.ASCII.GetBytes(output.ToString());
+        return Encoding.ASCII.GetBytes(pdf.ToString());
     }
 
     private static string PdfEscape(string value)

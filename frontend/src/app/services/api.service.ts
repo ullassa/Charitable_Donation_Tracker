@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -204,8 +204,8 @@ export class ApiService {
   }
 
   downloadDonationReceipt(donationId: number) {
-    return this.http.get(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/donation/receipt/${donationId}`, { responseType: 'blob' }).pipe(
-      catchError(() => this.http.get(`${this.baseUrl}/donations/${donationId}/receipt`, { responseType: 'blob' }))
+    return this.http.get(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/donation/receipt/${donationId}`, { responseType: 'blob', observe: 'response' }).pipe(
+      catchError(() => this.http.get(`${this.baseUrl}/donations/${donationId}/receipt`, { responseType: 'blob', observe: 'response' }))
     );
   }
 

@@ -177,13 +177,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  downloadReceipt(donationId: number): void {
-    this.api.downloadDonationReceipt(donationId).subscribe({
-      next: (blob) => this.saveBlob(blob, `Donation_Receipt_${donationId}.pdf`),
-      error: () => (this.error = 'Unable to download receipt right now.')
-    });
-  }
-
   private saveBlob(blob: Blob, fileName: string): void {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');

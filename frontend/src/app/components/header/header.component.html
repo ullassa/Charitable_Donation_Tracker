@@ -21,6 +21,7 @@
 
     <!-- Auth Buttons -->
     <div class="auth-buttons">
+      <button *ngIf="showStartCharity" type="button" class="btn start-charity-btn" (click)="startCharity()">Start a charity</button>
       <button *ngIf="!(auth.isLoggedIn$ | async)" type="button" class="btn btn-secondary" (click)="openLogin()">Login</button>
       <button *ngIf="auth.isLoggedIn$ | async" type="button" class="btn btn-secondary profile-btn" (click)="openProfile()">
         <span class="profile-icon" aria-hidden="true"></span>

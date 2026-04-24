@@ -151,6 +151,17 @@
   color: var(--cf-ink);
 }
 
+.start-charity-btn {
+  background: linear-gradient(135deg, #61305c, #3d758f 55%, #1d9e8d);
+  color: #fff7ee;
+  box-shadow: 0 10px 22px rgba(61, 117, 143, 0.18);
+}
+
+.start-charity-btn:hover {
+  background: linear-gradient(135deg, #7b3c75, #4d88a7 55%, #23b39d);
+  transform: translateY(-1px);
+}
+
 .profile-btn {
   display: inline-flex;
   align-items: center;
