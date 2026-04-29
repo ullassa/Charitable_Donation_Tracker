@@ -84,9 +84,8 @@ namespace CareFund.Models
 
         public bool IsPhoneVerified { get; set; } = false; 
 
-  
-
-  
+        [StringLength(500)] 
+        public string? AddressLine { get; set; } 
 
          
 

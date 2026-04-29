@@ -33,7 +33,8 @@ export class ProfileComponent implements OnInit {
     addressLine: '',
     email: '',
     phoneNumber: '',
-    city: ''
+    city: '',
+    dateOfBirth: ''
   };
 
   charityProfile: any = {
@@ -100,7 +101,8 @@ export class ProfileComponent implements OnInit {
           addressLine: res?.customer?.addressLine || res?.customer?.city || res?.user?.city || '',
           email: res?.user?.email || '',
           phoneNumber: res?.user?.phoneNumber || '',
-          city: res?.customer?.city || res?.user?.city || ''
+          city: res?.customer?.city || res?.user?.city || '',
+          dateOfBirth: res?.customer?.dateOfBirth || res?.user?.dateOfBirth || ''
         };
 
         this.profileForm.patchValue(this.profile);

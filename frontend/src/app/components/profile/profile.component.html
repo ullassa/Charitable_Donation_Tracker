@@ -25,6 +25,16 @@
           [attr.aria-invalid]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
         />
       </label>
+      
+      <section *ngIf="isCustomer" class="customer-details-box">
+        <h2>Customer Details</h2>
+        <div class="read-only-grid">
+          <div class="read-only-item"><span>Email</span><p>{{ profile.email || 'Not available' }}</p></div>
+          <div class="read-only-item"><span>Phone</span><p>{{ profile.phoneNumber || 'Not available' }}</p></div>
+          <div class="read-only-item"><span>City</span><p>{{ profile.city || 'Not available' }}</p></div>
+          <div class="read-only-item"><span>Date of Birth</span><p>{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'mediumDate') : 'Not available' }}</p></div>
+        </div>
+      </section>
 
       <label>
         <span>Address</span>

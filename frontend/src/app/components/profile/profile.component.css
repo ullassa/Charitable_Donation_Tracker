@@ -53,6 +53,20 @@
   gap: 1rem;
 }
 
+.customer-details-box {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.customer-details-box h2 {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-display);
+  color: var(--cf-ink);
+  font-size: 1.1rem;
+}
+
 .profile-summary,
 .read-only-grid {
   display: grid;
