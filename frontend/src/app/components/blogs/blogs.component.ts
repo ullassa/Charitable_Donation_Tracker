@@ -39,7 +39,7 @@ export class BlogsComponent {
       description: 'Our awareness initiative reached families across multiple neighborhoods with sessions on preventive care, sanitation, and emergency support channels.',
       category: 'Awareness',
       date: 'March 2026',
-      imageUrl: '',
+      imageUrl: '/images/awareness.png',
       highlight: 'Health Awareness'
     },
     {
@@ -57,7 +57,7 @@ export class BlogsComponent {
       description: 'A recurring donor shared how transparent updates and visible campaign progress gave confidence to keep supporting causes month after month.',
       category: 'Testimonials',
       date: 'February 2026',
-      imageUrl: '',
+      imageUrl: '/images/testimonial.png',
       highlight: 'Donor Voices'
     },
     {
@@ -75,7 +75,7 @@ export class BlogsComponent {
       description: 'Young volunteers organized clean-up and recycling drives, creating a positive culture of service and shared responsibility in local communities.',
       category: 'Positive Vibes',
       date: 'January 2026',
-      imageUrl: '',
+      imageUrl: '/images/youth_leadership.png',
       highlight: 'Youth Leadership'
     },
     {
@@ -84,7 +84,7 @@ export class BlogsComponent {
       description: 'This month’s awareness story explains how consistent small contributions can sustain education, medical aid, and meal programs over time.',
       category: 'Awareness',
       date: 'January 2026',
-      imageUrl: '',
+      imageUrl: '/images/community_education.png',
       highlight: 'Community Education'
     },
     {
@@ -93,7 +93,7 @@ export class BlogsComponent {
       description: 'A partner organization shared how faster visibility and easier donor reach through CareFund helped them serve beneficiaries in urgent cases.',
       category: 'Testimonials',
       date: 'December 2025',
-      imageUrl: '',
+      imageUrl: '/images/testimonials.png',
       highlight: 'Partner Voices'
     }
   ];

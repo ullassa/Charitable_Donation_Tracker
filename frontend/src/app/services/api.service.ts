@@ -11,6 +11,11 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  private getAuthHeaders(): HttpHeaders {
+    const token = sessionStorage.getItem('token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
   login(data: any) {
     return this.http.post(`${this.baseUrl}/auth/login`, data);
   }
@@ -88,11 +93,15 @@ export class ApiService {
   }
 
   createRazorpayOrder(payload: { charityRegistrationId: number; amount: number; upivpa?: string; transactionReference?: string }) {
-    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/create-order`, payload);
+    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/create-order`, payload, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   finalizeRazorpayPayment(payload: { paymentId: number; razorpayPaymentId: string; razorpayOrderId: string; razorpaySignature: string; charityRegistrationId: number; amount: number; isAnonymous: boolean }) {
-    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/finalize`, payload);
+    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/finalize`, payload, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   submitFeedback(payload: {

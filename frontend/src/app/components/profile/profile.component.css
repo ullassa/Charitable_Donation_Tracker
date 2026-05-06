@@ -43,6 +43,10 @@
   border: 1px solid rgba(230, 136, 214, 0.15);
 }
 
+.profile-card > .message {
+  margin-bottom: -0.25rem;
+}
+
 .title-row {
   display: none;
 }
@@ -51,6 +55,151 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.clean-profile-grid {
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.charity-grid {
+  margin-top: 0.5rem;
+}
+
+.customer-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.customer-summary-panel,
+.customer-edit-panel {
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  padding: 1.15rem;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.customer-summary-panel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.profile-summary-card.highlight {
+  background: linear-gradient(135deg, rgba(230, 136, 214, 0.14), rgba(65, 179, 163, 0.12));
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  color: var(--cf-ink);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.section-head p {
+  margin: 0.25rem 0 0;
+  color: var(--cf-ash);
+}
+
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(230, 136, 214, 0.12);
+  color: #6b4a70;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.readonly-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.readonly-meta-grid .full {
+  grid-column: 1 / -1;
+}
+
+.profile-summary-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.profile-summary-card {
+  background: linear-gradient(180deg, rgba(230, 136, 214, 0.08), rgba(65, 179, 163, 0.08));
+  border: 1px solid rgba(230, 136, 214, 0.18);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.profile-summary-card span {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.profile-summary-card strong {
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.customer-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.field-card {
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.field-card span {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #334155;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.field-card input,
+.field-card textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid #dbe3f0;
+  background: #fbfdff;
+}
+
+.field-card input {
+  height: 48px;
+  padding: 0 0.95rem;
+}
+
+.field-card textarea {
+  min-height: 128px;
+  padding: 0.85rem 0.95rem;
+  resize: vertical;
 }
 
 .customer-details-box {
@@ -103,6 +252,15 @@
   color: #0f172a;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.readonly-meta-grid .read-only-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.readonly-meta-grid .read-only-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .read-only-item.full {
@@ -160,6 +318,11 @@ textarea:disabled {
   color: #64748b;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
 }
 
 .sr-only {
@@ -252,6 +415,14 @@ textarea:disabled {
   color: var(--cf-ash);
 }
 
+.charity-readonly-grid {
+  margin-top: -0.25rem;
+}
+
+.charity-readonly-grid .read-only-item {
+  background: linear-gradient(180deg, #fff, #fafafa);
+}
+
 .faq-box {
   background: rgba(65, 179, 163, 0.08);
   border: 1px solid rgba(65, 179, 163, 0.2);
@@ -307,13 +478,30 @@ textarea:disabled {
 }
 
 @media (max-width: 768px) {
+  .customer-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .profile-grid {
     grid-template-columns: 1fr;
   }
 
+  .field-card textarea {
+    min-height: 120px;
+  }
+
+  .readonly-meta-grid,
   .profile-summary,
   .read-only-grid {
     grid-template-columns: 1fr;
+  }
+
+  .section-head {
+    flex-direction: column;
   }
 
   .title-row {

@@ -133,7 +133,11 @@ public class ProfileController : ControllerBase
                 {
                     UserId = user.UserId,
                     DateOfBirth = DateTime.UtcNow,
-                    City = string.IsNullOrWhiteSpace(request.AddressLine) ? "Unknown" : request.AddressLine.Trim(),
+                    City = !string.IsNullOrWhiteSpace(request.City)
+                        ? request.City.Trim()
+                        : !string.IsNullOrWhiteSpace(request.AddressLine)
+                            ? request.AddressLine.Trim()
+                            : "Unknown",
                     Gender = "Other",
                     CreatedAt = DateTime.UtcNow,
                     IsAnonymousDefault = false
@@ -143,7 +147,14 @@ public class ProfileController : ControllerBase
             }
             else
             {
-                user.Customer.City = string.IsNullOrWhiteSpace(request.AddressLine) ? user.Customer.City : request.AddressLine.Trim();
+                if (!string.IsNullOrWhiteSpace(request.City))
+                {
+                    user.Customer.City = request.City.Trim();
+                }
+                else if (!string.IsNullOrWhiteSpace(request.AddressLine))
+                {
+                    user.Customer.City = request.AddressLine.Trim();
+                }
             }
         }
 
@@ -177,7 +188,73 @@ public class ProfileController : ControllerBase
     [Authorize(Roles = "CharityManager")]
     public async Task<IActionResult> UpdateCharity([FromBody] UpdateCharityProfileRequest request)
     {
-        return Forbid();
+        if (request == null)
+            return BadRequest(new { success = false, message = "Request body is required." });
+
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized(new { success = false, message = "Invalid token claims." });
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var user = await _context.Users
+            .Include(u => u.CharityRegistrationRequests)
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found." });
+
+        var charity = await _context.Charities
+            .FirstOrDefaultAsync(c => c.UserId == user.UserId);
+
+        if (charity == null)
+            return NotFound(new { success = false, message = "Charity profile not found." });
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return BadRequest(new { success = false, message = "Name is required." });
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return BadRequest(new { success = false, message = "Email is required." });
+
+        if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+            return BadRequest(new { success = false, message = "Phone number is required." });
+
+        var newEmail = request.Email.Trim().ToLowerInvariant();
+        var emailInUse = await _context.Users.AnyAsync(u => u.Email == newEmail && u.UserId != user.UserId);
+        if (emailInUse)
+            return BadRequest(new { success = false, message = "Email already exists." });
+
+        user.UserName = request.Name.Trim();
+        user.Email = newEmail;
+        user.PhoneNumber = request.PhoneNumber.Trim();
+
+        charity.AddressLine = request.AddressLine?.Trim() ?? charity.AddressLine;
+        charity.City = request.City?.Trim() ?? charity.City;
+        charity.Mission = request.Mission?.Trim() ?? charity.Mission;
+        charity.About = request.About?.Trim() ?? charity.About;
+        charity.Activities = request.Activities?.Trim() ?? charity.Activities;
+        charity.SocialMediaLink = request.SocialMediaLink?.Trim() ?? charity.SocialMediaLink;
+        charity.CauseType = request.CauseType;
+
+        await _context.SaveChangesAsync();
+
+        await _notifications.NotifyUserAsync(
+            user,
+            "Profile updated",
+            "Your charity profile has been updated successfully on CareFund.");
+
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Update",
+            "CharityRegistrationRequest",
+            charity.CharityRegistrationId,
+            $"Charity profile updated for {user.UserName}.");
+
+        return Ok(new
+        {
+            success = true,
+            message = "Charity profile updated successfully."
+        });
     }
 }
 

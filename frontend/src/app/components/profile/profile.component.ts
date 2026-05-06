@@ -6,6 +6,53 @@ import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
 
+interface CustomerProfileModel {
+  name: string;
+  addressLine: string;
+  email: string;
+  phoneNumber: string;
+  city: string;
+  dateOfBirth: string;
+}
+
+interface CharityProfileModel {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  city: string;
+  state: string;
+  pincode: string;
+  registrationId: string;
+  mission: string;
+  about: string;
+  activities: string;
+  socialMediaLink: string;
+  causeType: string;
+  status: string;
+  adminComment: string;
+  reviewedAt: string;
+}
+
+const CAUSE_OPTIONS = [
+  'Education',
+  'Healthcare',
+  'WomenEmpowerment',
+  'ChildCare',
+  'OrphanageSupport',
+  'ElderlyCare',
+  'AnimalWelfare',
+  'DisasterRelief',
+  'FoodDonation',
+  'EnvironmentalProtection',
+  'DisabilitySupport',
+  'RuralDevelopment',
+  'MentalHealthSupport',
+  'HomelessSupport',
+  'TribalSupport',
+  'SkillDevelopment',
+  'GeneralCharity'
+];
+
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -20,7 +67,10 @@ export class ProfileComponent implements OnInit {
   message = '';
   role = '';
   isEditing = false;
+  isCharityEditing = false;
   profileForm: FormGroup;
+  charityForm: FormGroup;
+  readonly causeOptions = CAUSE_OPTIONS;
 
   private readonly storageListener = (event: StorageEvent): void => {
     if (event.key === 'cf:profile:refresh' || event.key === 'cf:auth:changed') {
@@ -28,7 +78,7 @@ export class ProfileComponent implements OnInit {
     }
   };
 
-  profile: any = {
+  profile: CustomerProfileModel = {
     name: '',
     addressLine: '',
     email: '',
@@ -37,8 +87,10 @@ export class ProfileComponent implements OnInit {
     dateOfBirth: ''
   };
 
-  charityProfile: any = {
-    addressLine: '',
+  charityProfile: CharityProfileModel = {
+    name: '',
+    email: '',
+    phoneNumber: '',
     city: '',
     state: '',
     pincode: '',
@@ -49,13 +101,28 @@ export class ProfileComponent implements OnInit {
     about: '',
     activities: '',
     socialMediaLink: '',
-    causeType: ''
+    causeType: '',
+    status: '',
+    adminComment: '',
+    reviewedAt: ''
   };
 
   constructor(private api: ApiService, private fb: FormBuilder) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      addressLine: ['']
+      addressLine: ['', Validators.required]
+    });
+
+    this.charityForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', Validators.required],
+      city: ['', Validators.required],
+      mission: ['', [Validators.required, Validators.minLength(20)]],
+      about: ['', [Validators.required, Validators.minLength(20)]],
+      activities: ['', [Validators.required, Validators.minLength(20)]],
+      socialMediaLink: ['', Validators.required],
+      causeType: ['GeneralCharity', Validators.required]
     });
   }
 
@@ -68,7 +135,11 @@ export class ProfileComponent implements OnInit {
   }
 
   get canEditProfile(): boolean {
-    return this.role !== 'CharityManager';
+    return this.role === 'Customer' || this.role === 'Admin';
+  }
+
+  get canEditCharityProfile(): boolean {
+    return this.role === 'CharityManager';
   }
 
   canEditField(field: 'name' | 'addressLine'): boolean {
@@ -76,7 +147,7 @@ export class ProfileComponent implements OnInit {
       return false;
     }
 
-    return this.isCustomer && (field === 'name' || field === 'addressLine');
+    return this.canEditProfile && (field === 'name' || field === 'addressLine');
   }
 
   ngOnInit(): void {
@@ -96,35 +167,60 @@ export class ProfileComponent implements OnInit {
     this.api.getMyProfile().subscribe({
       next: (res: any) => {
         this.role = (res?.role || '').toString();
+        const user = res?.user || {};
+        const customer = res?.customer || {};
+        const charity = res?.charity || {};
+
         this.profile = {
-          name: res?.user?.userName || '',
-          addressLine: res?.customer?.addressLine || res?.customer?.city || res?.user?.city || '',
-          email: res?.user?.email || '',
-          phoneNumber: res?.user?.phoneNumber || '',
-          city: res?.customer?.city || res?.user?.city || '',
-          dateOfBirth: res?.customer?.dateOfBirth || res?.user?.dateOfBirth || ''
+          name: user?.userName || '',
+          addressLine: user?.addressLine || customer?.city || user?.city || '',
+          email: user?.email || '',
+          phoneNumber: user?.phoneNumber || '',
+          city: customer?.city || user?.city || '',
+          dateOfBirth: customer?.dateOfBirth || user?.dateOfBirth || ''
         };
 
-        this.profileForm.patchValue(this.profile);
+        this.profileForm.patchValue({
+          name: this.profile.name,
+          addressLine: this.profile.addressLine
+        });
         this.profileForm.markAsPristine();
 
         this.charityProfile = {
-          addressLine: res?.charity?.addressLine || '',
-          city: res?.charity?.city || '',
-          state: res?.charity?.state || '',
-          pincode: res?.charity?.pincode || '',
-          managerName: res?.charity?.managerName || '',
-          managerPhone: res?.charity?.managerPhone || '',
-          registrationId: res?.charity?.registrationId || '',
-          mission: res?.charity?.mission || '',
-          about: res?.charity?.about || '',
-          activities: res?.charity?.activities || '',
-          socialMediaLink: res?.charity?.socialMediaLink || '',
-          causeType: res?.charity?.causeType || ''
+          name: user?.userName || '',
+          email: user?.email || '',
+          phoneNumber: user?.phoneNumber || '',
+          city: charity?.city || user?.city || '',
+          state: charity?.indianState || '',
+          pincode: charity?.pincode || '',
+          registrationId: charity?.registrationId || charity?.charityRegistrationId || '',
+          mission: charity?.mission || '',
+          about: charity?.about || '',
+          activities: charity?.activities || '',
+          socialMediaLink: charity?.socialMediaLink || '',
+          causeType: charity?.causeType || 'GeneralCharity',
+          status: charity?.status || '',
+          adminComment: charity?.adminComment || '',
+          reviewedAt: charity?.reviewedAt || ''
         };
+
+        this.charityForm.patchValue({
+          name: this.charityProfile.name,
+          email: this.charityProfile.email,
+          phoneNumber: this.charityProfile.phoneNumber,
+          city: this.charityProfile.city,
+          mission: this.charityProfile.mission,
+          about: this.charityProfile.about,
+          activities: this.charityProfile.activities,
+          socialMediaLink: this.charityProfile.socialMediaLink,
+          causeType: this.charityProfile.causeType
+        });
+
+        this.charityForm.markAsPristine();
 
         this.loading = false;
         this.isEditing = false;
+        this.isCharityEditing = false;
       },
       error: (err) => {
         this.loading = false;
@@ -137,8 +233,8 @@ export class ProfileComponent implements OnInit {
     this.error = '';
     this.message = '';
 
-    if (this.isCharityManager) {
-      this.error = 'Charity profiles are read-only and cannot be edited.';
+    if (!this.canEditProfile) {
+      this.error = 'You do not have permission to edit the customer profile.';
       return;
     }
 
@@ -153,8 +249,7 @@ export class ProfileComponent implements OnInit {
     this.profile = { ...this.profile, ...formValue };
     this.api.updateCustomerProfile({
       name: formValue.name,
-      addressLine: formValue.addressLine,
-      city: formValue.addressLine
+      addressLine: formValue.addressLine
     }).subscribe({
       next: (res: any) => {
         this.saving = false;
@@ -171,6 +266,51 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  saveCharity(): void {
+    this.error = '';
+    this.message = '';
+
+    if (!this.canEditCharityProfile) {
+      this.error = 'You do not have permission to edit the charity profile.';
+      return;
+    }
+
+    if (this.charityForm.invalid) {
+      this.charityForm.markAllAsTouched();
+      this.error = 'Please review the highlighted charity fields.';
+      return;
+    }
+
+    this.saving = true;
+    const formValue = this.charityForm.getRawValue();
+    this.charityProfile = { ...this.charityProfile, ...formValue };
+
+    this.api.updateCharityProfile({
+      name: formValue.name,
+      email: formValue.email,
+      phoneNumber: formValue.phoneNumber,
+      city: formValue.city,
+      mission: formValue.mission,
+      about: formValue.about,
+      activities: formValue.activities,
+      socialMediaLink: formValue.socialMediaLink,
+      causeType: formValue.causeType
+    }).subscribe({
+      next: (res: any) => {
+        this.saving = false;
+        this.message = res?.message || 'Charity profile updated successfully.';
+        sessionStorage.setItem('userName', this.charityProfile.name || '');
+        localStorage.setItem('cf:profile:refresh', Date.now().toString());
+        localStorage.setItem('cf:auth:changed', Date.now().toString());
+        this.isCharityEditing = false;
+      },
+      error: (err) => {
+        this.saving = false;
+        this.error = err?.error?.message || 'Unable to update charity profile.';
+      }
+    });
+  }
+
   enableEdit(): void {
     if (!this.canEditProfile) {
       return;
@@ -180,8 +320,22 @@ export class ProfileComponent implements OnInit {
     this.message = '';
   }
 
+  enableCharityEdit(): void {
+    if (!this.canEditCharityProfile) {
+      return;
+    }
+
+    this.isCharityEditing = true;
+    this.message = '';
+  }
+
   cancelEdit(): void {
     this.isEditing = false;
+    this.load();
+  }
+
+  cancelCharityEdit(): void {
+    this.isCharityEditing = false;
     this.load();
   }
 }

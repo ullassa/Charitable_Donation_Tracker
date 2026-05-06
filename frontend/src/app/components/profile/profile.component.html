@@ -3,9 +3,9 @@
 <main class="profile-page">
   <section class="profile-hero" *ngIf="!loading" aria-label="Profile header">
     <div class="profile-hero-content">
-      <h1>Your Profile</h1>
-      <p *ngIf="isCharityManager">View and manage your organization details.</p>
-      <p *ngIf="!isCharityManager">Manage your account settings and personal information.</p>
+      <h1>{{ isCharityManager ? 'Charity Profile' : 'Customer Profile' }}</h1>
+      <p *ngIf="isCharityManager">Data is loaded directly from the charity and user tables.</p>
+      <p *ngIf="!isCharityManager">Data is loaded directly from the customer and user tables.</p>
     </div>
     <span class="role-badge" role="status" [attr.aria-label]="'Your role is ' + (role || 'User')">{{ role || 'User' }}</span>
   </section>
@@ -14,85 +14,166 @@
     <p class="message success" *ngIf="message" role="status" aria-live="polite">{{ message }}</p>
     <p class="message error" *ngIf="error" role="alert" aria-live="assertive">{{ error }}</p>
 
-    <form class="profile-grid" [formGroup]="profileForm" *ngIf="profileForm">
-      <label>
-        <span>Name</span>
-        <input 
-          type="text" 
-          formControlName="name" 
-          [disabled]="!canEditField('name')"
-          aria-label="Full name"
-          [attr.aria-invalid]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
-        />
-      </label>
-      
-      <section *ngIf="isCustomer" class="customer-details-box">
-        <h2>Customer Details</h2>
-        <div class="read-only-grid">
-          <div class="read-only-item"><span>Email</span><p>{{ profile.email || 'Not available' }}</p></div>
-          <div class="read-only-item"><span>Phone</span><p>{{ profile.phoneNumber || 'Not available' }}</p></div>
-          <div class="read-only-item"><span>City</span><p>{{ profile.city || 'Not available' }}</p></div>
-          <div class="read-only-item"><span>Date of Birth</span><p>{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'mediumDate') : 'Not available' }}</p></div>
+    <ng-container *ngIf="isCharityManager; else customerProfileView">
+      <div class="profile-summary-panel">
+        <div class="profile-summary-card">
+          <span>Registration ID</span>
+          <strong>{{ charityProfile.registrationId || 'Not available' }}</strong>
         </div>
-      </section>
+        <div class="profile-summary-card">
+          <span>Status</span>
+          <strong>{{ charityProfile.status || 'Not available' }}</strong>
+        </div>
+        <div class="profile-summary-card">
+          <span>Cause Type</span>
+          <strong>{{ charityProfile.causeType || 'Not available' }}</strong>
+        </div>
+        <div class="profile-summary-card">
+          <span>Reviewed</span>
+          <strong>{{ charityProfile.reviewedAt ? (charityProfile.reviewedAt | date:'mediumDate') : 'Not available' }}</strong>
+        </div>
+      </div>
 
-      <label>
-        <span>Address</span>
-        <input 
-          type="text" 
-          placeholder="Address" 
-          formControlName="addressLine" 
-          [disabled]="!canEditField('addressLine')"
-          aria-label="Address"
-          [attr.aria-invalid]="profileForm.get('addressLine')?.invalid && profileForm.get('addressLine')?.touched"
-        />
-      </label>
-    </form>
+      <form class="profile-grid charity-grid" [formGroup]="charityForm">
+        <label>
+          <span>Organization Name</span>
+          <input type="text" formControlName="name" [disabled]="!isCharityEditing" />
+        </label>
 
-    <section *ngIf="role === 'CharityManager'" class="charity-box">
-      <h2>Charity Details</h2>
-      <p class="note">Charity profile details are read-only.</p>
+        <label>
+          <span>Email</span>
+          <input type="email" formControlName="email" [disabled]="!isCharityEditing" />
+        </label>
 
-      <div class="read-only-grid">
-        <div class="read-only-item"><span>Registration ID</span><p>{{ charityProfile.registrationId || 'Not available' }}</p></div>
-        <div class="read-only-item"><span>Cause Type</span><p>{{ charityProfile.causeType || 'Not available' }}</p></div>
-        <div class="read-only-item"><span>Manager Name</span><p>{{ charityProfile.managerName || 'Not available' }}</p></div>
-        <div class="read-only-item"><span>Manager Phone</span><p>{{ charityProfile.managerPhone || 'Not available' }}</p></div>
-        <div class="read-only-item"><span>Address</span><p>{{ charityProfile.addressLine || 'Not available' }}</p></div>
-        <div class="read-only-item"><span>City</span><p>{{ charityProfile.city || 'Not available' }}</p></div>
+        <label>
+          <span>Phone Number</span>
+          <input type="tel" formControlName="phoneNumber" [disabled]="!isCharityEditing" />
+        </label>
+
+        <label>
+          <span>Cause Type</span>
+          <select formControlName="causeType" [disabled]="!isCharityEditing">
+            <option *ngFor="let cause of causeOptions" [value]="cause">{{ cause }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>City</span>
+          <input type="text" formControlName="city" [disabled]="!isCharityEditing" />
+        </label>
+
+        <label class="full">
+          <span>Mission</span>
+          <textarea rows="4" formControlName="mission" [disabled]="!isCharityEditing"></textarea>
+        </label>
+
+        <label class="full">
+          <span>About</span>
+          <textarea rows="4" formControlName="about" [disabled]="!isCharityEditing"></textarea>
+        </label>
+
+        <label class="full">
+          <span>Activities</span>
+          <textarea rows="4" formControlName="activities" [disabled]="!isCharityEditing"></textarea>
+        </label>
+
+        <label class="full">
+          <span>Social Media Link</span>
+          <input type="url" formControlName="socialMediaLink" [disabled]="!isCharityEditing" />
+        </label>
+      </form>
+
+      <section class="read-only-grid charity-readonly-grid">
         <div class="read-only-item"><span>State</span><p>{{ charityProfile.state || 'Not available' }}</p></div>
         <div class="read-only-item"><span>Pincode</span><p>{{ charityProfile.pincode || 'Not available' }}</p></div>
-        <div class="read-only-item full"><span>Mission</span><p>{{ charityProfile.mission || 'Not available' }}</p></div>
-        <div class="read-only-item full"><span>About</span><p>{{ charityProfile.about || 'Not available' }}</p></div>
-        <div class="read-only-item full"><span>Activities</span><p>{{ charityProfile.activities || 'Not available' }}</p></div>
-        <div class="read-only-item full"><span>Social Media Link</span><p class="break-link">{{ charityProfile.socialMediaLink || 'Not available' }}</p></div>
+        <div class="read-only-item full"><span>Admin Comment</span><p>{{ charityProfile.adminComment || 'Not available' }}</p></div>
+      </section>
+
+      <div class="actions" role="group" aria-label="Profile actions">
+        <button type="button" class="btn secondary" (click)="enableCharityEdit()" *ngIf="!isCharityEditing" [attr.aria-label]="'Edit charity profile'">Edit Charity Profile</button>
+        <button type="button" class="btn secondary" (click)="cancelCharityEdit()" *ngIf="isCharityEditing" [attr.aria-label]="'Cancel editing charity profile'">Cancel</button>
+        <button type="button" class="btn primary" (click)="saveCharity()" [disabled]="saving" *ngIf="isCharityEditing" [attr.aria-busy]="saving">
+          {{ saving ? 'Saving...' : 'Save Charity Profile' }}
+        </button>
+        <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
       </div>
-    </section>
+    </ng-container>
 
-    <div class="actions" role="group" aria-label="Profile actions">
-      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing" [attr.aria-label]="'Edit profile'">Edit</button>
-      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing" [attr.aria-label]="'Cancel editing'">Cancel</button>
-      <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing" [attr.aria-busy]="saving">
-        {{ saving ? 'Saving...' : 'Save Changes' }}
-      </button>
-      <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
-    </div>
+    <ng-template #customerProfileView>
+      <div class="customer-layout">
+        <section class="customer-summary-panel">
+          <div class="profile-summary-card highlight">
+            <span>Name</span>
+            <strong>{{ profile.name || 'Not available' }}</strong>
+          </div>
+          <div class="profile-summary-card">
+            <span>Email</span>
+            <strong>{{ profile.email || 'Not available' }}</strong>
+          </div>
+          <div class="profile-summary-card">
+            <span>Phone</span>
+            <strong>{{ profile.phoneNumber || 'Not available' }}</strong>
+          </div>
+          <div class="profile-summary-card">
+            <span>Date of Birth</span>
+            <strong>{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'mediumDate') : 'Not available' }}</strong>
+          </div>
+        </section>
 
-    <section class="faq-box">
-      <h2>FAQs</h2>
-      <details>
-        <summary>Why do my profile changes sometimes take time to reflect?</summary>
-        <p>Updates are saved immediately, but some dashboards refresh on intervals. Reload the page if needed.</p>
-      </details>
-      <details>
-        <summary>Can Admin update profile details?</summary>
-        <p>Yes. Admin can update basic profile fields (name, email, phone) from this page.</p>
-      </details>
-      <details>
-        <summary>Can Charity updates be instant?</summary>
-        <p>Charity profile fields are view-only in this page and cannot be edited.</p>
-      </details>
-    </section>
+        <section class="customer-edit-panel">
+          <div class="section-head">
+            <div>
+              <h2>Edit Customer Profile</h2>
+              <p>Only name and address are editable.</p>
+            </div>
+            <span class="section-pill">Read-only: Email & Phone</span>
+          </div>
+
+          <form class="profile-grid clean-profile-grid customer-form-grid" [formGroup]="profileForm" *ngIf="profileForm">
+            <label class="field-card">
+              <span>Name</span>
+              <input type="text" formControlName="name" [disabled]="!canEditField('name')" aria-label="Full name" />
+            </label>
+
+            <label class="field-card full">
+              <span>Address</span>
+              <textarea rows="4" placeholder="Address" formControlName="addressLine" [disabled]="!canEditField('addressLine')" aria-label="Address"></textarea>
+            </label>
+          </form>
+
+          <div class="readonly-meta-grid">
+            <div class="read-only-item"><span>Email</span><p>{{ profile.email || 'Not available' }}</p></div>
+            <div class="read-only-item"><span>Phone</span><p>{{ profile.phoneNumber || 'Not available' }}</p></div>
+            <div class="read-only-item full"><span>City</span><p>{{ profile.city || 'Not available' }}</p></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="actions" role="group" aria-label="Profile actions">
+        <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing" [attr.aria-label]="'Edit profile'">Edit Profile</button>
+        <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing" [attr.aria-label]="'Cancel editing'">Cancel</button>
+        <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing" [attr.aria-busy]="saving">
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
+      </div>
+
+      <section class="faq-box">
+        <h2>FAQs</h2>
+        <details>
+          <summary>Where does this data come from?</summary>
+          <p>The page loads live data from the database through the profile API.</p>
+        </details>
+        <details>
+          <summary>Can customer updates be saved?</summary>
+          <p>Yes. Customer updates are saved back to the database and reloaded on refresh.</p>
+        </details>
+        <details>
+          <summary>Can charity managers update their profile?</summary>
+          <p>Yes. Charity managers can edit their charity record, including mission, about, activities, and contact details.</p>
+        </details>
+      </section>
+    </ng-template>
   </section>
 
   <ng-template #loadingView>
