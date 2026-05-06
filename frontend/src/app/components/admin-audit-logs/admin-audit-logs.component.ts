@@ -136,4 +136,19 @@ export class AdminAuditLogsComponent implements OnInit {
       this.currentPage -= 1;
     }
   }
+
+  getDetailsPreview(details: string): string {
+    const safe = (details || '').trim();
+    if (!safe) return '—';
+    return safe.length > 120 ? `${safe.slice(0, 120)}...` : safe;
+  }
+
+  getDetailsLines(details: string): string[] {
+    const safe = (details || '').trim();
+    if (!safe) return [];
+    return safe
+      .split(/\r?\n|\s*;\s*/)
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+  }
 }

@@ -19,6 +19,7 @@ export class CustomerSignupComponent implements OnInit {
   totalSteps = 4;
   showPassword = false;
   showConfirmPassword = false;
+  showTermsModal = false;
   isLoading = false;
   submitted = false;
   errorMessage = '';
@@ -357,6 +358,21 @@ export class CustomerSignupComponent implements OnInit {
 
   toggleConfirmPasswordVisibility(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  openTermsModal(event?: Event): void {
+    event?.preventDefault();
+    this.showTermsModal = true;
+  }
+
+  closeTermsModal(): void {
+    this.showTermsModal = false;
+  }
+
+  agreeToTerms(): void {
+    this.signupForm.get('termsAccepted')?.setValue(true);
+    this.signupForm.get('termsAccepted')?.markAsTouched();
+    this.showTermsModal = false;
   }
 
   private startEmailCooldown(): void {

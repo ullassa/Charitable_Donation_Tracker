@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using System.Text;
 using CareFund.Data;
+using CareFund.DTOs.Payments;
 using CareFund.Enums;
 using CareFund.Models;
 using CareFund.Services.AuditLogs;
 using CareFund.Services.Notifications;
+using CareFund.Services.Payments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,29 +37,14 @@ public class DonationsController : ControllerBase
         if (request == null || request.CharityRegistrationId <= 0 || request.Amount <= 0)
             return BadRequest(new { success = false, message = "Valid charity and donation amount are required." });
 
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        var user = await _context.Users.Include(u => u.Customer).FirstOrDefaultAsync(u => u.Email == email);
+        var user = await GetCurrentCustomerUserAsync();
         if (user == null)
             return NotFound(new { success = false, message = "User not found." });
 
         if (user.UserRole != UserRole.Customer)
             return Forbid();
 
-        if (user.Customer == null)
-        {
-            user.Customer = new Customer
-            {
-                UserId = user.UserId,
-                DateOfBirth = DateTime.UtcNow,
-                City = "Unknown",
-                Gender = "Other",
-                CreatedAt = DateTime.UtcNow,
-                IsAnonymousDefault = false
-            };
-
-            _context.Customers.Add(user.Customer);
-            await _context.SaveChangesAsync();
-        }
+        var customer = await EnsureCustomerAsync(user);
 
         var charity = await _context.Charities.Include(c => c.User)
             .FirstOrDefaultAsync(c => c.CharityRegistrationId == request.CharityRegistrationId && c.Status == CharityStatus.Approved);
@@ -74,43 +61,8 @@ public class DonationsController : ControllerBase
             PaymentDate = DateTime.UtcNow
         };
 
-        _context.Payments.Add(payment);
-        await _context.SaveChangesAsync();
-
-        var donation = new Donation
-        {
-            CustomerId = user.Customer.CustomerId,
-            CharityRegistrationId = charity.CharityRegistrationId,
-            Amount = request.Amount,
-            DonationDate = DateTime.UtcNow,
-            IsAnonymous = request.IsAnonymous,
-            PaymentId = payment.PaymentId
-        };
-
-        _context.Donations.Add(donation);
-        await _context.SaveChangesAsync();
-
-        await _auditLogs.LogAsync(
-            user.UserId,
-            user.UserRole,
-            "Donation",
-            "Donation",
-            donation.DonationId,
-            $"Customer donated ₹{request.Amount:n2} to Charity ID {charity.CharityRegistrationId}.");
-
-        var donorMessage = $"You donated ₹{request.Amount:n2} to {charity.User?.UserName ?? "a charity"} on CareFund. Transaction reference: {payment.TransactionReference}.";
-        await _notifications.NotifyUserAsync(user, "Donation received", donorMessage, donation.DonationId);
-
-        var totalCollected = await _context.Donations
-            .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId)
-            .SumAsync(d => (decimal?)d.Amount) ?? 0;
-
-        await _notifications.NotifyUserAsync(charity.User!, "New donation received", $"Your charity received a donation of ₹{request.Amount:n2} from a CareFund donor. Total collected so far is ₹{totalCollected:n2}.", donation.DonationId);
-
-        if (totalCollected >= CharitySufficientAmountThreshold)
-        {
-            await _notifications.NotifyUserAsync(charity.User!, "Fundraising milestone reached", $"Your charity has reached the CareFund fundraising milestone with ₹{totalCollected:n2} collected.", donation.DonationId);
-        }
+        var donation = await CreateDonationRecordsAsync(customer, charity, request.Amount, request.IsAnonymous, payment);
+        await NotifyDonationAsync(user, charity, donation, payment);
 
         return Ok(new
         {
@@ -119,6 +71,84 @@ public class DonationsController : ControllerBase
             paymentReference = payment.TransactionReference,
             message = "Donation completed successfully."
         });
+    }
+
+    private async Task<User?> GetCurrentCustomerUserAsync()
+    {
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+
+        var normalized = email.Trim().ToLowerInvariant();
+        return await _context.Users
+            .Include(u => u.Customer)
+            .FirstOrDefaultAsync(u => u.Email == normalized);
+    }
+
+    private async Task<Customer> EnsureCustomerAsync(User user)
+    {
+        if (user.Customer != null)
+            return user.Customer;
+
+        var customer = new Customer
+        {
+            UserId = user.UserId,
+            DateOfBirth = DateTime.UtcNow,
+            City = "Unknown",
+            Gender = "Other",
+            CreatedAt = DateTime.UtcNow,
+            IsAnonymousDefault = false
+        };
+
+        _context.Customers.Add(customer);
+        await _context.SaveChangesAsync();
+        user.Customer = customer;
+        return customer;
+    }
+
+    private async Task<Donation> CreateDonationRecordsAsync(Customer customer, CharityRegistrationRequest charity, decimal amount, bool isAnonymous, Payment payment)
+    {
+        _context.Payments.Add(payment);
+        await _context.SaveChangesAsync();
+
+        var donation = new Donation
+        {
+            CustomerId = customer.CustomerId,
+            CharityRegistrationId = charity.CharityRegistrationId,
+            Amount = amount,
+            DonationDate = DateTime.UtcNow,
+            IsAnonymous = isAnonymous,
+            PaymentId = payment.PaymentId
+        };
+
+        _context.Donations.Add(donation);
+        await _context.SaveChangesAsync();
+        return donation;
+    }
+
+    private async Task NotifyDonationAsync(User user, CharityRegistrationRequest charity, Donation donation, Payment payment)
+    {
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Donation",
+            "Donation",
+            donation.DonationId,
+            $"Customer donated ₹{donation.Amount:n2} to Charity ID {charity.CharityRegistrationId}.");
+
+        var donorMessage = $"You donated ₹{donation.Amount:n2} to {charity.User?.UserName ?? "a charity"} on CareFund. Transaction reference: {payment.TransactionReference}.";
+        await _notifications.NotifyUserAsync(user, "Donation received", donorMessage, donation.DonationId);
+
+        var totalCollected = await _context.Donations
+            .Where(d => d.CharityRegistrationId == charity.CharityRegistrationId)
+            .SumAsync(d => (decimal?)d.Amount) ?? 0;
+
+        await _notifications.NotifyUserAsync(charity.User!, "New donation received", $"Your charity received a donation of ₹{donation.Amount:n2} from a CareFund donor. Total collected so far is ₹{totalCollected:n2}.", donation.DonationId);
+
+        if (totalCollected >= CharitySufficientAmountThreshold)
+        {
+            await _notifications.NotifyUserAsync(charity.User!, "Fundraising milestone reached", $"Your charity has reached the CareFund fundraising milestone with ₹{totalCollected:n2} collected.", donation.DonationId);
+        }
     }
 
     [HttpGet("{donationId:int}/receipt")]

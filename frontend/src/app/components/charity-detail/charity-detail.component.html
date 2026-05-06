@@ -160,7 +160,7 @@
       </div>
 
       <p class="generated-note" *ngIf="paymentMethod === 'card' || paymentMethod === 'netbanking'">
-        {{ selectedPaymentLabel }} will open secure Razorpay checkout directly when you click Pay Now.
+        {{ selectedPaymentLabel }} payment processing will proceed once you click Pay Now.
       </p>
 
       <div class="buttons">
@@ -281,8 +281,8 @@
 
     <section class="gateway-overlay" *ngIf="showFakeGateway">
       <article class="gateway-modal" role="dialog" aria-modal="true" aria-label="Mock payment checkout">
-        <header class="gateway-topbar razorpay-theme">
-          <div class="brand-mark">razorpay</div>
+        <header class="gateway-topbar">
+          <div class="brand-mark">CareFund Payment</div>
           <button type="button" class="close-gateway" (click)="cancelFakeGateway()" [disabled]="paymentProcessing">×</button>
         </header>
 

@@ -1277,6 +1277,127 @@
     overflow-x: auto;
   }
 
+  .donor-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.8rem;
+    padding: 1rem;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    margin: 0 0 1rem;
+  }
+
+  .donor-filters .filter-group {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .donor-filters label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .donor-filters input {
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    padding: 0.6rem 0.7rem;
+    background: #fff;
+  }
+
+  .donor-filters .filter-actions {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+  }
+
+  .top-donors-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    margin-bottom: 1rem;
+  }
+
+  .top-donors-card .table-head.compact {
+    margin-bottom: 0.6rem;
+  }
+
+  .top-donors-list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .top-donor-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  .top-donor-row .rank {
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .top-donor-row .name {
+    margin: 0;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .top-donor-row .meta {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .top-donor-row .amount {
+    font-weight: 700;
+    color: #15803d;
+  }
+
+  .donation-tracking-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    margin-bottom: 1rem;
+  }
+
+  .donation-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .donation-filters .filter-group {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .donation-filters label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .donation-filters input,
+  .donation-filters select {
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    padding: 0.6rem 0.7rem;
+    background: #fff;
+  }
+
   .requests-table {
     width: 100%;
     border-collapse: collapse;

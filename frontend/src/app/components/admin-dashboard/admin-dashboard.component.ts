@@ -19,9 +19,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   commentDraft: Record<number, string> = {};
   expandedRequestId: number | null = null;
   expandedDonorId: number | null = null;
+  expandedDonationId: number | null = null;
   activePanel: 'donors' | 'charities' | 'feedback' = 'donors';
 
   statusFilter = '';
+  donorFrom = '';
+  donorTo = '';
+  donationNameFilter = '';
+  donationFrom = '';
+  donationTo = '';
+  donationSort: 'desc' | 'asc' = 'desc';
   stats: any = { pending: 0, approved: 0, rejected: 0, hold: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
   requests: any[] = [];
   donors: any[] = [];
@@ -82,7 +89,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   fetchDonors(): void {
-    this.api.getAdminDonors().subscribe({
+    this.api.getAdminDonors(this.donorFrom || undefined, this.donorTo || undefined).subscribe({
       next: (res: any) => {
         this.donors = res?.items ?? [];
         if (this.expandedDonorId !== null && !this.donors.some(item => item.donorId === this.expandedDonorId)) {
@@ -93,6 +100,93 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.error = err?.error?.message || 'Failed to load donor details.';
       }
     });
+  }
+
+  clearDonorFilters(): void {
+    this.donorFrom = '';
+    this.donorTo = '';
+    this.fetchDonors();
+  }
+
+  toggleDonationDetails(id: number): void {
+    this.expandedDonationId = this.expandedDonationId === id ? null : id;
+  }
+
+  isDonationDetailsOpen(id: number): boolean {
+    return this.expandedDonationId === id;
+  }
+
+  get donationRows(): Array<{
+    donationId: number;
+    donorName: string;
+    donorEmail: string;
+    amount: number;
+    donationDate: string;
+    charityName: string;
+    paymentMethod: string;
+    transactionReference?: string;
+  }> {
+    return this.donors.flatMap(donor =>
+      (donor?.donations ?? []).map((donation: any) => ({
+        donationId: donation?.donationId,
+        donorName: donation?.donorName || donor?.name || 'Anonymous',
+        donorEmail: donation?.donorEmail || donor?.email || 'Hidden',
+        amount: Number(donation?.amount || 0),
+        donationDate: donation?.donationDate,
+        charityName: donation?.charityName || 'Not provided',
+        paymentMethod: donation?.paymentMethod || 'Unknown',
+        transactionReference: donation?.transactionReference
+      }))
+    );
+  }
+
+  get filteredDonationRows(): Array<{
+    donationId: number;
+    donorName: string;
+    donorEmail: string;
+    amount: number;
+    donationDate: string;
+    charityName: string;
+    paymentMethod: string;
+    transactionReference?: string;
+  }> {
+    const nameFilter = (this.donationNameFilter || '').trim().toLowerCase();
+    const from = this.donationFrom ? new Date(this.donationFrom) : null;
+    const to = this.donationTo ? new Date(this.donationTo) : null;
+
+    if (to) {
+      to.setHours(23, 59, 59, 999);
+    }
+
+    const filtered = this.donationRows.filter(row => {
+      const donorName = (row.donorName || '').toLowerCase();
+      if (nameFilter && !donorName.includes(nameFilter)) {
+        return false;
+      }
+
+      const donationDate = row.donationDate ? new Date(row.donationDate) : null;
+      if (from && donationDate && donationDate < from) {
+        return false;
+      }
+
+      if (to && donationDate && donationDate > to) {
+        return false;
+      }
+
+      return true;
+    });
+
+    return filtered.sort((a, b) =>
+      this.donationSort === 'asc'
+        ? a.amount - b.amount
+        : b.amount - a.amount
+    );
+  }
+
+  get topDonors(): any[] {
+    return [...this.donors]
+      .sort((a, b) => Number(b?.totalDonated || 0) - Number(a?.totalDonated || 0))
+      .slice(0, 5);
   }
 
   fetchFeedbacks(): void {

@@ -3,6 +3,7 @@ using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
 using CareFund.Services.Notifications;
 using CareFund.Services.Otp;
+using CareFund.Services.Payments;
 using DotNetEnv;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;

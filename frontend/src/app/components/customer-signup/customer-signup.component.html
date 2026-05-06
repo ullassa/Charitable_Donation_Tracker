@@ -312,7 +312,7 @@
           <div class="form-group terms-group">
             <label class="terms-checkbox">
               <input type="checkbox" formControlName="termsAccepted">
-              I accept the <a routerLink="/terms">terms and conditions</a> before creating my donor account.
+              I accept the <a href="#" (click)="openTermsModal($event)" class="terms-link">terms and conditions</a> before creating my donor account.
             </label>
             <div *ngIf="submitted && termsAccepted?.invalid" class="error-message">
               <span *ngIf="termsAccepted?.errors?.['required']">You must accept the terms to continue.</span>
@@ -370,3 +370,29 @@
 </div>
 
 <app-footer></app-footer>
+
+<div class="terms-modal-overlay" *ngIf="showTermsModal">
+  <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="terms-modal-header">
+      <h3 id="termsTitle">Terms & Conditions and Privacy Policy</h3>
+      <button type="button" class="terms-close-btn" (click)="closeTermsModal()">×</button>
+    </div>
+
+    <div class="terms-modal-body">
+      <h4>Terms and Conditions</h4>
+      <p>By creating a donor account, you agree to provide accurate information and use the platform responsibly.</p>
+      <p>Donations are voluntary and processed through approved payment channels for transparency and safety.</p>
+      <p>CareFund may suspend access if suspicious or abusive activity is detected.</p>
+
+      <h4>Privacy Policy</h4>
+      <p>We collect account and donation details to support secure transactions and provide donation receipts.</p>
+      <p>Your data is used only for platform operations, communication, and compliance purposes.</p>
+      <p>By clicking Agree, you consent to this data processing for your donor account.</p>
+    </div>
+
+    <div class="terms-modal-actions">
+      <button type="button" class="btn btn-outline" (click)="closeTermsModal()">Cancel</button>
+      <button type="button" class="btn terms-agree-btn" (click)="agreeToTerms()">Agree</button>
+    </div>
+  </div>
+</div>

@@ -55,16 +55,6 @@ export class DonateComponent implements OnInit, OnDestroy {
   paymentProcessing = false;
   paymentMessage = '';
   donateAnonymously = false;
-  showFakeGateway = false;
-  mockGatewayReference = '';
-  gatewayProvider: 'razorpay' = 'razorpay';
-  gatewayEmail = '';
-  gatewayName = '';
-  gatewayCardNumber = '4242 4242 4242 4242';
-  gatewayCardExpiry = '12/34';
-  gatewayCardCvc = '123';
-  gatewayContact = '';
-  gatewayUpi = '';
 
   upiId = '';
   cardHolderName = '';
@@ -351,14 +341,6 @@ export class DonateComponent implements OnInit, OnDestroy {
     return Number(((this.selectedAmount || 0) * 0.02).toFixed(2));
   }
 
-  get gatewayDisplayName(): string {
-    return 'Razorpay';
-  }
-
-  get requiresGatewayContact(): boolean {
-    return this.paymentMethod === 'wallet';
-  }
-
   get requiresGatewayUpi(): boolean {
     return this.paymentMethod === 'upi';
   }
@@ -390,7 +372,7 @@ export class DonateComponent implements OnInit, OnDestroy {
     navigator.clipboard?.writeText(url).catch(() => {});
   }
 
-  proceedToDonate(skipPaymentDetailValidation = false): void {
+  async proceedToDonate(skipPaymentDetailValidation = false): Promise<void> {
     this.paymentMessage = '';
 
     if (!this.getAuthToken()) {
@@ -435,59 +417,6 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.openFakeGateway();
-  }
-
-  private openFakeGateway(): void {
-    this.gatewayProvider = 'razorpay';
-    this.mockGatewayReference = `RZP-MOCK-${Date.now()}`;
-    this.gatewayEmail = this.gatewayEmail || '';
-    this.gatewayName = this.gatewayName || this.cardHolderName || '';
-    this.gatewayContact = this.gatewayContact || this.walletNumber || '';
-    this.gatewayUpi = this.gatewayUpi || this.upiId || '';
-    this.showFakeGateway = true;
-  }
-
-  cancelFakeGateway(): void {
-    if (this.paymentProcessing) {
-      return;
-    }
-
-    this.showFakeGateway = false;
-    this.paymentMessage = 'Payment cancelled. You can review details and try again.';
-  }
-
-  completeFakeGatewayPayment(success: boolean): void {
-    if (!success) {
-      this.showFakeGateway = false;
-      this.paymentMessage = 'Payment failed in gateway simulation. Please try again.';
-      return;
-    }
-
-    const validationMessage = this.validateGatewayDetails();
-    if (validationMessage) {
-      this.paymentMessage = validationMessage;
-      return;
-    }
-
-    this.showFakeGateway = false;
-    this.paymentMessage = '';
-    this.finalizeDonation();
-  }
-
-  private validateGatewayDetails(): string {
-    if (this.requiresGatewayContact && !this.gatewayContact.trim()) {
-      return 'Enter contact number in Razorpay checkout.';
-    }
-
-    if (this.requiresGatewayUpi && !this.gatewayUpi.trim()) {
-      return 'Enter UPI ID in Razorpay checkout.';
-    }
-
-    return '';
-  }
-
-  private finalizeDonation(): void {
     const charity = this.selectedCharity;
     if (!charity) {
       this.paymentMessage = 'Please choose a charity first.';
@@ -495,6 +424,7 @@ export class DonateComponent implements OnInit, OnDestroy {
     }
 
     this.paymentProcessing = true;
+    const payableAmount = this.payableTotal;
 
     const paymentMethodMap: Record<string, number> = {
       upi: 1,
@@ -503,16 +433,14 @@ export class DonateComponent implements OnInit, OnDestroy {
       wallet: 1
     };
 
-    const payload = {
+    this.apiService.createDonation({
       charityRegistrationId: charity.id,
       amount: this.selectedAmount,
       isAnonymous: this.donateAnonymously,
       paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
-      transactionReference: this.mockGatewayReference || `CF-${Date.now()}`
-    };
-
-    this.apiService.createDonation(payload).subscribe({
-      next: (response: any) => {
+      transactionReference: this.generateTransactionReference()
+    }).subscribe({
+      next: (result: any) => {
         this.paymentProcessing = false;
         localStorage.setItem('cf:notify:refresh', Date.now().toString());
         this.router.navigate(['/payment-success'], {
@@ -520,15 +448,19 @@ export class DonateComponent implements OnInit, OnDestroy {
             charityName: this.selectedCharity?.name,
             amount: this.selectedAmount,
             paymentMethod: this.selectedPaymentLabel,
-            reference: response?.paymentReference || payload.transactionReference,
-            gateway: `${this.gatewayDisplayName} (Mock)`
+            reference: result?.paymentReference || result?.donationId,
+            gateway: 'Direct'
           }
         });
       },
       error: (error) => {
         this.paymentProcessing = false;
-        this.paymentMessage = error?.error?.message || 'Payment failed. Please login as a customer and try again.';
+        this.paymentMessage = error?.error?.message || 'Donation failed. Please try again.';
       }
     });
+  }
+
+  private generateTransactionReference(): string {
+    return `CAREFUND_${Date.now()}_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   }
 }

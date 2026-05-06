@@ -192,6 +192,17 @@
   grid-column: 1 / -1;
 }
 
+.details-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.details-list p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.4;
+}
+
 .log-details label {
   display: block;
   font-size: 0.72rem;

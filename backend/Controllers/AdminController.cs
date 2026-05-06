@@ -181,15 +181,29 @@ public class AdminController : ControllerBase
     }
 
     [HttpGet("donors")]
-    public async Task<IActionResult> GetDonors()
+    public async Task<IActionResult> GetDonors([FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null)
     {
-        var donations = await _context.Donations
+        var query = _context.Donations
             .AsNoTracking()
             .Include(d => d.Customer)
                 .ThenInclude(c => c!.User)
             .Include(d => d.Payment)
             .Include(d => d.CharityRegistrationRequest)
                 .ThenInclude(c => c!.User)
+            .AsQueryable();
+
+        if (from.HasValue)
+        {
+            query = query.Where(d => d.DonationDate >= from.Value);
+        }
+
+        if (to.HasValue)
+        {
+            var inclusiveTo = to.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(d => d.DonationDate <= inclusiveTo);
+        }
+
+        var donations = await query
             .OrderByDescending(d => d.DonationDate)
             .ToListAsync();
 

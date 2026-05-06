@@ -202,6 +202,110 @@
             <span>{{ stats.totalDonors || donors.length }} donors</span>
           </div>
 
+          <div class="donor-filters">
+            <div class="filter-group">
+              <label for="donor-from">From</label>
+              <input id="donor-from" type="date" [(ngModel)]="donorFrom" />
+            </div>
+            <div class="filter-group">
+              <label for="donor-to">To</label>
+              <input id="donor-to" type="date" [(ngModel)]="donorTo" />
+            </div>
+            <div class="filter-actions">
+              <button type="button" class="btn btn-primary" (click)="fetchDonors()">Apply</button>
+              <button type="button" class="btn btn-secondary" (click)="clearDonorFilters()">Clear</button>
+            </div>
+          </div>
+
+          <div class="top-donors-card" *ngIf="topDonors.length">
+            <div class="table-head compact">
+              <h3>Top Donors</h3>
+              <span>By total donation amount</span>
+            </div>
+            <div class="top-donors-list">
+              <div class="top-donor-row" *ngFor="let donor of topDonors; let i = index">
+                <div class="rank">#{{ i + 1 }}</div>
+                <div class="details">
+                  <p class="name">{{ donor.name || 'Anonymous donor' }}</p>
+                  <p class="meta">{{ donor.email || 'No email' }}</p>
+                </div>
+                <div class="amount">₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="donation-tracking-card" *ngIf="filteredDonationRows.length > 0">
+            <div class="table-head compact">
+              <h3>All Donations</h3>
+              <span>{{ filteredDonationRows.length }} rows</span>
+            </div>
+
+            <div class="donation-filters">
+              <div class="filter-group">
+                <label for="donation-name">Donor name</label>
+                <input id="donation-name" type="text" [(ngModel)]="donationNameFilter" placeholder="Search donor" />
+              </div>
+              <div class="filter-group">
+                <label for="donation-from">From</label>
+                <input id="donation-from" type="date" [(ngModel)]="donationFrom" />
+              </div>
+              <div class="filter-group">
+                <label for="donation-to">To</label>
+                <input id="donation-to" type="date" [(ngModel)]="donationTo" />
+              </div>
+              <div class="filter-group">
+                <label for="donation-sort">Sort</label>
+                <select id="donation-sort" [(ngModel)]="donationSort">
+                  <option value="desc">Amount: High to low</option>
+                  <option value="asc">Amount: Low to high</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="requests-table compact">
+                <thead>
+                  <tr>
+                    <th>Donation ID</th>
+                    <th>Donor</th>
+                    <th>Email</th>
+                    <th>Charity</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th class="actions-col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let donation of filteredDonationRows">
+                    <tr>
+                      <td>#{{ donation.donationId }}</td>
+                      <td>{{ donation.donorName }}</td>
+                      <td>{{ donation.donorEmail }}</td>
+                      <td>{{ donation.charityName }}</td>
+                      <td>₹{{ donation.amount | number:'1.0-0' }}</td>
+                      <td>{{ donation.donationDate | date:'mediumDate' }}</td>
+                      <td class="actions-col">
+                        <button type="button" class="btn-view-details" (click)="toggleDonationDetails(donation.donationId)">
+                          {{ isDonationDetailsOpen(donation.donationId) ? 'Hide' : 'View' }} details
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="isDonationDetailsOpen(donation.donationId)">
+                      <td colspan="7" class="details-row">
+                        <div class="details-grid">
+                          <div><label>Payment Method</label><p>{{ donation.paymentMethod || 'Unknown' }}</p></div>
+                          <div><label>Reference</label><p>{{ donation.transactionReference || 'N/A' }}</p></div>
+                          <div><label>Amount</label><p>₹{{ donation.amount | number:'1.0-0' }}</p></div>
+                          <div><label>Donation Date</label><p>{{ donation.donationDate | date:'medium' }}</p></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="table-wrap table-wrap--donors" *ngIf="donors.length > 0; else noCustomers">
             <table class="requests-table donors-table compact">
               <thead>

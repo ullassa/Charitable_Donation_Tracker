@@ -577,11 +577,6 @@ section {
   color: #ffffff;
 }
 
-.gateway-topbar.razorpay-theme {
-  background: linear-gradient(90deg, #0f172a, #1d4ed8);
-  color: #ffffff;
-}
-
 .brand-mark {
   text-transform: lowercase;
   font-weight: 800;

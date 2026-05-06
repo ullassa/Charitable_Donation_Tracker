@@ -183,8 +183,12 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/analytics?months=${months}`);
   }
 
-  getAdminDonors() {
-    return this.http.get(`${this.baseUrl}/admin/donors`);
+  getAdminDonors(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get(`${this.baseUrl}/admin/donors${suffix}`);
   }
 
   getAdminFeedbacks() {
@@ -246,5 +250,9 @@ export class ApiService {
     causeType: string;
   }) {
     return this.http.put(`${this.baseUrl}/profile/charity`, payload);
+  }
+
+  post<T>(url: string, body: any): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}${url}`, body);
   }
 }

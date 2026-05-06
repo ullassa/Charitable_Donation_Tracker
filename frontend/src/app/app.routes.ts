@@ -19,6 +19,7 @@ import { CharityDetailComponent } from './components/charity-detail/charity-deta
 import { ErrorPageComponent } from './components/error-page/error-page.component';
 import { NotFoundPageComponent } from './components/not-found-page/not-found-page.component';
 import { authGuard, roleGuard } from './auth.guard';
+import { DonateComponent } from './components/donate/donate.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -38,6 +39,7 @@ export const routes: Routes = [
   { path: 'blogs', component: BlogsComponent },
   { path: 'charity/:id', component: CharityDetailComponent },
   { path: 'payment-success', component: PaymentSuccessComponent, canActivate: [authGuard] },
+  { path: 'donate', component: DonateComponent },
   { path: 'error', component: ErrorPageComponent },
   { path: '**', component: NotFoundPageComponent }
 ];

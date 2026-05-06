@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>CareFund</RootNamespace>
     <Codepage>65001</Codepage>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +29,7 @@
     
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    
+
     <PackageReference Include="Twilio" Version="7.14.3" />
     
     <PackageReference Include="xunit" Version="2.9.3" />

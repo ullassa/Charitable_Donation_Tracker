@@ -66,7 +66,7 @@
                 <td>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</td>
                 <td class="details-cell">
                   <div class="details-preview">
-                    <span class="details-text">{{ item.details }}</span>
+                    <span class="details-text">{{ getDetailsPreview(item.details) }}</span>
                     <button type="button" class="details-toggle" (click)="toggleLogDetails(item.id)">
                       {{ isLogOpen(item.id) ? 'Hide' : 'View' }} details
                     </button>
@@ -98,7 +98,12 @@
                     </div>
                     <div class="full">
                       <label>Details</label>
-                      <p>{{ item.details }}</p>
+                      <div *ngIf="getDetailsLines(item.details).length > 0; else rawDetails" class="details-list">
+                        <p *ngFor="let line of getDetailsLines(item.details)">{{ line }}</p>
+                      </div>
+                      <ng-template #rawDetails>
+                        <p>—</p>
+                      </ng-template>
                     </div>
                   </div>
                 </td>
