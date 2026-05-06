@@ -28,6 +28,9 @@ if (!string.IsNullOrWhiteSpace(envPath))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure environment variables (including those from .env) are loaded into configuration
+builder.Configuration.AddEnvironmentVariables();
+
 // Controllers
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();

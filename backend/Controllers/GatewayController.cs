@@ -36,6 +36,16 @@ public class GatewayController : ControllerBase
     public IActionResult GetRazorpayConfig()
     {
         var keyId = _config["Razorpay:KeyId"]?.Trim();
+        var keySecret = _config["Razorpay:KeySecret"]?.Trim();
+        var enabled = _config["Razorpay:Enabled"]?.Trim()?.ToLowerInvariant() == "true";
+        var mode = _config["Razorpay:Mode"]?.Trim().ToLowerInvariant() ?? "test";
+        var currency = _config["Razorpay:Currency"]?.Trim().ToUpperInvariant() ?? "INR";
+        var merchantName = _config["Razorpay:MerchantName"] ?? "CareFund Foundation";
+        var description = _config["Razorpay:Description"] ?? "Donation payment";
+
+        // Debug: Log the configuration values
+        Console.WriteLine($"Razorpay Config - KeyId: {keyId?.Substring(0, 10)}..., Enabled: {enabled}, Mode: {mode}");
+
         if (string.IsNullOrWhiteSpace(keyId) || keyId.Contains("your-razorpay-key-id", StringComparison.OrdinalIgnoreCase))
         {
             return Ok(new
@@ -49,12 +59,12 @@ public class GatewayController : ControllerBase
         return Ok(new
         {
             success = true,
-            enabled = true,
+            enabled = enabled,
             keyId,
-            mode = (_config["Razorpay:Mode"] ?? "test").Trim().ToLowerInvariant(),
-            currency = (_config["Razorpay:Currency"] ?? "INR").Trim().ToUpperInvariant(),
-            merchantName = _config["Razorpay:MerchantName"] ?? "CareFund Foundation",
-            description = _config["Razorpay:Description"] ?? "Donation payment"
+            mode,
+            currency,
+            merchantName,
+            description
         });
     }
 
