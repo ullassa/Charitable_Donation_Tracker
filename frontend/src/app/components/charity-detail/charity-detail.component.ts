@@ -26,6 +26,11 @@ interface PublicCharity {
   email: string;
   phoneNumber: string;
   socialMediaLink: string;
+  targetAmount: number;
+  totalReceived: number;
+  remainingAmount: number;
+  progressPercent: number;
+  donorsCount: number;
   imageUrls: string[];
   isActive: boolean;
   status: string;
@@ -176,6 +181,11 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
       email: item?.email ?? '',
       phoneNumber: item?.phoneNumber ?? item?.phone ?? '',
       socialMediaLink: item?.socialMediaLink ?? '',
+      targetAmount: Number(item?.targetAmount ?? 0),
+      totalReceived: Number(item?.totalReceived ?? 0),
+      remainingAmount: Number(item?.remainingAmount ?? 0),
+      progressPercent: Number(item?.progressPercent ?? 0),
+      donorsCount: Number(item?.donorsCount ?? 0),
       imageUrls: Array.isArray(item?.imageUrls)
         ? item.imageUrls
             .map((url: any) => this.normalizeImageUrl(typeof url === 'string' ? url : ''))

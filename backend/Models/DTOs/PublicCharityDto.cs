@@ -24,6 +24,7 @@ namespace CareFund.DTOs.Charity
         public decimal TotalReceived { get; set; }
         public decimal RemainingAmount { get; set; }
         public decimal ProgressPercent { get; set; }
+        public int DonorsCount { get; set; }
         public List<string> ImageUrls { get; set; } = new();
         public string Status { get; set; } = string.Empty;
         public bool IsActive { get; set; }

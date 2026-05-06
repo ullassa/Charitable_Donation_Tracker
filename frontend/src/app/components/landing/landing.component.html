@@ -31,7 +31,7 @@
           <button class="btn btn-primary" (click)="goToFeaturedCharity()" aria-label="Donate to featured charity now">Donate now</button>
         </div>
 
-        <div class="hero-highlights" *ngIf="heroSlides.length > 0">
+      <div class="hero-highlights" *ngIf="heroSlides.length > 0">
           <!-- <span>Image {{ currentHeroSlide + 1 }} of {{ heroSlides.length }}</span> -->
           <span>{{ heroSlides[currentHeroSlide].tag || 'CareFund hero' }}</span>
           <span>Donate Now Save lives</span>
@@ -61,33 +61,122 @@
     </div>
   </section>
 
-  <section class="stats-strip" aria-label="Platform statistics">
-    <div class="container stats-grid">
-      <article class="stat-card" *ngFor="let stat of statistics">
-        <div class="stat-icon" [ngSwitch]="stat.icon" aria-hidden="true">
-          <svg *ngSwitchCase="'charity'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 20h18" />
-            <path d="M5 20V8l7-4 7 4v12" />
-            <path d="M9 20v-6h6v6" />
-          </svg>
-          <svg *ngSwitchCase="'approved'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9" />
-            <path d="m8.5 12 2.5 2.5L16 9.5" />
-          </svg>
-          <svg *ngSwitchCase="'pending'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 7v5l3 2" />
-          </svg>
-          <svg *ngSwitchCase="'users'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
-            <circle cx="9.5" cy="8" r="3" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16.5 4.13a3 3 0 0 1 0 5.74" />
-          </svg>
+  <section class="impact-section" aria-label="Platform impact statistics">
+    <div class="container">
+      <div class="impact-row">
+        <div class="impact-card">
+          <span class="impact-label">Total charities</span>
+          <strong>{{ displayedStats.charities }}</strong>
+          <span class="impact-note">Active charities on platform</span>
         </div>
-        <div class="stat-value">{{ stat.value }}</div>
-        <div class="stat-label">{{ stat.label }}</div>
-      </article>
+        <div class="impact-card">
+          <span class="impact-label">Total funds raised</span>
+          <strong>₹{{ displayedStats.raised | number:'1.0-0' }}</strong>
+          <span class="impact-note">Donations collected globally</span>
+        </div>
+        <div class="impact-card">
+          <span class="impact-label">Total donors</span>
+          <strong>{{ displayedStats.donors }}</strong>
+          <span class="impact-note">Supporters contributing to causes</span>
+        </div>
+        <div class="impact-card">
+          <span class="impact-label">Lives helped</span>
+          <strong>{{ displayedStats.lives }}</strong>
+          <span class="impact-note">Estimated beneficiaries impacted</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured-section" aria-label="Featured charities">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Featured charities</h2>
+          <p>Trending causes that are raising support quickly.</p>
+        </div>
+        <span class="featured-badge">Top picks</span>
+      </div>
+
+      <div class="featured-grid" *ngIf="featuredCharities.length > 0">
+        <article class="featured-card" *ngFor="let charity of featuredCharities">
+          <div class="featured-image">
+            <img [src]="getCharityImageUrl(charity)" [alt]="charity.charityName" />
+            <div class="featured-badges">
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 100" [class]="'milestone-complete'">✓ 100% funded</span>
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 75 && getProgressPercent(charity) < 100">🎯 75% funded</span>
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 50 && getProgressPercent(charity) < 75">📈 50% funded</span>
+            </div>
+          </div>
+          <div class="featured-content">
+            <div class="featured-header">
+              <div>
+                <h3>{{ charity.charityName }}</h3>
+                <div class="trust-badges">
+                  <span class="trust-badge verified" *ngIf="charity.status === 'Approved'" title="Verified charity">✓ Verified</span>
+                  <span class="trust-badge secure" title="Security guaranteed">🔒 Secure</span>
+                </div>
+              </div>
+            </div>
+            <p class="charity-cause">{{ charity.cause || 'Community support' }}</p>
+            
+            <div class="ngo-info" *ngIf="charity.registrationId">
+              <span class="ngo-label">NGO ID:</span>
+              <span class="ngo-id">{{ charity.registrationId }}</span>
+            </div>
+
+            <div class="featured-meta">
+              <span>Raised: ₹{{ charity.totalReceived | number:'1.0-0' }}</span>
+              <span>Remaining: ₹{{ getRemainingAmount(charity) | number:'1.0-0' }}</span>
+            </div>
+            <div class="featured-progress">
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="getProgressPercent(charity)"></div>
+              </div>
+              <span>{{ getProgressPercent(charity) | number:'1.0-0' }}% funded</span>
+            </div>
+
+            <div class="donor-reviews" *ngIf="charity.reviews && charity.reviews.length > 0">
+              <div class="reviews-header">
+                <span class="review-rating">⭐ {{ getAverageRating(charity) | number:'1.1-1' }}/5</span>
+                <span class="review-count">({{ charity.reviews.length }} donors)</span>
+              </div>
+              <p class="review-text">{{ charity.reviews[0]?.message }}</p>
+            </div>
+
+            <div class="featured-actions">
+              <button class="btn btn-primary" [routerLink]="['/charity', charity.charityId]">Donate now</button>
+              <button class="btn btn-secondary" (click)="shareCharity(charity)">Share</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="recent-donations" aria-label="Recent donations">
+    <div class="container">
+      <div class="section-head center">
+        <div>
+          <h2>Recent donations</h2>
+          <p>Real giving moments from our community members.</p>
+        </div>
+      </div>
+      <div class="recent-feed">
+        <article class="donation-item" *ngFor="let donation of recentDonations; let i = index" [style.animation-delay]="(i * 100) + 'ms'">
+          <div class="donation-visual">
+            <div class="donation-amount">₹{{ donation.amount | number:'1.0-0' }}</div>
+            <span class="donation-icon">❤️</span>
+          </div>
+          <div class="donation-content">
+            <div class="donation-header">
+              <span class="donation-charity">{{ donation.charityName }}</span>
+              <span class="donation-time">{{ donation.date }}</span>
+            </div>
+            <p class="donation-cause">{{ donation.cause }}</p>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 
@@ -216,7 +305,6 @@
               Donate now
             </button>
             <button type="button" class="btn btn-secondary" (click)="shareCharity(charity)">Share</button>
-            <button class="btn btn-secondary" [routerLink]="['/charity', charity.charityId]" *ngIf="!isLoggedIn">View charity</button>
           </div>
         </article>
       </div>
@@ -225,6 +313,40 @@
         <button class="btn btn-outline" (click)="previousPage()" [disabled]="!hasPreviousPage">Previous</button>
         <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
         <button class="btn btn-primary" (click)="nextPage()" [disabled]="!hasNextPage">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section" aria-label="Frequently asked questions">
+    <div class="container">
+      <div class="section-head center">
+        <div>
+          <h2>Frequently asked questions</h2>
+          <p>Get answers to common questions about CareFund and supporting charities.</p>
+        </div>
+      </div>
+
+      <div class="faq-list">
+        <article class="faq-item" *ngFor="let faq of faqs; let i = index" [class.expanded]="isFaqExpanded(faq.id)">
+          <button class="faq-question" (click)="toggleFaq(faq.id)" [attr.aria-expanded]="isFaqExpanded(faq.id)">
+            <div class="faq-number">{{ i + 1 }}</div>
+            <div class="faq-text">
+              <span class="faq-q">Q:</span>
+              <span>{{ faq.question }}</span>
+            </div>
+            <span class="faq-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4 8L10 14L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer" *ngIf="isFaqExpanded(faq.id)">
+            <div class="answer-content">
+              <span class="faq-a">A:</span>
+              <p>{{ faq.answer }}</p>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </section>

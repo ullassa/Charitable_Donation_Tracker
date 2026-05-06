@@ -139,6 +139,85 @@
   color: #000; /* This line is redundant and can be removed */
 }
 
+.hero-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+
+.hero-fact {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(18, 21, 28, 0.08);
+  border-radius: 14px;
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.hero-fact span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cd-muted);
+}
+
+.hero-fact strong {
+  font-size: 0.9rem;
+  color: var(--cd-text);
+  word-break: break-word;
+}
+
+.hero-impact-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.impact-card {
+  padding: 1rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(18, 21, 28, 0.08);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.impact-label,
+.impact-note {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cd-muted);
+}
+
+.impact-card strong {
+  font-size: 1.55rem;
+  color: var(--cd-text);
+  line-height: 1.1;
+}
+
+.impact-detail {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cd-text);
+}
+
+@media (max-width: 900px) {
+  .hero-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 .hero-media {
   padding: 0.5rem;
   display: grid;
@@ -242,7 +321,7 @@
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.32fr) minmax(290px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.95rem;
   align-items: start;
 }
@@ -287,6 +366,13 @@
 .sticky-card {
   position: sticky;
   top: 90px;
+}
+
+.sticky-donate-card {
+  position: sticky;
+  top: 80px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(230, 136, 214, 0.15);
 }
 
 .quick-list {

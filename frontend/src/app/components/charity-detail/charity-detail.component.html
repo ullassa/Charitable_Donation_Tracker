@@ -26,6 +26,48 @@
           <span class="info-pill">{{ charity.cause || 'Community support' }}</span>
           <span class="info-pill">Registration ID: {{ charity.registrationId || 'Not available' }}</span>
         </div>
+
+        <div class="hero-impact-row">
+          <div class="impact-card">
+            <span class="impact-label">Total needed</span>
+            <strong>₹{{ charity.targetAmount | number:'1.0-0' }}</strong>
+            <span class="impact-note">Target amount for this charity</span>
+            <div class="impact-detail">Received: ₹{{ charity.totalReceived | number:'1.0-0' }}</div>
+          </div>
+          <div class="impact-card">
+            <span class="impact-label">Still wanted</span>
+            <strong>₹{{ charity.remainingAmount | number:'1.0-0' }}</strong>
+            <span class="impact-note">Amount remaining</span>
+            <div class="impact-detail">Progress: {{ charity.progressPercent | number:'1.0-0' }}%</div>
+          </div>
+        </div>
+
+        <div class="hero-facts">
+          <div class="hero-fact">
+            <span>Contact details</span>
+            <strong>{{ charity.phoneNumber || 'Not set' }}</strong>
+          </div>
+          <div class="hero-fact">
+            <span>Address</span>
+            <strong>{{ charity.addressLine || 'Not set' }}</strong>
+          </div>
+          <div class="hero-fact">
+            <span>Location</span>
+            <strong>{{ charity.location || 'Not set' }}</strong>
+          </div>
+          <div class="hero-fact">
+            <span>State</span>
+            <strong>{{ charity.state || 'Not set' }}</strong>
+          </div>
+          <div class="hero-fact">
+            <span>Pincode</span>
+            <strong>{{ charity.pincode || 'Not set' }}</strong>
+          </div>
+          <div class="hero-fact">
+            <span>Social link</span>
+            <strong>{{ charity.socialMediaLink || 'Not set' }}</strong>
+          </div>
+        </div>
       </div>
 
       <div class="hero-media card-panel" *ngIf="displayGalleryImages.length > 0; else emptyHeroGallery">
@@ -81,44 +123,6 @@
         </article>
       </div>
 
-      <aside class="side-column">
-        <article class="info-card sticky-card">
-          <div class="section-heading">
-            <div>
-              <span class="section-kicker">Quick facts</span>
-              <h2>Contact details</h2>
-            </div>
-          </div>
-
-          <div class="quick-list">
-            <div>
-              <span>Address</span>
-              <strong>{{ charity.addressLine || 'Not set' }}</strong>
-            </div>
-            <div>
-              <span>Location</span>
-              <strong>{{ charity.location || 'Not set' }}</strong>
-            </div>
-            <div>
-              <span>State</span>
-              <strong>{{ charity.state || 'Not set' }}</strong>
-            </div>
-            <div>
-              <span>Pincode</span>
-              <strong>{{ charity.pincode || 'Not set' }}</strong>
-            </div>
-            <div>
-              <span>Social link</span>
-              <strong>{{ charity.socialMediaLink || 'Not set' }}</strong>
-            </div>
-          </div>
-
-          <div class="side-actions">
-            <button type="button" class="btn btn-secondary" (click)="shareSelectedCharity()">Share</button>
-            <button type="button" class="btn btn-secondary" (click)="copyCharityLink()">Copy link</button>
-          </div>
-        </article>
-      </aside>
     </section>
 
     <!-- <section class="gallery-section card-panel" *ngIf="selectedCharity as charity">
@@ -166,7 +170,7 @@
       </div>
     </section>
 
-    <section id="donation-section" class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate && !showPaymentSection">
+    <section id="donation-section" class="amount-section glass-card sticky-donate-card" *ngIf="selectedCharity && isLoggedIn && canDonate && !showPaymentSection">
       <h2>Choose donation amount</h2>
       <p class="section-subtitle">Select a preset amount or type your own.</p>
       <p class="average-amount-note">Average amount paid by users: <strong>₹{{ averageDonationByUsers }}</strong></p>

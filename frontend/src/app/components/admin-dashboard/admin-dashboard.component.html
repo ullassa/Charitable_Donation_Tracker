@@ -40,13 +40,13 @@
       </div>
     </section>
 
-    <section class="requests-section" *ngIf="donationMonthlyTrend.length > 0 || causeTrend.length > 0">
+    <section class="requests-section" *ngIf="donationMonthlyTrend.length > 0 || causeTrend.length > 0 || activePanel === 'charities'">
       <div class="table-head">
         <h2>Analytics Overview</h2>
         <span>Monthly donations and top causes</span>
       </div>
 
-      <div class="analytics-grid">
+      <div class="graphs-row">
         <div class="analytics-card" *ngIf="donationMonthlyTrend.length > 0">
           <h3>Monthly Donations (6 months)</h3>
           <div class="admin-bar-columns compact">
@@ -72,24 +72,16 @@
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <div class="admin-layout">
-      <div class="admin-main-panels">
-        <section class="requests-section" *ngIf="activePanel === 'charities'">
-          <div class="table-head">
-            <h2>Request Status Graph</h2>
-            <span>X-axis: Status • Y-axis: Count</span>
-          </div>
-
+        <div class="analytics-card" *ngIf="activePanel === 'charities'">
+          <h3>Request Status Graph</h3>
           <div class="admin-chart-with-axis">
             <div class="admin-y-axis">
               <span *ngFor="let tick of adminYAxisTicks">{{ tick }}</span>
             </div>
 
             <div class="admin-plot-wrapper">
-              <div class="admin-bar-columns">
+              <div class="admin-bar-columns status-columns">
                 <div class="admin-bar-col" *ngFor="let item of adminTrend; let i = index">
                   <div class="admin-bar-track">
                     <div class="admin-bar-fill" [style.height]="adminBarHeight(item.amount)" [style.background]="adminBarColor(i)"></div>
@@ -101,8 +93,12 @@
               <p class="admin-x-axis-title">X-axis: Request Status</p>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
+    </section>
 
+    <div class="admin-layout">
+      <div class="admin-main-panels">
         <section class="requests-section" *ngIf="activePanel === 'charities'">
           <div class="table-head">
             <h2>Charity Registration Requests</h2>
@@ -341,19 +337,55 @@
                   <td>₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</td>
                   <td class="actions-col">
                     <button type="button" class="btn-view-details" (click)="toggleDonorDetails(donor.donorId)">
-                      {{ isDonorDetailsOpen(donor.donorId) ? 'Hide details' : 'View details' }}
+                      {{ isDonorDetailsOpen(donor.donorId) ? '✕ Hide' : '👁 View' }}
                     </button>
                   </td>
                 </tr>
 
                 <tr *ngIf="isDonorDetailsOpen(donor.donorId)">
                   <td colspan="7" class="details-row">
-                    <div class="details-grid donor-details-grid">
-                      <div><label>Donor ID</label><p>{{ donor.donorId }}</p></div>
-                      <div><label>Created At</label><p>{{ donor.createdAt | date:'mediumDate' }}</p></div>
-                      <div><label>Last Donation</label><p>{{ donor.lastDonationAt | date:'medium' }}</p></div>
-                      <div><label>Total Donated</label><p>₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</p></div>
-                      <div class="full"><label>Donation History</label>
+                    <div class="donor-details-card">
+                      <div class="details-header">
+                        <h3>Donor Profile</h3>
+                        <button class="close-btn" (click)="toggleDonorDetails(donor.donorId)">✕</button>
+                      </div>
+
+                      <div class="details-section">
+                        <h4>Basic Information</h4>
+                        <div class="details-grid donor-details-grid">
+                          <div><label>Donor ID</label><p>{{ donor.donorId }}</p></div>
+                          <div><label>Full Name</label><p>{{ donor.name || 'Not provided' }}</p></div>
+                          <div><label>Email</label><p>{{ donor.email || 'Not provided' }}</p></div>
+                          <div><label>Phone</label><p>{{ donor.phone || 'Not provided' }}</p></div>
+                          <div><label>City</label><p>{{ donor.city || 'Not provided' }}</p></div>
+                          <div><label>State</label><p>{{ donor.state || 'Not provided' }}</p></div>
+                        </div>
+                      </div>
+
+                      <div class="details-section">
+                        <h4>Donation Statistics</h4>
+                        <div class="donation-stats-grid">
+                          <div class="stat-card">
+                            <span class="stat-label">Total Donations</span>
+                            <span class="stat-value">{{ donor.donationsCount || 0 }}</span>
+                          </div>
+                          <div class="stat-card">
+                            <span class="stat-label">Total Donated</span>
+                            <span class="stat-value">₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</span>
+                          </div>
+                          <div class="stat-card">
+                            <span class="stat-label">Joined</span>
+                            <span class="stat-value">{{ donor.createdAt | date:'mediumDate' }}</span>
+                          </div>
+                          <div class="stat-card">
+                            <span class="stat-label">Last Donation</span>
+                            <span class="stat-value">{{ donor.lastDonationAt | date:'mediumDate' }}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="details-section full-width">
+                        <h4>Donation History</h4>
                         <div class="donation-history" *ngIf="donor.donations?.length > 0; else noDonorPayments">
                           <table class="donation-table compact">
                             <thead>
@@ -361,10 +393,8 @@
                                 <th>Charity</th>
                                 <th>Amount</th>
                                 <th>Date</th>
-                                <th>Donor</th>
-                                <th>Email</th>
                                 <th>Payment Method</th>
-                                <th>Transaction Ref</th>
+                                <th>Status</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -372,10 +402,8 @@
                                 <td>{{ payment.charityName || 'Not provided' }}</td>
                                 <td>₹{{ (payment.amount || 0) | number:'1.0-0' }}</td>
                                 <td>{{ payment.donationDate | date:'mediumDate' }}</td>
-                                <td>{{ payment.donorName || donor.name || 'Not provided' }}</td>
-                                <td>{{ payment.donorEmail || donor.email || 'Not provided' }}</td>
                                 <td>{{ payment.paymentMethod || 'Unknown' }}</td>
-                                <td>{{ payment.transactionReference || 'N/A' }}</td>
+                                <td><span class="status-badge success">Completed</span></td>
                               </tr>
                             </tbody>
                           </table>

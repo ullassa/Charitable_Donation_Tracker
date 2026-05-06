@@ -24,6 +24,7 @@ namespace CareFund.Controllers
                 .AsNoTracking()
                 .Include(c => c.User)
                 .Include(c => c.Images)
+                .Include(c => c.Donations)
                 .Where(c => c.Status == CharityStatus.Approved && c.IsActive)
                 .Where(c => c.User != null)
                 .Where(c => string.IsNullOrWhiteSpace(keyword)
@@ -56,6 +57,7 @@ namespace CareFund.Controllers
                     Icon = c.CauseType.ToString(),
                     TargetAmount = c.TargetAmount,
                     TotalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
+                    DonorsCount = c.Donations != null ? c.Donations.Select(d => d.CustomerId).Distinct().Count() : 0,
                     ImageUrls = c.Images
                         .Where(i => i.ImageUrl != null)
                         .Select(i => i.ImageUrl!)
@@ -85,6 +87,7 @@ namespace CareFund.Controllers
                 .AsNoTracking()
                 .Include(c => c.User)
                 .Include(c => c.Images)
+                .Include(c => c.Donations)
                 .Where(c => c.CharityRegistrationId == id && c.Status == CharityStatus.Approved && c.IsActive)
                 .Where(c => c.User != null)
                 .Select(c => new PublicCharityDto
@@ -110,6 +113,7 @@ namespace CareFund.Controllers
                     Icon = c.CauseType.ToString(),
                     TargetAmount = c.TargetAmount,
                     TotalReceived = c.Donations != null ? c.Donations.Sum(d => d.Amount) : 0,
+                    DonorsCount = c.Donations != null ? c.Donations.Select(d => d.CustomerId).Distinct().Count() : 0,
                     SocialMediaLink = c.SocialMediaLink,
                     ImageUrls = c.Images
                         .Where(i => i.ImageUrl != null)

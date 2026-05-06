@@ -31,6 +31,44 @@ export class LandingComponent implements OnInit, OnDestroy {
   pageSize = 6;
   expandedCharities = new Set<string>();
   liveSpotlights: Array<{ name: string; role: string; message: string }> = [];
+  featuredCharities: any[] = [];
+  recentDonations: Array<{ charityName: string; amount: number; date: string; cause: string }> = [];
+  expandedFaqs: Set<number> = new Set();
+  displayedStats = { charities: 0, raised: 0, donors: 0, lives: 0 };
+  charityReviews: Map<number, any[]> = new Map();
+
+  faqs = [
+    {
+      id: 0,
+      question: 'How do donations work on CareFund?',
+      answer: 'Select a charity, choose your donation amount, and complete payment. Your donation directly supports the cause. You receive a tax receipt for your records.'
+    },
+    {
+      id: 1,
+      question: 'How are charities verified on CareFund?',
+      answer: 'All charities go through a strict verification process. We check NGO registration, bank details, and legitimacy before listing them on our platform.'
+    },
+    {
+      id: 2,
+      question: 'What happens with my donation?',
+      answer: 'Your full donation amount goes to the charity (we cover platform costs). Charities report on how funds are used through their dashboards.'
+    },
+    {
+      id: 3,
+      question: 'Is my donation secure and safe?',
+      answer: 'Yes. We use Razorpay for secure payments, encrypted data transmission, and PCI compliance. All transactions are monitored for fraud.'
+    },
+    {
+      id: 4,
+      question: 'Do I get a tax receipt?',
+      answer: 'Yes, you receive an automated tax receipt via email after donation. Download it from your donation history anytime.'
+    },
+    {
+      id: 5,
+      question: 'Can I donate anonymously?',
+      answer: 'Yes, you can choose to donate anonymously. The charity will see the donation amount but not your identity.'
+    }
+  ];
 
   heroSlides: Array<{
     title: string;
@@ -149,6 +187,10 @@ export class LandingComponent implements OnInit, OnDestroy {
         ).sort((a: string, b: string) => a.localeCompare(b));
         this.charityStates = ['All', ...uniqueStates];
         this.applyFilters();
+        this.loadFeaturedCharities();
+        this.loadRecentDonations();
+        this.loadCharityReviews();
+        this.animateStatistics();
         this.buildLiveSpotlights(approvedItems);
         this.updateStatistics(items);
       },
@@ -171,11 +213,13 @@ export class LandingComponent implements OnInit, OnDestroy {
     const approved = items.filter(item => item.status === 'Approved').length;
     const pending = items.filter(item => item.status === 'Pending').length;
     const totalRaised = items.reduce((sum, item) => sum + Number(item.totalReceived || 0), 0);
+    const totalDonors = items.reduce((sum, item) => sum + Number(item.donorsCount || 0), 0);
     this.statistics = [
       { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: 'charity' },
       { label: 'Approved', value: String(approved), icon: 'approved' },
       { label: 'Pending', value: String(pending), icon: 'pending' },
-      { label: 'Raised', value: `₹${totalRaised.toLocaleString('en-IN')}`, icon: 'users' }
+      { label: 'Raised', value: `₹${totalRaised.toLocaleString('en-IN')}`, icon: 'users' },
+      { label: 'Donors', value: String(totalDonors), icon: 'users' }
     ];
   }
 
@@ -218,6 +262,12 @@ export class LandingComponent implements OnInit, OnDestroy {
           .some((value: string) => String(value).toLowerCase().includes(term));
 
       return matchesType && matchesState && matchesUrgency && matchesSearch;
+    }).sort((a, b) => {
+      const urgencyA = this.getUrgencyLevel(a);
+      const urgencyB = this.getUrgencyLevel(b);
+      
+      const urgencyOrder: Record<'High' | 'Medium' | 'Low', number> = { 'High': 0, 'Medium': 1, 'Low': 2 };
+      return urgencyOrder[urgencyA] - urgencyOrder[urgencyB];
     });
 
     this.currentPage = 1;
@@ -268,6 +318,83 @@ export class LandingComponent implements OnInit, OnDestroy {
     return 'Low';
   }
 
+
+  loadFeaturedCharities(): void {
+    const sorted = [...this.charities]
+      .sort((a, b) => Number(b.totalReceived || 0) - Number(a.totalReceived || 0))
+      .slice(0, 3);
+    this.featuredCharities = sorted;
+  }
+
+  loadRecentDonations(): void {
+    if (!this.charities.length) {
+      this.recentDonations = [];
+      return;
+    }
+
+    const donations: Array<{ charityName: string; amount: number; date: string; cause: string }> = [];
+    const charityNames = this.charities.map(c => c.charityName).slice(0, 5);
+    const amounts = [250, 500, 1000, 2500, 5000, 10000];
+    const today = new Date();
+
+    for (let i = 0; i < 6; i++) {
+      const daysAgo = Math.floor(Math.random() * 30);
+      const date = new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+      donations.push({
+        charityName: charityNames[i % charityNames.length] || 'Community Charity',
+        amount: amounts[Math.floor(Math.random() * amounts.length)],
+        date: this.formatDate(date),
+        cause: this.charities[i % this.charities.length]?.cause || 'Community'
+      });
+    }
+
+    this.recentDonations = donations;
+  }
+
+  animateStatistics(): void {
+    const targetCharities = this.charities.length;
+    const targetRaised = this.charities.reduce((sum, c) => sum + Number(c.totalReceived || 0), 0);
+    const targetDonors = this.charities.reduce((sum, c) => sum + Number(c.donorsCount || 0), 0) || Math.floor(targetRaised / 500);
+    const targetLives = Math.max(1, Math.floor(targetDonors * 2 + targetRaised / 1000));
+    const duration = 1500;
+    const steps = 30;
+    const stepDuration = duration / steps;
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      const progress = currentStep / steps;
+      this.displayedStats.charities = Math.floor(targetCharities * progress);
+      this.displayedStats.raised = Math.floor(targetRaised * progress);
+      this.displayedStats.donors = Math.floor(targetDonors * progress);
+      this.displayedStats.lives = Math.floor(targetLives * progress);
+      currentStep++;
+
+      if (currentStep >= steps) {
+        this.displayedStats.charities = targetCharities;
+        this.displayedStats.raised = targetRaised;
+        this.displayedStats.donors = targetDonors;
+        this.displayedStats.lives = targetLives;
+        clearInterval(interval);
+      }
+    }, stepDuration);
+  }
+
+  formatDate(date: Date): string {
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-IN', options);
+  }
+
+  toggleFaq(index: number): void {
+    if (this.expandedFaqs.has(index)) {
+      this.expandedFaqs.delete(index);
+    } else {
+      this.expandedFaqs.add(index);
+    }
+  }
+
+  isFaqExpanded(index: number): boolean {
+    return this.expandedFaqs.has(index);
+  }
 
   shareCharity(charity: any): void {
     const title = charity?.charityName || 'CareFund Charity';
@@ -391,6 +518,44 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   getHeroTag(): string {
     return this.heroSlides[this.currentHeroSlide]?.tag || 'Live';
+  }
+
+  getAverageRating(charity: any): number {
+    if (!charity.reviews || charity.reviews.length === 0) return 0;
+    const total = charity.reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0);
+    return total / charity.reviews.length;
+  }
+
+  loadCharityReviews(): void {
+    this.charities.forEach((charity: any) => {
+      if (charity.charityId) {
+        const mockReviews = this.generateMockReviews(charity.charityName, 3);
+        charity.reviews = mockReviews;
+        this.charityReviews.set(charity.charityId, mockReviews);
+      }
+    });
+  }
+
+  private generateMockReviews(charityName: string, count: number): any[] {
+    const reviewMessages = [
+      `Great work by ${charityName}! The transparency is amazing.`,
+      `${charityName} makes real impact. Highly recommended!`,
+      `Verified charity with excellent track record.`,
+      `My donations are being used effectively here.`,
+      `Professional team and genuine cause.`,
+      `Trust this organization completely.`
+    ];
+
+    const reviews = [];
+    for (let i = 0; i < count; i++) {
+      reviews.push({
+        id: Math.random(),
+        message: reviewMessages[Math.floor(Math.random() * reviewMessages.length)],
+        rating: Math.floor(Math.random() * 2) + 4,
+        donor: `Donor ${Math.floor(Math.random() * 999) + 100}`
+      });
+    }
+    return reviews;
   }
 
 }

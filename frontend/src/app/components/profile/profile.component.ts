@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
@@ -109,10 +109,10 @@ export class ProfileComponent implements OnInit {
     reviewedAt: ''
   };
 
-  constructor(private api: ApiService, private fb: FormBuilder) {
+  constructor(private api: ApiService, private fb: FormBuilder, private router: Router) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      addressLine: ['', Validators.required]
+      addressLine: ['']
     });
 
     this.charityForm = this.fb.group({
@@ -149,7 +149,7 @@ export class ProfileComponent implements OnInit {
       return false;
     }
 
-    return this.canEditProfile && (field === 'name' || field === 'addressLine');
+    return this.canEditProfile && field === 'name';
   }
 
   ngOnInit(): void {
@@ -250,10 +250,9 @@ export class ProfileComponent implements OnInit {
 
     this.saving = true;
     const formValue = this.profileForm.getRawValue();
-    this.profile = { ...this.profile, ...formValue };
+    this.profile = { ...this.profile, name: formValue.name };
     this.api.updateCustomerProfile({
-      name: formValue.name,
-      addressLine: formValue.addressLine
+      name: formValue.name
     }).subscribe({
       next: (res: any) => {
         this.saving = false;
@@ -329,8 +328,7 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    this.isCharityEditing = true;
-    this.message = '';
+    this.router.navigate(['/charity-signup']);
   }
 
   cancelEdit(): void {
