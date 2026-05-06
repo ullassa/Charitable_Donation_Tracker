@@ -5,7 +5,7 @@
     <div class="profile-hero-content">
       <h1>{{ isCharityManager ? 'Charity Profile' : 'Customer Profile' }}</h1>
       <p *ngIf="isCharityManager">Data is loaded directly from the charity and user tables.</p>
-      <p *ngIf="!isCharityManager">Data is loaded directly from the customer and user tables.</p>
+      <p *ngIf="!isCharityManager">Clean profile summary, address details, and help options in one place.</p>
     </div>
     <span class="role-badge" role="status" [attr.aria-label]="'Your role is ' + (role || 'User')">{{ role || 'User' }}</span>
   </section>
@@ -54,70 +54,351 @@
       <div class="actions" role="group" aria-label="Profile actions">
         <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
       </div>
+
+      <!-- Account Settings Section for Charity -->
+      <section class="account-settings-box">
+        <div class="panel-head">
+          <div>
+            <h2>Account settings</h2>
+            <p>Manage your organization account security and privacy.</p>
+          </div>
+          <span class="section-pill">⚙️ Settings</span>
+        </div>
+
+        <div class="settings-info-card admin-approval">
+          <span class="info-icon">📧</span>
+          <div>
+            <h3>Account Management Requires Admin Approval</h3>
+            <p>To disable or delete your charity account, please contact our support team. An admin will review your request and process it accordingly.</p>
+            <ul>
+              <li>Email: <strong>support&#64;carefund.com</strong></li>
+              <li>Subject: "Delete/Disable Charity Account - [Your Charity Name]"</li>
+              <li>Include your registration ID and reason for deletion/disabling</li>
+            </ul>
+            <a href="mailto:support@carefund.com?subject=Account%20Deletion%20Request%20-%20Charity%20Account" class="btn-link" (click)="openSupportForm()">
+              📧 Send Support Email
+            </a>
+          </div>
+        </div>
+      </section>
     </ng-container>
 
     <ng-template #customerProfileView>
       <div class="customer-layout">
-        <section class="customer-summary-panel">
-          <div class="profile-summary-card">
-            <span>Email</span>
-            <strong>{{ profile.email || 'Not available' }}</strong>
+        <section class="customer-summary-panel compact-profile-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Profile details</h2>
+              <p>Your core account information.</p>
+            </div>
+            <span class="section-pill">Verified profile</span>
           </div>
-          <div class="profile-summary-card">
-            <span>Phone</span>
-            <strong>{{ profile.phoneNumber || 'Not available' }}</strong>
+
+          <div class="profile-summary-grid">
+            <div class="profile-summary-card focus-card">
+              <span>Name</span>
+              <strong>{{ profile.name || 'Not available' }}</strong>
+            </div>
+            <div class="profile-summary-card">
+              <span>Email</span>
+              <strong>{{ profile.email || 'Not available' }}</strong>
+            </div>
+            <div class="profile-summary-card">
+              <span>Phone</span>
+              <strong>{{ profile.phoneNumber || 'Not available' }}</strong>
+            </div>
+            <div class="profile-summary-card">
+              <span>Date of Birth</span>
+              <strong>{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'mediumDate') : 'Not available' }}</strong>
+            </div>
           </div>
-          <div class="profile-summary-card">
-            <span>Date of Birth</span>
-            <strong>{{ profile.dateOfBirth ? (profile.dateOfBirth | date:'mediumDate') : 'Not available' }}</strong>
+
+          <div class="address-card">
+            <div class="address-card-head">
+              <h3>Address</h3>
+              <span>Small and clean</span>
+            </div>
+            <p>{{ profile.addressLine || 'Not available' }}</p>
+            <small>{{ profile.city || 'Not available' }} • {{ profile.addressLine || 'No address on file' }}</small>
           </div>
         </section>
 
-        <section class="customer-edit-panel">
-          <div class="section-head">
+        <section class="customer-edit-panel support-panel">
+          <div class="panel-head">
             <div>
-              <h2>Edit Customer Profile</h2>
-              <p>Only name is editable.</p>
+              <h2>Help & support</h2>
+              <p>Quick actions for FAQs, chat, and account help.</p>
             </div>
-            <span class="section-pill">Read-only: Address, Email, Phone</span>
           </div>
 
-          <form class="profile-grid clean-profile-grid customer-form-grid" [formGroup]="profileForm" *ngIf="profileForm">
-            <label class="field-card">
-              <span>Name</span>
-              <input type="text" formControlName="name" [disabled]="!canEditField('name')" aria-label="Full name" />
-            </label>
-          </form>
-
-          <div class="readonly-meta-grid">
-            <div class="read-only-item full"><span>Address</span><p>{{ profile.addressLine || 'Not available' }}</p></div>
-            <div class="read-only-item full"><span>City</span><p>{{ profile.city || 'Not available' }}</p></div>
+          <div class="support-actions">
+            <button class="support-action" (click)="openChat()" style="border: none; background: none; cursor: pointer;">
+              <span class="support-icon">💬</span>
+              <div>
+                <strong>Chat with us</strong>
+                <p>Talk to support for quick help.</p>
+              </div>
+            </button>
+            <button class="support-action" (click)="openFaqs()" style="border: none; background: none; cursor: pointer;">
+              <span class="support-icon">❓</span>
+              <div>
+                <strong>FAQs</strong>
+                <p>Find answers to common questions.</p>
+              </div>
+            </button>
+            <a class="support-action" routerLink="/">
+              <span class="support-icon">📊</span>
+              <div>
+                <strong>Explore charities</strong>
+                <p>Browse causes and support more charities.</p>
+              </div>
+            </a>
+            <a class="support-action" routerLink="/privacy">
+              <span class="support-icon">🛡️</span>
+              <div>
+                <strong>Privacy & security</strong>
+                <p>Read how your data stays safe.</p>
+              </div>
+            </a>
           </div>
         </section>
       </div>
 
       <div class="actions" role="group" aria-label="Profile actions">
-        <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing" [attr.aria-label]="'Edit profile'">Edit Profile</button>
-        <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing" [attr.aria-label]="'Cancel editing'">Cancel</button>
-        <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing" [attr.aria-busy]="saving">
-          {{ saving ? 'Saving...' : 'Save Changes' }}
-        </button>
         <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
       </div>
 
-      <section class="faq-box">
-        <h2>FAQs</h2>
+      <!-- Account Settings Section -->
+      <section class="account-settings-box">
+        <div class="panel-head">
+          <div>
+            <h2>Account settings</h2>
+            <p>Manage your account security and privacy options.</p>
+          </div>
+          <span class="section-pill">⚙️ Settings</span>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Disable Account Option -->
+          <div class="settings-card danger-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">🔒</span>
+              <div>
+                <h3>Disable Account</h3>
+                <p>Make your account inactive temporarily</p>
+              </div>
+            </div>
+            <ul class="settings-details">
+              <li>Account remains inactive (can't login)</li>
+              <li>Data preserved on system</li>
+              <li>Can be re-enabled later by admin request</li>
+            </ul>
+            <button class="btn-settings disable-btn" (click)="openDisableAccountDialog()" [disabled]="isProcessingAccountAction">
+              Disable Account
+            </button>
+          </div>
+
+          <!-- Delete Account Option -->
+          <div class="settings-card critical-card">
+            <div class="settings-card-header">
+              <span class="settings-icon">🗑️</span>
+              <div>
+                <h3>Delete Account</h3>
+                <p>Permanently remove account data</p>
+              </div>
+            </div>
+            <ul class="settings-details">
+              <li>⚠️ This is permanent and cannot be undone</li>
+              <li>Email becomes available for reuse</li>
+              <li>All donation history removed</li>
+              <li>Data cannot be recovered</li>
+            </ul>
+            <button class="btn-settings delete-btn" (click)="openDeleteAccountDialog()" [disabled]="isProcessingAccountAction">
+              Delete Account Forever
+            </button>
+          </div>
+        </div>
+
+        <!-- Support Request Form Modal -->
+        <div class="modal-overlay" *ngIf="showSupportForm" (click)="closeSupportForm()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header info">
+              <span>📧</span>
+              <h3>Send Support Request</h3>
+              <button class="modal-close" (click)="closeSupportForm()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Submit your account deletion/disable request to admin.</strong></p>
+              <div class="form-group">
+                <label>Charity Name:</label>
+                <input
+                  type="text"
+                  [(ngModel)]="supportForm.charityName"
+                  class="modal-input"
+                  placeholder="Your charity organization name"
+                  [disabled]="isSendingSupport"
+                />
+              </div>
+              <div class="form-group">
+                <label>Registration ID:</label>
+                <input
+                  type="text"
+                  [(ngModel)]="supportForm.registrationId"
+                  class="modal-input"
+                  placeholder="Your charity registration ID"
+                  [disabled]="isSendingSupport"
+                />
+              </div>
+              <div class="form-group">
+                <label>Reason for Request:</label>
+                <select [(ngModel)]="supportForm.reason" class="modal-input" [disabled]="isSendingSupport">
+                  <option value="">Select reason</option>
+                  <option value="Closing charity operations">Closing charity operations</option>
+                  <option value="Merging with another organization">Merging with another organization</option>
+                  <option value="Temporary suspension">Temporary suspension</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Additional Details:</label>
+                <textarea
+                  [(ngModel)]="supportForm.message"
+                  class="modal-textarea"
+                  placeholder="Please provide detailed information about your request..."
+                  rows="4"
+                  [disabled]="isSendingSupport"
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn secondary" (click)="closeSupportForm()" [disabled]="isSendingSupport">
+                Cancel
+              </button>
+              <button class="btn primary" (click)="sendSupportRequest()" [disabled]="!supportForm.message || isSendingSupport">
+                {{ isSendingSupport ? 'Sending...' : 'Send Request' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disable Account Confirmation Modal -->
+        <div class="modal-overlay" *ngIf="showDisableConfirm" (click)="closeDisableAccountDialog()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header warning">
+              <span>🔒</span>
+              <h3>Disable Your Account?</h3>
+              <button class="modal-close" (click)="closeDisableAccountDialog()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Your account will be disabled and inactive.</strong> You won't be able to login, but data is preserved.</p>
+              <p>To confirm, enter your password:</p>
+              <input 
+                type="password" 
+                placeholder="Enter password" 
+                [(ngModel)]="disableConfirmPassword"
+                class="modal-input"
+                [disabled]="isProcessingAccountAction"
+              />
+              <p class="modal-note">Minimum 6 characters required</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn secondary" (click)="closeDisableAccountDialog()" [disabled]="isProcessingAccountAction">
+                Cancel
+              </button>
+              <button class="btn warning" (click)="disableAccount()" [disabled]="!disableConfirmPassword || isProcessingAccountAction">
+                {{ isProcessingAccountAction ? 'Processing...' : 'Disable Account' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Account Confirmation Modal -->
+        <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteAccountDialog()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header danger">
+              <span>⚠️</span>
+              <h3>Delete Account Permanently?</h3>
+              <button class="modal-close" (click)="closeDeleteAccountDialog()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p><strong style="color: #991b1b;">This action is PERMANENT and CANNOT BE UNDONE.</strong></p>
+              <p>Once deleted:</p>
+              <ul>
+                <li>Your account and all data will be removed</li>
+                <li>Email becomes available to sign up again</li>
+                <li>All donation history will be deleted</li>
+                <li>This cannot be recovered</li>
+              </ul>
+              <p>To confirm, enter your password:</p>
+              <input 
+                type="password" 
+                placeholder="Enter password" 
+                [(ngModel)]="deleteConfirmPassword"
+                class="modal-input"
+                [disabled]="isProcessingAccountAction"
+              />
+              <p class="modal-note">Minimum 6 characters required</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn secondary" (click)="closeDeleteAccountDialog()" [disabled]="isProcessingAccountAction">
+                Cancel, Keep Account
+              </button>
+              <button class="btn danger" (click)="deleteAccount()" [disabled]="!deleteConfirmPassword || isProcessingAccountAction">
+                {{ isProcessingAccountAction ? 'Deleting...' : 'Yes, Delete Forever' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq-box" id="profile-faqs">
+        <div class="panel-head">
+          <div>
+            <h2>FAQs & support</h2>
+            <p>Helpful answers for a smoother profile experience.</p>
+          </div>
+          <span class="section-pill">10 quick answers</span>
+        </div>
+
         <details>
-          <summary>Where does this data come from?</summary>
-          <p>The page loads live data from the database through the profile API.</p>
+          <summary>Where does this profile data come from?</summary>
+          <p>The page loads live data from the profile API and keeps the layout synced with the latest account details.</p>
         </details>
         <details>
-          <summary>Can customer updates be saved?</summary>
-          <p>Yes. Only your name can be updated on this page.</p>
+          <summary>Can I update my profile information?</summary>
+          <p>Yes. Customers can update the editable fields supported by the system and save changes securely.</p>
+        </details>
+        <details>
+          <summary>Why is my address shown in a small card?</summary>
+          <p>Address is intentionally compact to keep the profile clean while still keeping delivery details visible.</p>
+        </details>
+        <details>
+          <summary>Is my data secure?</summary>
+          <p>Yes. CareFund follows secure data handling with authentication and role-based access.</p>
+        </details>
+        <details>
+          <summary>How do I contact support?</summary>
+          <p>Use the chat option above or email support for faster assistance with account, donation, or payment issues.</p>
+        </details>
+        <details>
+          <summary>Can I view donation history?</summary>
+          <p>Donation history is available inside the customer dashboard for quick tracking and receipts.</p>
+        </details>
+        <details>
+          <summary>What if my details are incorrect?</summary>
+          <p>Update the editable fields and contact support if a field needs manual review.</p>
         </details>
         <details>
           <summary>Can charity managers update their profile?</summary>
-          <p>No. Charity profile changes require a resubmitted application.</p>
+          <p>Charity managers follow a separate verification flow and may need admin review for major updates.</p>
+        </details>
+        <details>
+          <summary>How do I change password or security settings?</summary>
+          <p>Use the login and security options from the account section once available in your dashboard.</p>
+        </details>
+        <details>
+          <summary>Where can I find more features?</summary>
+          <p>Explore dashboards, notifications, receipts, and charity pages to experience the full platform.</p>
         </details>
       </section>
     </ng-template>
@@ -142,6 +423,96 @@
       </div>
     </section>
   </ng-template>
+
+  <!-- Chat Modal -->
+  <div class="modal-overlay" *ngIf="showChat" (click)="closeChat()">
+    <div class="modal-content chat-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header info">
+        <span>💬</span>
+        <h3>Live Chat Support</h3>
+        <button class="modal-close" (click)="closeChat()">&times;</button>
+      </div>
+      <div class="modal-body chat-body">
+        <div class="chat-message agent">
+          <div class="message-avatar">🤖</div>
+          <div class="message-content">
+            <p>Hi! Welcome to CareFund Support. How can we help you today?</p>
+            <small>Just now</small>
+          </div>
+        </div>
+        <div class="chat-message user" *ngIf="supportForm.message">
+          <div class="message-content">
+            <p>{{ supportForm.message }}</p>
+            <small>Now</small>
+          </div>
+          <div class="message-avatar">👤</div>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <input
+          type="text"
+          [(ngModel)]="supportForm.message"
+          placeholder="Type your message..."
+          class="chat-input"
+          (keyup.enter)="sendSupportRequest()"
+        />
+        <button class="btn-send" (click)="sendSupportRequest()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQs Modal -->
+  <div class="modal-overlay" *ngIf="showFaqs" (click)="closeFaqs()">
+    <div class="modal-content faqs-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header info">
+        <span>❓</span>
+        <h3>Frequently Asked Questions</h3>
+        <button class="modal-close" (click)="closeFaqs()">&times;</button>
+      </div>
+      <div class="modal-body faqs-body">
+        <details>
+          <summary>Where does this profile data come from?</summary>
+          <p>The page loads live data from the profile API and keeps the layout synced with the latest account details.</p>
+        </details>
+        <details>
+          <summary>Can I update my profile information?</summary>
+          <p>Yes. Customers can update the editable fields supported by the system and save changes securely.</p>
+        </details>
+        <details>
+          <summary>Why is my address shown in a small card?</summary>
+          <p>Address is intentionally compact to keep the profile clean while still keeping delivery details visible.</p>
+        </details>
+        <details>
+          <summary>Is my data secure?</summary>
+          <p>Yes. CareFund follows secure data handling with authentication and role-based access.</p>
+        </details>
+        <details>
+          <summary>How do I contact support?</summary>
+          <p>Use the chat option above or email support for faster assistance with account, donation, or payment issues.</p>
+        </details>
+        <details>
+          <summary>Can I view donation history?</summary>
+          <p>Donation history is available inside the customer dashboard for quick tracking and receipts.</p>
+        </details>
+        <details>
+          <summary>What if my details are incorrect?</summary>
+          <p>Update the editable fields and contact support if a field needs manual review.</p>
+        </details>
+        <details>
+          <summary>Can charity managers update their profile?</summary>
+          <p>Charity managers follow a separate verification flow and may need admin review for major updates.</p>
+        </details>
+        <details>
+          <summary>How do I change password or security settings?</summary>
+          <p>Use the login and security options from the account section once available in your dashboard.</p>
+        </details>
+        <details>
+          <summary>Where can I find more features?</summary>
+          <p>Explore dashboards, notifications, receipts, and charity pages to experience the full platform.</p>
+        </details>
+      </div>
+    </div>
+  </div>
 </main>
 
 <app-footer></app-footer>

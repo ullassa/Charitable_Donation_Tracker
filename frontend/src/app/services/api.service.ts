@@ -273,6 +273,25 @@ export class ApiService {
     return this.http.put(`${this.baseUrl}/profile/charity`, payload);
   }
 
+  deleteAccount(password: string) {
+    return this.http.delete(`${this.baseUrl}/profile/delete`, {
+      headers: this.getAuthHeaders(),
+      body: { password }
+    });
+  }
+
+  disableAccount(password: string) {
+    return this.http.put(`${this.baseUrl}/profile/disable`, { password }, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+  sendBravoEmail(payload: { to: string; subject: string; body: string; from: string }) {
+    return this.http.post(`${this.baseUrl}/email/send-bravo`, payload, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
   post<T>(url: string, body: any): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}${url}`, body);
   }
