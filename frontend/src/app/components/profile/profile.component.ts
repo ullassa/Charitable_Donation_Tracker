@@ -22,6 +22,8 @@ interface CharityProfileModel {
   city: string;
   state: string;
   pincode: string;
+  managerName: string;
+  managerPhone: string;
   registrationId: string;
   mission: string;
   about: string;
@@ -193,6 +195,8 @@ export class ProfileComponent implements OnInit {
           city: charity?.city || user?.city || '',
           state: charity?.indianState || '',
           pincode: charity?.pincode || '',
+          managerName: charity?.managerName || '',
+          managerPhone: charity?.managerPhone || '',
           registrationId: charity?.registrationId || charity?.charityRegistrationId || '',
           mission: charity?.mission || '',
           about: charity?.about || '',

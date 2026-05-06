@@ -494,13 +494,16 @@ export class DataTransformationHelper {
    * Get donor summary (name, email, total, count, average per donation)
    */
   static getDonorSummary(donor: any) {
-    const stats = DonationCalculationHelper.getDonationStats(donor.donations || []);
+    const donations = donor?.donations || [];
+    const stats = DonationCalculationHelper.getDonationStats(donations);
+    const donationCount = donor?.donationCount ?? donations.length;
+    const totalDonated = donor?.totalDonated ?? stats.total;
     return {
       id: donor.id,
       name: donor.name,
       email: donor.email,
-      totalDonated: donor.totalDonated,
-      donationCount: donor.donationCount,
+      totalDonated,
+      donationCount,
       averageDonation: stats.average,
       highestDonation: stats.highest,
       lowestDonation: stats.lowest

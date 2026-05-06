@@ -26,8 +26,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   donorFrom = '';
   donorTo = '';
   donationNameFilter = '';
-  donationFrom = '';
-  donationTo = '';
+  donationFrom: string | Date | undefined = undefined;
+  donationTo: string | Date | undefined = undefined;
   donationSort: 'desc' | 'asc' = 'desc';
   stats: any = { pending: 0, approved: 0, rejected: 0, hold: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
   requests: any[] = [];
@@ -123,6 +123,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.fetchDonors();
   }
 
+  clearDonationFilters(): void {
+    this.donationNameFilter = '';
+    this.donationFrom = undefined;
+    this.donationTo = undefined;
+    this.expandedDonationId = null;
+  }
+
+  fetchDonersDateFiltered(fromDate?: string | Date, toDate?: string | Date): void {
+    (this.api.getAdminDonors as any)(fromDate as any, toDate as any).subscribe({
+      next: (res: any) => {
+        this.donors = res?.items ?? [];
+      },
+      error: (err: any) => {
+        this.error = err?.error?.message || 'Failed to load donor details.';
+      }
+    });
+  }
+
   toggleDonationDetails(id: number): void {
     this.expandedDonationId = this.expandedDonationId === id ? null : id;
   }
@@ -136,18 +154,18 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     donorName: string;
     donorEmail: string;
     amount: number;
-    donationDate: string;
+    donationDate: Date;
     charityName: string;
     paymentMethod: string;
     transactionReference?: string;
   }> {
     return this.donors.flatMap(donor =>
       (donor?.donations ?? []).map((donation: any) => ({
-        donationId: donation?.donationId,
+        donationId: Number(donation?.donationId ?? donation?.id ?? 0),
         donorName: donation?.donorName || donor?.name || 'Anonymous',
         donorEmail: donation?.donorEmail || donor?.email || 'Hidden',
         amount: Number(donation?.amount || 0),
-        donationDate: donation?.donationDate,
+        donationDate: donation?.donationDate ? new Date(donation.donationDate) : new Date(0),
         charityName: donation?.charityName || 'Not provided',
         paymentMethod: donation?.paymentMethod || 'Unknown',
         transactionReference: donation?.transactionReference
@@ -160,14 +178,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     donorName: string;
     donorEmail: string;
     amount: number;
-    donationDate: string;
+    donationDate: Date;
     charityName: string;
     paymentMethod: string;
     transactionReference?: string;
   }> {
     const nameFilter = (this.donationNameFilter || '').trim().toLowerCase();
-    const from = this.donationFrom ? new Date(this.donationFrom) : null;
-    const to = this.donationTo ? new Date(this.donationTo) : null;
+    const from = this.toDateValue(this.donationFrom);
+    const to = this.toDateValue(this.donationTo);
 
     if (to) {
       to.setHours(23, 59, 59, 999);
@@ -179,7 +197,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         return false;
       }
 
-      const donationDate = row.donationDate ? new Date(row.donationDate) : null;
+      const donationDate = this.toDateValue(row.donationDate);
       if (from && donationDate && donationDate < from) {
         return false;
       }
@@ -198,8 +216,18 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  private toDateValue(value: string | Date | undefined | null): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = value instanceof Date ? new Date(value) : new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
   get topDonors(): any[] {
     return [...this.donors]
+      .filter(donor => Number(donor?.totalDonated || 0) > 0)
       .sort((a, b) => Number(b?.totalDonated || 0) - Number(a?.totalDonated || 0))
       .slice(0, 5);
   }

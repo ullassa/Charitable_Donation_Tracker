@@ -79,7 +79,9 @@ export class DonateComponent implements OnInit, OnDestroy {
   gatewayContact = '';
   gatewayUpi = '';
   showFakeGateway = false;
-  requiresGatewayContact = false;
+  get requiresGatewayContact(): boolean {
+    return this.paymentMethod === 'wallet';
+  }
   
   private destroy$ = new Subject<void>();
   isLoggedIn = false;

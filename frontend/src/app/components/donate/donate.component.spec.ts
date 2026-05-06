@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { DonateComponent } from './donate.component';
 import { ApiService } from '../../services/api.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -65,25 +66,31 @@ describe('DonateComponent', () => {
       'createDonation'
     ]);
 
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [CommonModule, FormsModule, DonateComponent],
+      imports: [CommonModule, FormsModule, RouterTestingModule, DonateComponent],
       providers: [
         { provide: ApiService, useValue: apiSpy },
-        { provide: Router, useValue: routerSpy },
         {
           provide: ActivatedRoute,
           useValue: {
-            queryParams: of({})
+            queryParams: of({}),
+            snapshot: {
+              queryParamMap: {
+                get: () => null
+              }
+            }
           }
         }
       ]
     }).compileComponents();
 
     apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+    (apiService as any).baseUrl = 'http://localhost/api';
+    apiService.getPublicCharities.and.returnValue(of({ items: mockCharities }));
+    apiService.getPublicCharitiesFromAuth.and.returnValue(of({ items: mockCharities }));
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
     activatedRoute = TestBed.inject(ActivatedRoute);
 
     fixture = TestBed.createComponent(DonateComponent);
@@ -233,6 +240,7 @@ describe('DonateComponent', () => {
     });
 
     it('should show error if not logged in', () => {
+      (sessionStorage.getItem as jasmine.Spy).and.returnValue(null);
       component.isLoggedIn = false;
       component.selectedCharity = mockCharities[0];
       component.selectedAmount = 100;
