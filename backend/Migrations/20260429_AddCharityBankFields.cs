@@ -12,37 +12,21 @@ namespace CareFund.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "AccountHolderName",
-                table: "Charities",
-                type: "nvarchar(150)",
-                maxLength: 150,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('dbo.Charities','AccountHolderName') IS NULL BEGIN ALTER TABLE [Charities] ADD [AccountHolderName] nvarchar(150) NOT NULL DEFAULT('') END"
+            );
 
-            migrationBuilder.AddColumn<string>(
-                name: "AccountNumber",
-                table: "Charities",
-                type: "nvarchar(30)",
-                maxLength: 30,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('dbo.Charities','AccountNumber') IS NULL BEGIN ALTER TABLE [Charities] ADD [AccountNumber] nvarchar(30) NOT NULL DEFAULT('') END"
+            );
 
-            migrationBuilder.AddColumn<string>(
-                name: "BankName",
-                table: "Charities",
-                type: "nvarchar(150)",
-                maxLength: 150,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('dbo.Charities','BankName') IS NULL BEGIN ALTER TABLE [Charities] ADD [BankName] nvarchar(150) NOT NULL DEFAULT('') END"
+            );
 
-            migrationBuilder.AddColumn<string>(
-                name: "IFSCCode",
-                table: "Charities",
-                type: "nvarchar(11)",
-                maxLength: 11,
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('dbo.Charities','IFSCCode') IS NULL BEGIN ALTER TABLE [Charities] ADD [IFSCCode] nvarchar(11) NOT NULL DEFAULT('') END"
+            );
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

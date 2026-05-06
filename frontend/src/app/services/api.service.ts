@@ -83,6 +83,18 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/donations`, payload);
   }
 
+  getRazorpayConfig() {
+    return this.http.get(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/razorpay-config`);
+  }
+
+  createRazorpayOrder(payload: { charityRegistrationId: number; amount: number; upivpa?: string; transactionReference?: string }) {
+    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/create-order`, payload);
+  }
+
+  finalizeRazorpayPayment(payload: { paymentId: number; razorpayPaymentId: string; razorpayOrderId: string; razorpaySignature: string; charityRegistrationId: number; amount: number; isAnonymous: boolean }) {
+    return this.http.post(`${this.baseUrl.replace(/\/api\/?$/i, '')}/api/gateway/finalize`, payload);
+  }
+
   submitFeedback(payload: {
     charityName?: string;
     amount?: number;

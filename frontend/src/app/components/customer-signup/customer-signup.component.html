@@ -369,6 +369,31 @@
   </div>
 </div>
 
+<div class="terms-modal-overlay" *ngIf="showTermsModal">
+  <div class="terms-modal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="terms-modal-header">
+      <h3 id="termsTitle">Terms & Conditions</h3>
+      <button type="button" class="terms-close-btn" (click)="closeTermsModal()">×</button>
+    </div>
+
+    <div class="terms-modal-body">
+      <h4>Donor Terms</h4>
+      <p>By creating a donor account on CareFund, you agree to use the platform honestly and only provide accurate information.</p>
+      <p>You may review charity details before making any donation and you are responsible for verifying the information you submit.</p>
+      <p>CareFund may contact you about account verification, donation receipts, and platform updates.</p>
+
+      <h4>Privacy Notice</h4>
+      <p>Your account information is used only to manage your donor profile, donation activity, and important service notifications.</p>
+      <p>Click Agree to continue creating your donor account.</p>
+    </div>
+
+    <div class="terms-modal-actions">
+      <button type="button" class="btn btn-outline" (click)="closeTermsModal()">Cancel</button>
+      <button type="button" class="btn terms-agree-btn" (click)="agreeToTerms()">Agree</button>
+    </div>
+  </div>
+</div>
+
 <app-footer></app-footer>
 
 <div class="terms-modal-overlay" *ngIf="showTermsModal">

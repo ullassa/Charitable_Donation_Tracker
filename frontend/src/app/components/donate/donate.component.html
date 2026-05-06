@@ -174,7 +174,7 @@
       </div>
 
       <div class="payment-methods">
-        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" [disabled]="isUpiDisabledOnDesktop" [title]="isUpiDisabledOnDesktop ? '⚠️ UPI works on mobile devices only. Use Card or Net Banking on desktop.' : ''" (click)="selectPaymentMethod('upi')">UPI {{ isUpiDisabledOnDesktop ? '(Mobile)' : '' }}</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">Card</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'netbanking'" (click)="selectPaymentMethod('netbanking')">Net Banking</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'wallet'" (click)="selectPaymentMethod('wallet')">Wallet</button>
@@ -238,13 +238,13 @@
       </div>
 
       <div class="payment-methods">
-        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" [disabled]="isUpiDisabledOnDesktop" [title]="isUpiDisabledOnDesktop ? '⚠️ UPI works on mobile devices only. Use Card or Net Banking on desktop.' : ''" (click)="selectPaymentMethod('upi')">UPI {{ isUpiDisabledOnDesktop ? '(Mobile)' : '' }}</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">Card</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'netbanking'" (click)="selectPaymentMethod('netbanking')">Net Banking</button>
         <button type="button" class="payment-chip" [class.active]="paymentMethod === 'wallet'" (click)="selectPaymentMethod('wallet')">Wallet</button>
       </div>
 
-      <div class="payment-form card-shell" *ngIf="paymentMethod === 'upi'">
+      <div class="payment-form card-shell" *ngIf="paymentMethod === 'upi' && !isUpiDisabledOnDesktop">
         <label>UPI ID</label>
         <input [(ngModel)]="upiId" type="text" placeholder="name@upi">
       </div>

@@ -147,45 +147,79 @@
 
 .details-cell {
   color: #475569;
-}
-
-.details-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-}
-
-.details-text {
-  display: block;
-  color: #475569;
-  word-break: break-word;
+  text-align: center;
 }
 
 .details-toggle {
-  align-self: flex-start;
-  border: none;
-  background: transparent;
-  color: #2563eb;
-  font-weight: 600;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
 }
 
 .details-toggle:hover {
-  text-decoration: underline;
+  background: #e0e7ff;
 }
 
 .audit-details-row td {
-  padding: 0;
+  padding: 0.9rem;
   background: #f8fafc;
+}
+
+.log-details-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #dbe7f5;
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.log-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.detail-kicker {
+  margin: 0 0 0.25rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.log-details-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #ecfeff;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .log-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.75rem 1rem;
-  padding: 1rem;
-  border-top: 1px solid #e5e7eb;
+  gap: 0.85rem 1rem;
 }
 
 .log-details .full {
@@ -216,6 +250,16 @@
 .log-details p {
   margin: 0;
   color: #0f172a;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.details-text {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 0.9rem;
+  line-height: 1.6;
 }
 
 .pagination-row {

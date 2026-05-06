@@ -167,6 +167,17 @@
                           <label>Social Media</label>
                           <p><a [href]="item.socialMediaLink" target="_blank" rel="noopener noreferrer">{{ item.socialMediaLink }}</a></p>
                         </div>
+                        <div class="full">
+                          <label>Uploaded Images</label>
+                          <div class="request-images" *ngIf="item.imageUrls?.length > 0; else noRequestImages">
+                            <a class="request-image-card" *ngFor="let image of item.imageUrls" [href]="image" target="_blank" rel="noopener noreferrer">
+                              <img [src]="image" [alt]="item.charityName + ' upload'">
+                            </a>
+                          </div>
+                          <ng-template #noRequestImages>
+                            <p class="empty-inline">No uploaded images available</p>
+                          </ng-template>
+                        </div>
                       </div>
 
                       <div class="request-actions">

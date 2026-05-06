@@ -38,6 +38,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   constructor(private api: ApiService) {}
 
+  private normalizeImageUrl(url?: string | null): string {
+    const raw = (url || '').trim();
+    if (!raw) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(raw)) {
+      return raw;
+    }
+
+    const path = raw.startsWith('/') ? raw : `/${raw}`;
+    const apiBase = this.api.baseUrl.replace(/\/api\/?$/i, '');
+    return `${apiBase}${path}`;
+  }
+
   ngOnInit(): void {
     this.load();
   }
@@ -268,7 +283,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   fetchRequests(): void {
     this.api.getAdminCharityRequests(this.statusFilter || undefined).subscribe({
       next: (res: any) => {
-        this.requests = res?.items ?? [];
+        this.requests = (res?.items ?? []).map((item: any) => ({
+          ...item,
+          imageUrls: Array.isArray(item?.imageUrls)
+            ? item.imageUrls
+                .map((url: any) => this.normalizeImageUrl(typeof url === 'string' ? url : ''))
+                .filter((url: string) => !!url)
+            : []
+        }));
         if (this.expandedRequestId !== null && !this.requests.some(item => item.charityRegistrationId === this.expandedRequestId)) {
           this.expandedRequestId = null;
         }

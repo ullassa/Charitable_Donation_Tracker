@@ -59,14 +59,28 @@
 
 .charity-main-grid {
   display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-columns: 1fr;
   gap: 20px;
+  align-items: start;
+.charity-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px; /* Large screen two-column layout */
+  gap: 20px;
+  align-items: start;
+}
 }
 
 .charity-main-left {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 20px;
+  order: 1;
+.charity-main-left {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  order: 1;
+}
 }
 
 .content-card {
@@ -75,6 +89,7 @@
   border-radius: 10px;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   padding: 16px;
+  min-width: 0;
 }
 
 .content-card h3 {
@@ -96,11 +111,33 @@
 
 .charity-main-right {
   align-self: start;
+  min-width: 0;
+  order: 2;
+.charity-main-right {
+  align-self: start;
+  min-width: 0;
+  order: 2;
+  /* Make sidebar visually distinct and stay visible on tall pages */
+  width: 100%;
+  max-width: 380px;
+  position: sticky; /* Make sidebar sticky */
+  top: 100px; /* Adjust position */
+}
 }
 
 .gallery-layout {
   display: grid;
   gap: 12px;
+.gallery-layout {
+  display: grid;
+  gap: 12px;
+}
+}
+
+.charity-main-right h3,
+.content-card h3 {
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 .gallery-main,
@@ -112,6 +149,11 @@
 
 .gallery-main {
   aspect-ratio: 4 / 3;
+.gallery-main {
+  aspect-ratio: 4 / 3;
+  /* make the main image larger on wide screens */
+  height: 320px; /* Increase main image size */
+}
 }
 
 .gallery-main img,
@@ -132,6 +174,11 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+.gallery-small-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
 }
 
 .gallery-small-item {
@@ -143,6 +190,46 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+.details-bottom-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Large screen two-column layout */
+@media (min-width: 1000px) {
+  .charity-main-grid {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+
+  .charity-main-right {
+    position: sticky;
+    top: 100px;
+    margin-left: 12px;
+  }
+
+  .content-card {
+    padding: 18px;
+  }
+
+  .gallery-main {
+    height: 360px; /* Increase gallery main image size */
+  }
+
+  .content-card-full {
+    grid-column: 1 / 2;
+  }
+}
+
+/* Slightly tighter layout and better spacing */
+@media (min-width: 1200px) {
+  .donate-container.flat-layout.charity-details-shell {
+    max-width: 1200px;
+    padding: 24px;
+  }
+}
 }
 
 .details-bottom-grid .meta-label {
@@ -208,5 +295,9 @@
 
   .details-bottom-grid {
     grid-template-columns: 1fr;
+  }
+
+  .charity-main-right {
+    padding: 14px;
   }
 }

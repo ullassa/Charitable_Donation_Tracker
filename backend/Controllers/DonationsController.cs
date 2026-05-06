@@ -58,6 +58,11 @@ public class DonationsController : ControllerBase
             TransactionReference = string.IsNullOrWhiteSpace(request.TransactionReference)
                 ? $"CF-{DateTime.UtcNow:yyyyMMddHHmmssfff}"
                 : request.TransactionReference,
+            TransactionId = request.TransactionReference,
+            Amount = request.Amount,
+            Currency = "INR",
+            Status = "Completed",
+            GatewayName = request.PaymentMethod.ToString(),
             PaymentDate = DateTime.UtcNow
         };
 

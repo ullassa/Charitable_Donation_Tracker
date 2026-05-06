@@ -1182,6 +1182,29 @@
     line-height: 1.45;
   }
 
+  .admin-page .request-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .admin-page .request-image-card {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #dbe3ef;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+    aspect-ratio: 1 / 1;
+  }
+
+  .admin-page .request-image-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
   .admin-page .request-actions {
     margin-top: 0.7rem;
     display: flex;
@@ -1242,6 +1265,17 @@
     .admin-page .btn-approve,
     .admin-page .btn-reject {
       flex: 1;
+    }
+
+    .admin-page .dashboard-hero-actions {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .admin-page .audit-link-wrap {
+      border-right: 0;
+      padding-right: 0;
     }
   }
 

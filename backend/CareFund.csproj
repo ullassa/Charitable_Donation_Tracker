@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Backend.Tests\**\*.cs" />
+    <None Remove="Backend.Tests\**\*" />
+    <Content Remove="Backend.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     
     <!-- <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" /> -->
     

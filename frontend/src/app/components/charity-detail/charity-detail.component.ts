@@ -367,7 +367,7 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.openFakeGateway();
+    this.openConfiguredGateway();
   }
 
   private openFakeGateway(): void {
@@ -378,6 +378,76 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
     this.gatewayContact = this.gatewayContact || this.walletNumber || '';
     this.gatewayUpi = this.gatewayUpi || this.upiId || '';
     this.showFakeGateway = true;
+  }
+
+  private openConfiguredGateway(): void {
+    this.apiService.getRazorpayConfig().subscribe({
+      next: (config: any) => {
+        if (config?.enabled && config?.keyId) {
+          this.loadRazorpayScript().then(() => this.launchRazorpayCheckout(config)).catch(() => {
+            this.paymentMessage = 'Razorpay checkout could not be loaded. Showing demo checkout instead.';
+            this.openFakeGateway();
+          });
+          return;
+        }
+
+        this.paymentMessage = config?.message || 'Razorpay is not configured yet. Showing demo checkout instead.';
+        this.openFakeGateway();
+      },
+      error: () => {
+        this.paymentMessage = 'Unable to load Razorpay settings. Showing demo checkout instead.';
+        this.openFakeGateway();
+      }
+    });
+  }
+
+  private loadRazorpayScript(): Promise<void> {
+    if ((window as any).Razorpay) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Unable to load Razorpay checkout'));
+      document.body.appendChild(script);
+    });
+  }
+
+  private launchRazorpayCheckout(config: any): void {
+    const amountInPaise = Math.max(1, Math.round(this.payableTotal * 100));
+    const options = {
+      key: config.keyId,
+      amount: amountInPaise,
+      currency: config.currency || 'INR',
+      name: config.merchantName || 'CareFund Foundation',
+      description: config.description || `Donation to ${this.selectedCharity?.name || 'CareFund'}`,
+      prefill: {
+        name: this.gatewayName || this.cardHolderName || '',
+        email: this.gatewayEmail || '',
+        contact: this.gatewayContact || this.walletNumber || this.upiId || ''
+      },
+      theme: {
+        color: '#6366f1'
+      },
+      modal: {
+        ondismiss: () => {
+          this.paymentMessage = 'Payment cancelled. You can review details and try again.';
+        }
+      },
+      handler: (response: any) => {
+        this.mockGatewayReference = response?.razorpay_payment_id || response?.razorpay_order_id || `RZP-${Date.now()}`;
+        this.finalizeDonation(this.mockGatewayReference);
+      }
+    };
+
+    const razorpay = new (window as any).Razorpay(options);
+    razorpay.on('payment.failed', (response: any) => {
+      this.paymentMessage = response?.error?.description || 'Payment failed in Razorpay checkout. Please try again.';
+    });
+    razorpay.open();
   }
 
   cancelFakeGateway(): void {
@@ -404,7 +474,7 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
 
     this.showFakeGateway = false;
     this.paymentMessage = '';
-    this.finalizeDonation();
+    this.finalizeDonation(this.mockGatewayReference);
   }
 
   private validateGatewayDetails(): string {
@@ -419,7 +489,7 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  private finalizeDonation(): void {
+  private finalizeDonation(paymentReference?: string): void {
     const charity = this.selectedCharity;
     if (!charity) {
       this.paymentMessage = 'Please choose a charity first.';
@@ -440,7 +510,7 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
       amount: this.selectedAmount,
       isAnonymous: this.donateAnonymously,
       paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
-      transactionReference: this.mockGatewayReference || `CF-${Date.now()}`
+      transactionReference: paymentReference || this.mockGatewayReference || `CF-${Date.now()}`
     };
 
     this.apiService.createDonation(payload).subscribe({

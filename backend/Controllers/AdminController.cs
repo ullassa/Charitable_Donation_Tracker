@@ -314,6 +314,7 @@ public class AdminController : ControllerBase
             .AsNoTracking()
             .Include(c => c.User)
             .Include(c => c.Donations)
+            .Include(c => c.Images)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<CharityStatus>(status, true, out var parsedStatus))
@@ -353,7 +354,14 @@ public class AdminController : ControllerBase
             status = c.Status.ToString(),
             submittedAt = c.SubmittedAt,
             reviewedAt = c.ReviewedAt,
-            adminComment = c.AdminComment
+            adminComment = c.AdminComment,
+            imageUrls = c.Images != null
+                ? c.Images
+                    .Where(i => i.ImageUrl != null)
+                    .Select(i => i.ImageUrl!)
+                    .Distinct()
+                    .ToList()
+                : new List<string>()
         }).ToList();
 
         return Ok(new { success = true, items });

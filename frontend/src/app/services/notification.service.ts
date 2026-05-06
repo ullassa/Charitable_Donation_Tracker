@@ -74,7 +74,7 @@ export class NotificationService {
    * Load notifications from server
    */
   private loadNotifications(): void {
-    this.http.get<Notification[]>(this.baseUrl).subscribe((data) => {
+    this.http.get<Notification[]>(`${this.baseUrl}/mine`).subscribe((data) => {
       data.forEach((n) => (n.createdAt = new Date(n.createdAt)));
       this.notifications.next(data);
       this.updateUnreadCount();

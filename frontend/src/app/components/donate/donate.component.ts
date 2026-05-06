@@ -68,6 +68,7 @@ export class DonateComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   isLoggedIn = false;
   currentRole = '';
+  isMobileDevice = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -75,8 +76,26 @@ export class DonateComponent implements OnInit, OnDestroy {
     private apiService: ApiService
   ) {}
 
+  private detectMobileDevice(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+    // Check for mobile user agents
+    const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    const isTouchDevice = () => {
+      return (
+        (navigator.maxTouchPoints !== undefined && navigator.maxTouchPoints > 2) ||
+        ('ontouchstart' in window)
+      );
+    };
+    return mobileRegex.test(userAgent.toLowerCase()) || isTouchDevice();
+  }
+
   ngOnInit(): void {
     this.checkLoginStatus();
+    this.isMobileDevice = this.detectMobileDevice();
+    // Auto-select Card on desktop (UPI doesn't work without UPI app)
+    if (!this.isMobileDevice) {
+      this.paymentMethod = 'card';
+    }
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
@@ -319,6 +338,11 @@ export class DonateComponent implements OnInit, OnDestroy {
   }
 
   selectPaymentMethod(method: 'upi' | 'card' | 'netbanking' | 'wallet'): void {
+    // Warn user if selecting UPI on desktop
+    if (method === 'upi' && !this.isMobileDevice) {
+      this.paymentMessage = '⚠️ UPI works best on mobile devices. Use Card or Net Banking on desktop. If you have a UPI app, try again on mobile.';
+      return;
+    }
     this.paymentMethod = method;
     this.paymentMessage = '';
   }
@@ -343,6 +367,10 @@ export class DonateComponent implements OnInit, OnDestroy {
 
   get requiresGatewayUpi(): boolean {
     return this.paymentMethod === 'upi';
+  }
+
+  get isUpiDisabledOnDesktop(): boolean {
+    return !this.isMobileDevice;
   }
 
   shareSelectedCharity(): void {
@@ -395,9 +423,15 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!skipPaymentDetailValidation && this.paymentMethod === 'upi' && !this.upiId.trim()) {
-      this.paymentMessage = 'Enter your UPI ID to continue.';
-      return;
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'upi') {
+      if (!this.isMobileDevice) {
+        this.paymentMessage = '⚠️ UPI is only available on mobile devices. Please use Card or Net Banking instead.';
+        return;
+      }
+      if (!this.upiId.trim()) {
+        this.paymentMessage = 'Enter your UPI ID to continue.';
+        return;
+      }
     }
 
     if (!skipPaymentDetailValidation && this.paymentMethod === 'card') {
@@ -417,6 +451,203 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
+<<<<<<< HEAD
+=======
+    this.openConfiguredGateway();
+  }
+
+  private openFakeGateway(): void {
+    this.gatewayProvider = 'razorpay';
+    this.mockGatewayReference = `RZP-MOCK-${Date.now()}`;
+    this.gatewayEmail = this.gatewayEmail || '';
+    this.gatewayName = this.gatewayName || this.cardHolderName || '';
+    this.gatewayContact = this.gatewayContact || this.walletNumber || '';
+    this.gatewayUpi = this.gatewayUpi || this.upiId || '';
+    this.showFakeGateway = true;
+  }
+
+  private openConfiguredGateway(): void {
+    this.apiService.getRazorpayConfig().subscribe({
+      next: (config: any) => {
+        if (config?.enabled && config?.keyId) {
+          // create server-side order first
+          this.paymentProcessing = true;
+          const payload: any = {
+            charityRegistrationId: this.selectedCharity?.id,
+            amount: this.selectedAmount,
+            upivpa: this.paymentMethod === 'upi' ? this.upiId : undefined,
+            contactNumber: this.paymentMethod === 'wallet' ? this.walletNumber : this.gatewayContact,
+            walletNumber: this.paymentMethod === 'wallet' ? this.walletNumber : undefined,
+            transactionReference: `CF-${Date.now()}`,
+            paymentMethod: this.paymentMethod
+          };
+
+          this.apiService.createRazorpayOrder(payload).subscribe({
+            next: (orderResp: any) => {
+              const orderId = orderResp?.orderId;
+              const paymentId = orderResp?.paymentId;
+              this.loadRazorpayScript().then(() => this.launchRazorpayCheckout(config, { orderId, paymentId })).catch(() => {
+                this.paymentProcessing = false;
+                this.paymentMessage = 'Razorpay checkout could not be loaded. Showing demo checkout instead.';
+                this.openFakeGateway();
+              });
+            },
+            error: () => {
+              this.paymentProcessing = false;
+              this.paymentMessage = 'Unable to create payment order. Showing demo checkout instead.';
+              this.openFakeGateway();
+            }
+          });
+          return;
+        }
+
+        this.paymentMessage = config?.message || 'Razorpay is not configured yet. Showing demo checkout instead.';
+        this.openFakeGateway();
+      },
+      error: () => {
+        this.paymentMessage = 'Unable to load Razorpay settings. Showing demo checkout instead.';
+        this.openFakeGateway();
+      }
+    });
+  }
+
+  private loadRazorpayScript(): Promise<void> {
+    if ((window as any).Razorpay) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Unable to load Razorpay checkout'));
+      document.body.appendChild(script);
+    });
+  }
+
+  private launchRazorpayCheckout(config: any, order?: { orderId?: string; paymentId?: number }): void {
+    const amountInPaise = Math.max(1, Math.round(this.payableTotal * 100));
+    const options = {
+      key: config.keyId,
+      amount: amountInPaise,
+      currency: config.currency || 'INR',
+      name: config.merchantName || 'CareFund Foundation',
+      description: config.description || `Donation to ${this.selectedCharity?.name || 'CareFund'}`,
+      order_id: order?.orderId,
+      notes: { paymentId: order?.paymentId },
+      image: undefined,
+      prefill: {
+        name: this.gatewayName || this.cardHolderName || '',
+        email: this.gatewayEmail || '',
+        contact: this.gatewayContact || this.walletNumber || this.upiId || ''
+      },
+      theme: {
+        color: '#6366f1'
+      },
+      modal: {
+        ondismiss: () => {
+          this.paymentMessage = 'Payment cancelled. You can review details and try again.';
+        }
+      },
+      handler: (response: any) => {
+        const razorpayPaymentId = response?.razorpay_payment_id;
+        const razorpayOrderId = response?.razorpay_order_id;
+        const razorpaySignature = response?.razorpay_signature;
+        const paymentId = (order && order.paymentId) || undefined;
+
+        if (paymentId && razorpayPaymentId && razorpayOrderId) {
+          // call server finalize
+          this.apiService.finalizeRazorpayPayment({
+            paymentId: paymentId,
+            razorpayPaymentId: razorpayPaymentId,
+            razorpayOrderId: razorpayOrderId,
+            razorpaySignature: razorpaySignature || '',
+            charityRegistrationId: this.selectedCharity?.id || 0,
+            amount: this.selectedAmount,
+            isAnonymous: this.donateAnonymously
+          }).subscribe({
+            next: (res: any) => {
+              this.paymentProcessing = false;
+              localStorage.setItem('cf:notify:refresh', Date.now().toString());
+              this.router.navigate(['/payment-success'], {
+                queryParams: {
+                  charityName: this.selectedCharity?.name,
+                  amount: this.selectedAmount,
+                  paymentMethod: this.selectedPaymentLabel,
+                  reference: res?.paymentReference || `CF-${Date.now()}`,
+                  gateway: `Razorpay`
+                }
+              });
+            },
+            error: (err) => {
+              this.paymentProcessing = false;
+              this.paymentMessage = err?.error?.message || 'Payment verification failed. Please contact support.';
+            }
+          });
+        } else {
+          this.paymentMessage = 'Payment completed but verification data missing.';
+          this.paymentProcessing = false;
+        }
+      }
+    };
+
+    // When using UPI, hint Razorpay to open UPI flow and prefill the VPA (UPI ID)
+    if (this.paymentMethod === 'upi') {
+      // add method and upi prefill where supported
+      (options as any).method = 'upi';
+      (options as any).prefill = (options as any).prefill || {};
+      (options as any).prefill.vpa = this.upiId || (options as any).prefill.contact || '';
+    }
+
+    const razorpay = new (window as any).Razorpay(options);
+    razorpay.on('payment.failed', (response: any) => {
+      this.paymentMessage = response?.error?.description || 'Payment failed in Razorpay checkout. Please try again.';
+    });
+    razorpay.open();
+  }
+
+  cancelFakeGateway(): void {
+    if (this.paymentProcessing) {
+      return;
+    }
+
+    this.showFakeGateway = false;
+    this.paymentMessage = 'Payment cancelled. You can review details and try again.';
+  }
+
+  completeFakeGatewayPayment(success: boolean): void {
+    if (!success) {
+      this.showFakeGateway = false;
+      this.paymentMessage = 'Payment failed in gateway simulation. Please try again.';
+      return;
+    }
+
+    const validationMessage = this.validateGatewayDetails();
+    if (validationMessage) {
+      this.paymentMessage = validationMessage;
+      return;
+    }
+
+    this.showFakeGateway = false;
+    this.paymentMessage = '';
+    this.finalizeDonation(this.mockGatewayReference);
+  }
+
+  private validateGatewayDetails(): string {
+    if (this.requiresGatewayContact && !this.gatewayContact.trim()) {
+      return 'Enter contact number in Razorpay checkout.';
+    }
+
+    if (this.requiresGatewayUpi && !this.gatewayUpi.trim()) {
+      return 'Enter UPI ID in Razorpay checkout.';
+    }
+
+    return '';
+  }
+
+  private finalizeDonation(paymentReference?: string): void {
+>>>>>>> 5fbee60bc26227b47cd7381a951b6deb90ce38d6
     const charity = this.selectedCharity;
     if (!charity) {
       this.paymentMessage = 'Please choose a charity first.';
@@ -430,7 +661,7 @@ export class DonateComponent implements OnInit, OnDestroy {
       upi: 1,
       card: 2,
       netbanking: 3,
-      wallet: 1
+      wallet: 4
     };
 
     this.apiService.createDonation({
@@ -438,9 +669,17 @@ export class DonateComponent implements OnInit, OnDestroy {
       amount: this.selectedAmount,
       isAnonymous: this.donateAnonymously,
       paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
+<<<<<<< HEAD
       transactionReference: this.generateTransactionReference()
     }).subscribe({
       next: (result: any) => {
+=======
+      transactionReference: paymentReference || this.mockGatewayReference || `CF-${Date.now()}`
+    };
+
+    this.apiService.createDonation(payload).subscribe({
+      next: (response: any) => {
+>>>>>>> 5fbee60bc26227b47cd7381a951b6deb90ce38d6
         this.paymentProcessing = false;
         localStorage.setItem('cf:notify:refresh', Date.now().toString());
         this.router.navigate(['/payment-success'], {

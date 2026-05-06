@@ -11,35 +11,35 @@ namespace CareFund.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AuditLogs",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    UserRole = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
-                    EntityName = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    EntityId = table.Column<int>(type: "int", nullable: true),
-                    Details = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AuditLogs", x => x.Id);
-                });
+            migrationBuilder.Sql(@"
+IF OBJECT_ID('dbo.AuditLogs','U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[AuditLogs](
+        [Id] int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [UserId] int NULL,
+        [UserRole] nvarchar(32) NOT NULL,
+        [Action] nvarchar(32) NOT NULL,
+        [EntityName] nvarchar(64) NOT NULL,
+        [EntityId] int NULL,
+        [Details] nvarchar(1000) NOT NULL,
+        [Timestamp] datetime2 NOT NULL DEFAULT(GETDATE())
+    );
+END
+");
 
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_AuditLogs_Timestamp' AND object_id = OBJECT_ID('dbo.AuditLogs'))
+BEGIN
+    CREATE INDEX [IX_AuditLogs_Timestamp] ON [dbo].[AuditLogs]([Timestamp]);
+END
+");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AuditLogs_Timestamp",
-                table: "AuditLogs",
-                column: "Timestamp");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AuditLogs_UserId",
-                table: "AuditLogs",
-                column: "UserId");
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_AuditLogs_UserId' AND object_id = OBJECT_ID('dbo.AuditLogs'))
+BEGIN
+    CREATE INDEX [IX_AuditLogs_UserId] ON [dbo].[AuditLogs]([UserId]);
+END
+");
 
         }
 

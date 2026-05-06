@@ -78,6 +78,11 @@ namespace CareFund.Data
             modelBuilder.Entity<Feedback>()
                 .Property(f => f.Amount)
                 .HasPrecision(18, 2);
+
+            // Payment amount precision
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
  
             // User - OTP (1:M)
             modelBuilder.Entity<User>()
