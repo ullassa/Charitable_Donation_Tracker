@@ -62,11 +62,11 @@
             <h2>Account settings</h2>
             <p>Manage your organization account security and privacy.</p>
           </div>
-          <span class="section-pill">⚙️ Settings</span>
+          <span class="section-pill"><span class="material-symbols-outlined" aria-hidden="true">settings</span> Settings</span>
         </div>
 
         <div class="settings-info-card admin-approval">
-          <span class="info-icon">📧</span>
+          <span class="material-symbols-outlined info-icon" aria-hidden="true">mail</span>
           <div>
             <h3>Account Management Requires Admin Approval</h3>
             <p>To disable or delete your charity account, please contact our support team. An admin will review your request and process it accordingly.</p>
@@ -76,7 +76,7 @@
               <li>Include your registration ID and reason for deletion/disabling</li>
             </ul>
             <a href="mailto:support@carefund.com?subject=Account%20Deletion%20Request%20-%20Charity%20Account" class="btn-link" (click)="openSupportForm()">
-              📧 Send Support Email
+              <span class="material-symbols-outlined" aria-hidden="true">mail</span> Send Support Email
             </a>
           </div>
         </div>
@@ -123,45 +123,7 @@
           </div>
         </section>
 
-        <section class="customer-edit-panel support-panel">
-          <div class="panel-head">
-            <div>
-              <h2>Help & support</h2>
-              <p>Quick actions for FAQs, chat, and account help.</p>
-            </div>
-          </div>
-
-          <div class="support-actions">
-            <button class="support-action" (click)="openChat()" style="border: none; background: none; cursor: pointer;">
-              <span class="support-icon">💬</span>
-              <div>
-                <strong>Chat with us</strong>
-                <p>Talk to support for quick help.</p>
-              </div>
-            </button>
-            <button class="support-action" (click)="openFaqs()" style="border: none; background: none; cursor: pointer;">
-              <span class="support-icon">❓</span>
-              <div>
-                <strong>FAQs</strong>
-                <p>Find answers to common questions.</p>
-              </div>
-            </button>
-            <a class="support-action" routerLink="/">
-              <span class="support-icon">📊</span>
-              <div>
-                <strong>Explore charities</strong>
-                <p>Browse causes and support more charities.</p>
-              </div>
-            </a>
-            <a class="support-action" routerLink="/privacy">
-              <span class="support-icon">🛡️</span>
-              <div>
-                <strong>Privacy & security</strong>
-                <p>Read how your data stays safe.</p>
-              </div>
-            </a>
-          </div>
-        </section>
+        <!-- Help & support card removed per request -->
       </div>
 
       <div class="actions" role="group" aria-label="Profile actions">
@@ -175,14 +137,14 @@
             <h2>Account settings</h2>
             <p>Manage your account security and privacy options.</p>
           </div>
-          <span class="section-pill">⚙️ Settings</span>
+          <span class="section-pill"><span class="material-symbols-outlined" aria-hidden="true">settings</span> Settings</span>
         </div>
 
         <div class="settings-grid">
           <!-- Disable Account Option -->
           <div class="settings-card danger-card">
             <div class="settings-card-header">
-              <span class="settings-icon">🔒</span>
+              <span class="material-symbols-outlined settings-icon" aria-hidden="true">lock</span>
               <div>
                 <h3>Disable Account</h3>
                 <p>Make your account inactive temporarily</p>
@@ -201,14 +163,14 @@
           <!-- Delete Account Option -->
           <div class="settings-card critical-card">
             <div class="settings-card-header">
-              <span class="settings-icon">🗑️</span>
+              <span class="material-symbols-outlined settings-icon" aria-hidden="true">delete</span>
               <div>
                 <h3>Delete Account</h3>
                 <p>Permanently remove account data</p>
               </div>
             </div>
             <ul class="settings-details">
-              <li>⚠️ This is permanent and cannot be undone</li>
+              <li><span class="material-symbols-outlined inline-warning" aria-hidden="true">warning</span> This is permanent and cannot be undone</li>
               <li>Email becomes available for reuse</li>
               <li>All donation history removed</li>
               <li>Data cannot be recovered</li>
@@ -223,7 +185,7 @@
         <div class="modal-overlay" *ngIf="showSupportForm" (click)="closeSupportForm()">
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header info">
-              <span>📧</span>
+              <span class="material-symbols-outlined" aria-hidden="true">mail</span>
               <h3>Send Support Request</h3>
               <button class="modal-close" (click)="closeSupportForm()">&times;</button>
             </div>
@@ -285,7 +247,7 @@
         <div class="modal-overlay" *ngIf="showDisableConfirm" (click)="closeDisableAccountDialog()">
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header warning">
-              <span>🔒</span>
+              <span class="material-symbols-outlined" aria-hidden="true">lock</span>
               <h3>Disable Your Account?</h3>
               <button class="modal-close" (click)="closeDisableAccountDialog()">&times;</button>
             </div>
@@ -316,7 +278,7 @@
         <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteAccountDialog()">
           <div class="modal-content" (click)="$event.stopPropagation()">
             <div class="modal-header danger">
-              <span>⚠️</span>
+              <span class="material-symbols-outlined" aria-hidden="true">warning</span>
               <h3>Delete Account Permanently?</h3>
               <button class="modal-close" (click)="closeDeleteAccountDialog()">&times;</button>
             </div>
@@ -428,13 +390,13 @@
   <div class="modal-overlay" *ngIf="showChat" (click)="closeChat()">
     <div class="modal-content chat-modal" (click)="$event.stopPropagation()">
       <div class="modal-header info">
-        <span>💬</span>
+        <span class="material-symbols-outlined" aria-hidden="true">chat</span>
         <h3>Live Chat Support</h3>
         <button class="modal-close" (click)="closeChat()">&times;</button>
       </div>
       <div class="modal-body chat-body">
         <div class="chat-message agent">
-          <div class="message-avatar">🤖</div>
+          <div class="message-avatar"><span class="material-symbols-outlined" aria-hidden="true">smart_toy</span></div>
           <div class="message-content">
             <p>Hi! Welcome to CareFund Support. How can we help you today?</p>
             <small>Just now</small>
@@ -445,7 +407,7 @@
             <p>{{ supportForm.message }}</p>
             <small>Now</small>
           </div>
-          <div class="message-avatar">👤</div>
+          <div class="message-avatar"><span class="material-symbols-outlined" aria-hidden="true">person</span></div>
         </div>
       </div>
       <div class="chat-footer">
@@ -465,7 +427,7 @@
   <div class="modal-overlay" *ngIf="showFaqs" (click)="closeFaqs()">
     <div class="modal-content faqs-modal" (click)="$event.stopPropagation()">
       <div class="modal-header info">
-        <span>❓</span>
+        <span class="material-symbols-outlined" aria-hidden="true">help</span>
         <h3>Frequently Asked Questions</h3>
         <button class="modal-close" (click)="closeFaqs()">&times;</button>
       </div>

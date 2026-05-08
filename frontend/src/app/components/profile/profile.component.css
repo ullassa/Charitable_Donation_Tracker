@@ -839,16 +839,22 @@ textarea {
 }
 
 .settings-details li:before {
-  content: "✓";
+  content: "check_circle";
+  font-family: "Material Symbols Outlined";
   position: absolute;
   left: 0;
   color: #10b981;
+  font-size: 1rem;
+  line-height: 1;
   font-weight: bold;
 }
 
 .settings-card.critical-card .settings-details li:before {
-  content: "⚠️";
+  content: "warning";
+  font-family: "Material Symbols Outlined";
   color: #ef4444;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .btn-settings {

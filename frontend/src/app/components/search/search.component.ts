@@ -40,9 +40,9 @@ interface SearchSuggestion {
           (click)="clearSearch()"
           [attr.aria-label]="'Clear search'"
         >
-          ✕
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
-        <span class="search-icon">🔍</span>
+        <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
       </div>
 
       <!-- Search Results Dropdown -->
@@ -101,7 +101,7 @@ interface SearchSuggestion {
             (click)="search(item)"
             [attr.aria-label]="'Search for ' + item"
           >
-            <span class="history-icon">⏰</span>
+            <span class="material-symbols-outlined history-icon" aria-hidden="true">schedule</span>
             {{ item }}
           </button>
         </div>

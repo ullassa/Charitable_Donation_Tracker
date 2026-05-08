@@ -13,6 +13,7 @@
         </div>
         <div class="panel-tabs">
           <button type="button" class="panel-tab" [class.active]="activePanel === 'donors'" (click)="setActivePanel('donors')">Donors</button>
+          <button type="button" class="panel-tab" [class.active]="activePanel === 'customers'" (click)="setActivePanel('customers')">Customers</button>
           <button type="button" class="panel-tab" [class.active]="activePanel === 'charities'" (click)="setActivePanel('charities')">Charities</button>
           <button type="button" class="panel-tab" [class.active]="activePanel === 'feedback'" (click)="setActivePanel('feedback')">Feedback</button>
         </div>
@@ -99,6 +100,60 @@
 
     <div class="admin-layout">
       <div class="admin-main-panels">
+        <section class="requests-section" *ngIf="activePanel === 'customers'">
+          <div class="table-head">
+            <h2>Customer Accounts</h2>
+            <span>{{ customerStats.total || customers.length }} accounts</span>
+          </div>
+
+          <div class="table-wrap" *ngIf="customers.length > 0; else noCustomersList">
+            <table class="requests-table donors-table compact">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th>Donations</th>
+                  <th>Total Donated</th>
+                  <th>Status</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of customers">
+                  <td>{{ customer.name || 'Not provided' }}</td>
+                  <td>{{ customer.email || 'Not provided' }}</td>
+                  <td>{{ customer.phone || 'Not provided' }}</td>
+                  <td>{{ customer.city || 'Not provided' }}</td>
+                  <td>{{ customer.donationsCount || 0 }}</td>
+                  <td>₹{{ (customer.totalDonated || 0) | number:'1.0-0' }}</td>
+                  <td>
+                    <span class="status-badge">
+                      {{ customer.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="actions-col">
+                    <button
+                      type="button"
+                      [ngClass]="customer.isActive ? 'btn-reject' : 'btn-approve'"
+                      (click)="toggleCustomerStatus(customer)"
+                    >
+                      {{ customer.isActive ? 'Disable' : 'Enable' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noCustomersList>
+            <div class="empty-state">
+              <p class="empty-text">No customer accounts found</p>
+            </div>
+          </ng-template>
+        </section>
+
         <section class="requests-section" *ngIf="activePanel === 'charities'">
           <div class="table-head">
             <h2>Charity Registration Requests</h2>
@@ -425,6 +480,9 @@
               <p class="empty-text">No donors found</p>
             </div>
           </ng-template>
+        </section>
+
+        <section class="requests-section" *ngIf="activePanel === 'charities'">
         </section>
 
         <section class="requests-section" *ngIf="activePanel === 'feedback'">

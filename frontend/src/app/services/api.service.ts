@@ -212,6 +212,14 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/donors${suffix}`);
   }
 
+  getAdminCustomers() {
+    return this.http.get(`${this.baseUrl}/admin/customers`);
+  }
+
+  updateCustomerAccountStatus(userId: number, isActive: boolean) {
+    return this.http.put(`${this.baseUrl}/admin/customers/${userId}/status`, { isActive });
+  }
+
   getAdminFeedbacks() {
     return this.http.get(`${this.baseUrl}/admin/feedbacks`);
   }
@@ -274,9 +282,8 @@ export class ApiService {
   }
 
   deleteAccount(password: string) {
-    return this.http.delete(`${this.baseUrl}/profile/delete`, {
-      headers: this.getAuthHeaders(),
-      body: { password }
+    return this.http.put(`${this.baseUrl}/profile/delete`, { password }, {
+      headers: this.getAuthHeaders()
     });
   }
 

@@ -43,6 +43,12 @@ namespace CareFund.Services.Auth
                 return null;
             }
 
+            if (!user.IsActive)
+            {
+                _logger.LogWarning("Authentication blocked for inactive account: {Email}", email);
+                return null;
+            }
+
             var storedHash = user.PasswordHash ?? string.Empty;
             var isValid = VerifyPassword(passwordHash, storedHash, email);
 

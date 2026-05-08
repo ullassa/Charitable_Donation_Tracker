@@ -2,7 +2,7 @@
 
 <div class="marquee-container" aria-label="Fraud warning banner">
   <div class="marquee-text">
-    ⚠️ Be aware of frauds. CareFund never asks for your bank details or OTP. Do not share sensitive information with anyone.
+    <span class="material-symbols-outlined" aria-hidden="true">warning</span> Be aware of frauds. CareFund never asks for your bank details or OTP. Do not share sensitive information with anyone.
   </div>
 </div>
 
@@ -103,9 +103,9 @@
           <div class="featured-image">
             <img [src]="getCharityImageUrl(charity)" [alt]="charity.charityName" />
             <div class="featured-badges">
-              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 100" [class]="'milestone-complete'">✓ 100% funded</span>
-              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 75 && getProgressPercent(charity) < 100">🎯 75% funded</span>
-              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 50 && getProgressPercent(charity) < 75">📈 50% funded</span>
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 100" [class]="'milestone-complete'"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> 100% funded</span>
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 75 && getProgressPercent(charity) < 100"><span class="material-symbols-outlined" aria-hidden="true">flag</span> 75% funded</span>
+              <span class="milestone-badge" *ngIf="getProgressPercent(charity) >= 50 && getProgressPercent(charity) < 75"><span class="material-symbols-outlined" aria-hidden="true">trending_up</span> 50% funded</span>
             </div>
           </div>
           <div class="featured-content">
@@ -113,8 +113,8 @@
               <div>
                 <h3>{{ charity.charityName }}</h3>
                 <div class="trust-badges">
-                  <span class="trust-badge verified" *ngIf="charity.status === 'Approved'" title="Verified charity">✓ Verified</span>
-                  <span class="trust-badge secure" title="Security guaranteed">🔒 Secure</span>
+                  <span class="trust-badge verified" *ngIf="charity.status === 'Approved'" title="Verified charity"><span class="material-symbols-outlined" aria-hidden="true">verified</span> Verified</span>
+                  <span class="trust-badge secure" title="Security guaranteed"><span class="material-symbols-outlined" aria-hidden="true">lock</span> Secure</span>
                 </div>
               </div>
             </div>
@@ -138,7 +138,7 @@
 
             <div class="donor-reviews" *ngIf="charity.reviews && charity.reviews.length > 0">
               <div class="reviews-header">
-                <span class="review-rating">⭐ {{ getAverageRating(charity) | number:'1.1-1' }}/5</span>
+                <span class="review-rating"><span class="material-symbols-outlined" aria-hidden="true">star</span> {{ getAverageRating(charity) | number:'1.1-1' }}/5</span>
                 <span class="review-count">({{ charity.reviews.length }} donors)</span>
               </div>
               <p class="review-text">{{ charity.reviews[0]?.message }}</p>
@@ -166,7 +166,7 @@
         <article class="donation-item" *ngFor="let donation of recentDonations; let i = index" [style.animation-delay]="(i * 100) + 'ms'">
           <div class="donation-visual">
             <div class="donation-amount">₹{{ donation.amount | number:'1.0-0' }}</div>
-            <span class="donation-icon">❤️</span>
+            <span class="material-symbols-outlined donation-icon" aria-hidden="true">favorite</span>
           </div>
           <div class="donation-content">
             <div class="donation-header">

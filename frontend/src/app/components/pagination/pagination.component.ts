@@ -38,7 +38,7 @@ import { PaginationService, PaginationOptions } from '../../services/pagination.
           title="First page"
           aria-label="Go to first page"
         >
-          ⏮️ First
+          <span class="material-symbols-outlined" aria-hidden="true">first_page</span> First
         </button>
 
         <!-- Previous Button -->
@@ -86,7 +86,7 @@ import { PaginationService, PaginationOptions } from '../../services/pagination.
           title="Last page"
           aria-label="Go to last page"
         >
-          Last ⏭️
+          Last <span class="material-symbols-outlined" aria-hidden="true">last_page</span>
         </button>
       </div>
 

@@ -356,11 +356,6 @@ export class DonateComponent implements OnInit, OnDestroy {
   }
 
   selectPaymentMethod(method: 'upi' | 'card' | 'netbanking' | 'wallet'): void {
-    // Warn user if selecting UPI on desktop
-    if (method === 'upi' && !this.isMobileDevice) {
-      this.paymentMessage = '⚠️ UPI works best on mobile devices. Use Card or Net Banking on desktop. If you have a UPI app, try again on mobile.';
-      return;
-    }
     this.paymentMethod = method;
     this.paymentMessage = '';
   }
@@ -388,7 +383,7 @@ export class DonateComponent implements OnInit, OnDestroy {
   }
 
   get isUpiDisabledOnDesktop(): boolean {
-    return !this.isMobileDevice;
+    return false;
   }
 
   shareSelectedCharity(): void {
@@ -441,15 +436,8 @@ export class DonateComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!skipPaymentDetailValidation && this.paymentMethod === 'upi') {
-      if (!this.isMobileDevice) {
-        this.paymentMessage = '⚠️ UPI is only available on mobile devices. Please use Card or Net Banking instead.';
-        return;
-      }
-      if (!this.upiId.trim()) {
-        this.paymentMessage = 'Enter your UPI ID to continue.';
-        return;
-      }
+    if (!skipPaymentDetailValidation && this.paymentMethod === 'upi' && this.upiId.trim()) {
+      // Optional UPI ID prefill for Razorpay; modal can still open without it.
     }
 
     if (!skipPaymentDetailValidation && this.paymentMethod === 'card') {
@@ -495,7 +483,7 @@ export class DonateComponent implements OnInit, OnDestroy {
           this.paymentProcessing = true;
           const payload: any = {
             charityRegistrationId: this.selectedCharity?.id,
-            amount: this.selectedAmount,
+            amount: this.payableTotal,
             upivpa: this.paymentMethod === 'upi' ? this.upiId : undefined,
             contactNumber: this.paymentMethod === 'wallet' ? this.walletNumber : this.gatewayContact,
             walletNumber: this.paymentMethod === 'wallet' ? this.walletNumber : undefined,

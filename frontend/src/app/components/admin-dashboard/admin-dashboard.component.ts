@@ -20,7 +20,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   expandedRequestId: number | null = null;
   expandedDonorId: number | null = null;
   expandedDonationId: number | null = null;
-  activePanel: 'donors' | 'charities' | 'feedback' = 'donors';
+  activePanel: 'donors' | 'customers' | 'charities' | 'feedback' = 'donors';
 
   statusFilter = '';
   donorFrom = '';
@@ -30,8 +30,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   donationTo: string | Date | undefined = undefined;
   donationSort: 'desc' | 'asc' = 'desc';
   stats: any = { pending: 0, approved: 0, rejected: 0, hold: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
+  customerStats: any = { total: 0, active: 0, inactive: 0 };
   requests: any[] = [];
   donors: any[] = [];
+  customers: any[] = [];
   feedbacks: any[] = [];
   donationMonthlyTrend: Array<{ label: string; amount: number }> = [];
   causeTrend: Array<{ cause: string; amount: number }> = [];
@@ -57,10 +59,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  setActivePanel(panel: 'donors' | 'charities' | 'feedback'): void {
+  setActivePanel(panel: 'donors' | 'customers' | 'charities' | 'feedback'): void {
     this.activePanel = panel;
     if (panel === 'donors' && this.donors.length === 0) {
       this.fetchDonors();
+    }
+    if (panel === 'customers' && this.customers.length === 0) {
+      this.fetchCustomers();
     }
     if (panel === 'charities' && this.requests.length === 0) {
       this.fetchRequests();
@@ -96,6 +101,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private fetchPanelData(): void {
     if (this.activePanel === 'donors') {
       this.fetchDonors();
+    } else if (this.activePanel === 'customers') {
+      this.fetchCustomers();
     } else if (this.activePanel === 'charities') {
       this.fetchRequests();
     } else {
@@ -113,6 +120,18 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to load donor details.';
+      }
+    });
+  }
+
+  fetchCustomers(): void {
+    this.api.getAdminCustomers().subscribe({
+      next: (res: any) => {
+        this.customers = res?.items ?? [];
+        this.customerStats = res?.stats ?? this.customerStats;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load customer accounts.';
       }
     });
   }
@@ -273,6 +292,20 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       ];
     }
 
+    if (this.activePanel === 'customers') {
+      const total = Number(this.customerStats.total || this.stats.totalCustomers || this.customers.length);
+      const active = Number(this.customerStats.active || 0);
+      const inactive = Number(this.customerStats.inactive || 0);
+      const activeRate = total > 0 ? Math.round((active / total) * 100) : 0;
+
+      return [
+        { label: 'Total', value: total, variant: 'neutral' },
+        { label: 'Active', value: active, variant: 'approved' },
+        { label: 'Inactive', value: inactive, variant: 'rejected' },
+        { label: 'Active Rate', value: `${activeRate}%`, variant: 'neutral' }
+      ];
+    }
+
     if (this.activePanel === 'feedback') {
       const total = this.feedbacks.length;
       const average = total > 0
@@ -359,6 +392,26 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = err?.error?.message || `Failed to ${action} request.`;
+      }
+    });
+  }
+
+  toggleCustomerStatus(customer: any): void {
+    const nextActive = !customer?.isActive;
+    const action = nextActive ? 'enable' : 'disable';
+    const name = customer?.name || 'this customer';
+    const confirmed = window.confirm(`Are you sure you want to ${action} ${name}'s account?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.api.updateCustomerAccountStatus(Number(customer?.userId), nextActive).subscribe({
+      next: () => {
+        localStorage.setItem('cf:notify:refresh', Date.now().toString());
+        this.load();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || `Failed to ${action} customer account.`;
       }
     });
   }

@@ -396,7 +396,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!confirm('⚠️  This action is PERMANENT. Your account and all data will be deleted. Email can be reused. Continue?')) {
+    if (!confirm('This action is PERMANENT. Your account and all data will be deleted. Email can be reused. Continue?')) {
       return;
     }
 
@@ -461,7 +461,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.api.disableAccount(this.disableConfirmPassword).subscribe({
       next: (res: any) => {
         this.isProcessingAccountAction = false;
-        this.message = 'Account disabled successfully. Redirecting to login...';
+        this.message = 'Account disabled successfully. To re-enable your account, contact admin at support@carefund.com. Redirecting to login...';
         this.closeDisableAccountDialog();
         setTimeout(() => {
           localStorage.clear();
@@ -479,7 +479,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (statusCode === 404) {
           this.error = this.isCharityManager
             ? 'Charity account disabling requires admin approval. Please contact support@carefund.com with your details.'
-            : 'Account disabling feature is being set up. Please try again later.';
+            : 'Account disabling feature is being set up. Please try again later or contact support@carefund.com';
           return;
         }
 

@@ -21,7 +21,7 @@ import { SocialShareService } from '../../services/social-share.service';
           title="Share using your device"
           [attr.aria-label]="'Share ' + title + ' using your device'"
         >
-          <span class="share-icon">↗️</span>
+          <span class="material-symbols-outlined share-icon" aria-hidden="true">ios_share</span>
           <span class="share-label" *ngIf="layout === 'vertical'">Share</span>
         </button>
 
@@ -65,7 +65,7 @@ import { SocialShareService } from '../../services/social-share.service';
           title="Share on WhatsApp"
           [attr.aria-label]="'Share ' + title + ' on WhatsApp'"
         >
-          <span class="share-icon">💬</span>
+          <span class="material-symbols-outlined share-icon" aria-hidden="true">chat</span>
           <span class="share-label" *ngIf="layout === 'vertical'">WhatsApp</span>
         </button>
 
@@ -76,7 +76,7 @@ import { SocialShareService } from '../../services/social-share.service';
           title="Share via Email"
           [attr.aria-label]="'Share ' + title + ' via Email'"
         >
-          <span class="share-icon">✉️</span>
+          <span class="material-symbols-outlined share-icon" aria-hidden="true">mail</span>
           <span class="share-label" *ngIf="layout === 'vertical'">Email</span>
         </button>
 
@@ -88,7 +88,7 @@ import { SocialShareService } from '../../services/social-share.service';
           [attr.aria-label]="'Copy link for ' + title"
           [class.copied]="linkCopied"
         >
-          <span class="share-icon">{{ linkCopied ? '✓' : '🔗' }}</span>
+          <span class="material-symbols-outlined share-icon" aria-hidden="true">{{ linkCopied ? 'check' : 'link' }}</span>
           <span class="share-label" *ngIf="layout === 'vertical'">{{ linkCopied ? 'Copied!' : 'Copy' }}</span>
         </button>
       </div>

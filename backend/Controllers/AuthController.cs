@@ -44,6 +44,13 @@ public class AuthController : ControllerBase
             var password = !string.IsNullOrWhiteSpace(loginUser.PasswordHash)
                 ? loginUser.PasswordHash
                 : (loginUser.Password ?? string.Empty);
+            var existingUser = _authService.GetUserByEmail(email);
+            if (existingUser == null)
+                return Unauthorized(new { success = false, message = "Invalid credentials" });
+
+            if (!existingUser.IsActive)
+                return Unauthorized(new { success = false, message = "Your account is disabled. Please contact admin to reactivate it." });
+
             var user = _authService.AuthenticateUser(email, password);
 
             if (user == null)

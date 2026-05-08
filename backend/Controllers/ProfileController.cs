@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BCrypt.Net;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
@@ -256,6 +257,116 @@ public class ProfileController : ControllerBase
             message = "Charity profile updated successfully."
         });
     }
+
+    [HttpPut("disable")]
+    [Authorize]
+    public async Task<IActionResult> DisableOwnAccount([FromBody] DisableAccountRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { success = false, message = "Password is required." });
+
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized(new { success = false, message = "Invalid token claims." });
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found." });
+
+        // Verify password
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        bool passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+        if (!passwordValid)
+            return Unauthorized(new { success = false, message = "Invalid password." });
+
+        // Check if already disabled
+        if (!user.IsActive)
+            return BadRequest(new { success = false, message = "Account is already disabled." });
+
+        // Disable account
+        user.IsActive = false;
+        await _context.SaveChangesAsync();
+
+        // Log audit
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Disable",
+            "User",
+            user.UserId,
+            $"User {user.UserName} disabled their own account.");
+
+        // Send notification
+        await _notifications.NotifyUserAsync(
+            user,
+            "Account Disabled",
+            "Your CareFund account has been disabled. To re-enable it, please contact support at support@carefund.com with your email and reason for reactivation.");
+
+        return Ok(new
+        {
+            success = true,
+            message = "Account disabled successfully. To re-enable your account, please contact admin."
+        });
+    }
+
+    [HttpPut("delete")]
+    [Authorize]
+    public async Task<IActionResult> DeleteOwnAccount([FromBody] DeleteAccountRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new { success = false, message = "Password is required." });
+
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email))
+            return Unauthorized(new { success = false, message = "Invalid token claims." });
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        var user = await _context.Users
+            .Include(u => u.Customer)
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+        if (user == null)
+            return NotFound(new { success = false, message = "User not found." });
+
+        // Verify password
+        bool passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+        if (!passwordValid)
+            return Unauthorized(new { success = false, message = "Invalid password." });
+
+        // Log audit before deletion
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Delete",
+            "User",
+            user.UserId,
+            $"User {user.UserName} deleted their own account permanently.");
+
+        // Delete related records via Customer FK if customer exists
+        if (user.Customer != null)
+        {
+            var donations = await _context.Donations.Where(d => d.CustomerId == user.Customer.CustomerId).ToListAsync();
+            if (donations.Any())
+                _context.Donations.RemoveRange(donations);
+
+            var favorites = await _context.FavoriteCharities.Where(f => f.CustomerId == user.Customer.CustomerId).ToListAsync();
+            if (favorites.Any())
+                _context.FavoriteCharities.RemoveRange(favorites);
+
+            _context.Customers.Remove(user.Customer);
+        }
+
+        // Delete user
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            success = true,
+            message = "Account deleted permanently. Your email is now available for reuse."
+        });
+    }
 }
 
 public class UpdateCustomerProfileRequest
@@ -279,4 +390,14 @@ public class UpdateCharityProfileRequest
     public string? Activities { get; set; }
     public string? SocialMediaLink { get; set; }
     public CauseType CauseType { get; set; }
+}
+
+public class DisableAccountRequest
+{
+    public string Password { get; set; } = string.Empty;
+}
+
+public class DeleteAccountRequest
+{
+    public string Password { get; set; } = string.Empty;
 }

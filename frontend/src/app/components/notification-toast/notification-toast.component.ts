@@ -19,9 +19,7 @@ import { takeUntil } from 'rxjs/operators';
         [attr.aria-live]="notification.priority === 'high' ? 'assertive' : 'polite'"
       >
         <div class="notification-content">
-          <div class="notification-icon">
-            {{ getNotificationIcon(notification.type) }}
-          </div>
+          <span class="material-symbols-outlined notification-icon" aria-hidden="true">{{ getNotificationIcon(notification.type) }}</span>
           <div class="notification-body">
             <div class="notification-title">{{ notification.title }}</div>
             <div class="notification-message">{{ notification.message }}</div>
@@ -81,9 +79,10 @@ import { takeUntil } from 'rxjs/operators';
     }
 
     .notification-icon {
-      font-size: 1.5rem;
-      text-align: center;
-      min-width: 40px;
+        font-size: 1.5rem;
+        text-align: center;
+        min-width: 40px;
+        color: inherit;
     }
 
     .notification-body {
@@ -253,12 +252,12 @@ export class NotificationToastComponent implements OnInit, OnDestroy {
 
   getNotificationIcon(type: string): string {
     const icons: { [key: string]: string } = {
-      donation: '💰',
-      approval: '✅',
-      status: 'ℹ️',
-      alert: '⚠️'
+      donation: 'savings',
+      approval: 'check_circle',
+      status: 'info',
+      alert: 'warning'
     };
-    return icons[type] || '📬';
+    return icons[type] || 'mail';
   }
 
   ngOnDestroy(): void {

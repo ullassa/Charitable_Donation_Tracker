@@ -307,6 +307,101 @@ public class AdminController : ControllerBase
         return Ok(new { success = true, items });
     }
 
+    [HttpGet("customers")]
+    public async Task<IActionResult> GetCustomers()
+    {
+        var items = await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Customer)
+                .ThenInclude(c => c!.Donations)
+            .Where(u => u.UserRole == UserRole.Customer)
+            .OrderByDescending(u => u.CreatedAt)
+            .Select(u => new
+            {
+                userId = u.UserId,
+                name = u.UserName,
+                email = u.Email,
+                phone = u.PhoneNumber,
+                city = u.Customer != null ? u.Customer.City : string.Empty,
+                createdAt = u.CreatedAt,
+                isActive = u.IsActive,
+                donationsCount = u.Customer != null ? u.Customer.Donations.Count : 0,
+                totalDonated = u.Customer != null ? u.Customer.Donations.Sum(d => d.Amount) : 0,
+                lastDonationAt = u.Customer != null && u.Customer.Donations.Any() ? u.Customer.Donations.Max(d => d.DonationDate) : (DateTime?)null
+            })
+            .ToListAsync();
+
+        return Ok(new
+        {
+            success = true,
+            items,
+            stats = new
+            {
+                total = items.Count,
+                active = items.Count(item => item.isActive),
+                inactive = items.Count(item => !item.isActive)
+            }
+        });
+    }
+
+    [HttpPut("customers/{id}/status")]
+    public async Task<IActionResult> UpdateCustomerStatus(int id, [FromBody] UpdateCustomerStatusRequest dto)
+    {
+        if (dto == null)
+            return BadRequest(new { success = false, message = "Request body is required." });
+
+        var customerUser = await _context.Users
+            .Include(u => u.Customer)
+                .ThenInclude(c => c!.Donations)
+            .FirstOrDefaultAsync(u => u.UserId == id && u.UserRole == UserRole.Customer);
+
+        if (customerUser == null)
+            return NotFound(new { success = false, message = "Customer account not found." });
+
+        if (customerUser.IsActive == dto.IsActive)
+        {
+            return Ok(new
+            {
+                success = true,
+                message = dto.IsActive ? "Customer account is already active." : "Customer account is already disabled."
+            });
+        }
+
+        customerUser.IsActive = dto.IsActive;
+        await _context.SaveChangesAsync();
+
+        var adminEmail = User.FindFirstValue(ClaimTypes.Email);
+        var adminUser = await _context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == (adminEmail ?? string.Empty).Trim().ToLowerInvariant());
+
+        var action = dto.IsActive ? "Update" : "Update";
+        var details = dto.IsActive
+            ? $"Activated customer account for {customerUser.UserName}."
+            : $"Disabled customer account for {customerUser.UserName}.";
+
+        await _auditLogs.LogAsync(
+            adminUser?.UserId,
+            adminUser?.UserRole ?? UserRole.Admin,
+            action,
+            "User",
+            customerUser.UserId,
+            details);
+
+        await _notifications.NotifyUserAsync(
+            customerUser,
+            dto.IsActive ? "Account reactivated" : "Account disabled",
+            dto.IsActive
+                ? "Your CareFund account has been reactivated by the admin. You can now log in again."
+                : "Your CareFund account has been disabled by the admin. If this was a mistake, please contact support."
+        );
+
+        return Ok(new
+        {
+            success = true,
+            message = dto.IsActive ? "Customer account enabled successfully." : "Customer account disabled successfully."
+        });
+    }
+
     [HttpGet("charity-requests")]
     public async Task<IActionResult> GetCharityRequests([FromQuery] string? status = null)
     {
@@ -432,4 +527,9 @@ public class ReviewCharityRequest
 {
     public string Action { get; set; } = string.Empty;
     public string? AdminComment { get; set; }
+}
+
+public class UpdateCustomerStatusRequest
+{
+    public bool IsActive { get; set; }
 }
